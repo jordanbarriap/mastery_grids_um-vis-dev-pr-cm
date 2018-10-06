@@ -1,0 +1,1357 @@
+[
+	{
+		"set_name" : "arithmetic.bmi_calculator",
+		"act_name" : "BmiCalculator1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arithmetic.bmi_calculator",
+		"act_name" : "BmiCalculator2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arithmetic.f_to_c_conversion",
+		"act_name" : "CelsiusToFahrenheit",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arithmetic.f_to_c_conversion",
+		"act_name" : "FahrenheitToCelsius",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arithmetic.pythagorean_theorem",
+		"act_name" : "PythagoreanTheorem1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arithmetic.pythagorean_theorem",
+		"act_name" : "PythagoreanTheorem2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arithmetic.time_conversion",
+		"act_name" : "DisplayTime1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arithmetic.time_conversion",
+		"act_name" : "DisplayTime2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "artihmetic.vending_machine",
+		"act_name" : "VendingMachine1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "artihmetic.vending_machine",
+		"act_name" : "VendingMachine2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "artithmetic.inc_dec_operators",
+		"act_name" : "JDecInc1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "artithmetic.inc_dec_operators",
+		"act_name" : "JDecInc2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "artithmetic.inc_dec_operators",
+		"act_name" : "JDecInc3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.fail_course",
+		"act_name" : "JFailCourse1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "booleans.fail_course",
+		"act_name" : "JFailCourse2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.fail_course",
+		"act_name" : "JFailCourse3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.hot_dry",
+		"act_name" : "JBooleanDryHot1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "booleans.hot_dry",
+		"act_name" : "JBooleanDryHot2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.hot_dry",
+		"act_name" : "JBooleanDryHot3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.hot_dry",
+		"act_name" : "JBooleanDryHot4",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.phone_age",
+		"act_name" : "JPhoneAge1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "booleans.phone_age",
+		"act_name" : "JPhoneAge2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.rent_car",
+		"act_name" : "JRentCar1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "booleans.rent_car",
+		"act_name" : "JRentCar2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.rent_car",
+		"act_name" : "JRentCar3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.three_booleans",
+		"act_name" : "JThreeBoolean1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "booleans.three_booleans",
+		"act_name" : "JThreeBoolean2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "booleans.three_booleans",
+		"act_name" : "JThreeBoolean3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "strings.addition",
+		"act_name" : "StringAddition1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "strings.addition",
+		"act_name" : "StringAddition2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "strings.charAt",
+		"act_name" : "JCharAt1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "strings.charAt",
+		"act_name" : "JCharAt2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "strings.equals",
+		"act_name" : "JStringEqual1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "strings.equals",
+		"act_name" : "JStringEqual2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "strings.escape_chars",
+		"act_name" : "JEscapeChar1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "strings.escape_chars",
+		"act_name" : "JEscapeChar2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "strings.escape_chars",
+		"act_name" : "JEscapeChar3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "strings.substring",
+		"act_name" : "Initials",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "strings.substring",
+		"act_name" : "Initials2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "strings.substring",
+		"act_name" : "Initials3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "ifelse.if_else_if_grade",
+		"act_name" : "JIfElseIfGrade1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "ifelse.if_else_if_grade",
+		"act_name" : "JIfElseIfGrade2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "ifelse.if_else_num",
+		"act_name" : "JIfElseNumSign1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "ifelse.if_else_num",
+		"act_name" : "ifElseOddEven",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "ifelse.if_else_wage",
+		"act_name" : "JIfElseWages1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "ifelse.if_else_wage",
+		"act_name" : "JIfElseWages2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "ifelse.nested_if_min_max",
+		"act_name" : "JNestedIfMinOfThree",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "ifelse.nested_if_min_max",
+		"act_name" : "JNestedIfMaxOfThree",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "ifelse.nested_if_temperature",
+		"act_name" : "JNestedIfTemperature1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "ifelse.nested_if_temperature",
+		"act_name" : "JNestedIfTemperature2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.divisor",
+		"act_name" : "JSmallestDivisor",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "while_loops.divisor",
+		"act_name" : "JLargestDivisor",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.inputs",
+		"act_name" : "JInput1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "while_loops.inputs",
+		"act_name" : "JInput2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.inputs",
+		"act_name" : "JInput3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.inputs",
+		"act_name" : "JInput4",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.j_average",
+		"act_name" : "JAverage",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "while_loops.j_average",
+		"act_name" : "JAverageEvenNums",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.j_average",
+		"act_name" : "JAverageDouble",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.j_check_adjacent",
+		"act_name" : "JAdjacentDuplicates",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "while_loops.j_check_adjacent",
+		"act_name" : "JAdjacentConsecutives",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.j_check_adjacent",
+		"act_name" : "JAdjacentGreater",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.j_digits",
+		"act_name" : "JPrintDigitsReverse",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "while_loops.j_digits",
+		"act_name" : "JSumDigits",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.j_digits",
+		"act_name" : "JReverseNumber",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.win_percentage",
+		"act_name" : "JWinPercentage",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "while_loops.win_percentage",
+		"act_name" : "JWinPercentageInput",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "while_loops.win_percentage",
+		"act_name" : "JWinPercentageWonEqual",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_bmi_calculator",
+		"act_name" : "py_bmi_calculator1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_bmi_calculator",
+		"act_name" : "py_bmi_calculator2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_f_to_c_conversion",
+		"act_name" : "py_celsius_to_fahrenheit",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_f_to_c_conversion",
+		"act_name" : "py_fahrenheit_to_celsius",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_fail_course",
+		"act_name" : "py_fail_course1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_fail_course",
+		"act_name" : "py_fail_course2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_fail_course",
+		"act_name" : "py_fail_course3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_if_else_grade",
+		"act_name" : "py_ifelseif_grade1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_if_else_grade",
+		"act_name" : "py_ifelseif_grade2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_if_else_num",
+		"act_name" : "py_ifelse_num_sign1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_if_else_num",
+		"act_name" : "py_ifelse_odd_even",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_if_else_wage",
+		"act_name" : "py_if_else_wage1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_if_else_wage",
+		"act_name" : "py_if_else_wage2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_phone_age",
+		"act_name" : "py_phone_age1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_phone_age",
+		"act_name" : "py_phone_age2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_pythagorean_theorem",
+		"act_name" : "py_pythagorean_theorem1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_pythagorean_theorem",
+		"act_name" : "py_pythagorean_theorem2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_rent_car",
+		"act_name" : "py_rent_car1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_rent_car",
+		"act_name" : "py_rent_car2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_rent_car",
+		"act_name" : "py_rent_car3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_time_conversion",
+		"act_name" : "py_display_time1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_time_conversion",
+		"act_name" : "py_display_time2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_vending_machine",
+		"act_name" : "py_vending_machine1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_vending_machine",
+		"act_name" : "py_vending_machine2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "for_loops.j_squares",
+		"act_name" : "JWriteSquaresEven",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "for_loops.j_squares",
+		"act_name" : "JWriteSquaresOdd",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "for_loops.j_squares",
+		"act_name" : "JWriteSquaresRange",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "for_loops.j_for_one",
+		"act_name" : "JForOne1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "for_loops.j_for_one",
+		"act_name" : "JForOne2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "for_loops.j_for_three",
+		"act_name" : "JForThree1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "for_loops.j_for_three",
+		"act_name" : "JForThree2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "for_loops.j_for_two",
+		"act_name" : "JForTwo1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "for_loops.j_for_two",
+		"act_name" : "JForTwo2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_check_adjacent",
+		"act_name" : "py_adjacent_duplicates",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_check_adjacent",
+		"act_name" : "py_adjacent_consecutive",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_check_adjacent",
+		"act_name" : "py_adjacent_greater",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_digits",
+		"act_name" : "py_print_digits_reverse",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_digits",
+		"act_name" : "py_sum_digits",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_digits",
+		"act_name" : "py_reverse_number",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_divisor",
+		"act_name" : "py_smallest_divisor",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_divisor",
+		"act_name" : "py_largest_divisor",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_find_average",
+		"act_name" : "py_average",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_find_average",
+		"act_name" : "py_average_even_nums",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_find_average",
+		"act_name" : "py_average_float",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_hot_dry",
+		"act_name" : "py_boolean_dry_hot1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_hot_dry",
+		"act_name" : "py_boolean_dry_hot2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_hot_dry",
+		"act_name" : "py_boolean_dry_hot3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_hot_dry",
+		"act_name" : "py_boolean_dry_hot4",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_input",
+		"act_name" : "py_input1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_input",
+		"act_name" : "py_input2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_input",
+		"act_name" : "py_input3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_input",
+		"act_name" : "py_input4",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_nested_if_min_max",
+		"act_name" : "py_nested_if_min_of_three",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_nested_if_min_max",
+		"act_name" : "py_nested_if_max_of_three",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_nested_if_temperature",
+		"act_name" : "py_nested_if_temperature1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_nested_if_temperature",
+		"act_name" : "py_nested_if_temperature2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_range_one",
+		"act_name" : "py_range1_1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_range_one",
+		"act_name" : "py_range1_2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_range_three",
+		"act_name" : "py_range3_1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_range_three",
+		"act_name" : "py_range3_2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_range_two",
+		"act_name" : "py_range2_1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_range_two",
+		"act_name" : "py_range2_2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_squares",
+		"act_name" : "py_write_squares_even",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_squares",
+		"act_name" : "py_write_squares_odd",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_squares",
+		"act_name" : "py_write_squares_range",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_three_booleans",
+		"act_name" : "py_three_boolean1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_three_booleans",
+		"act_name" : "py_three_boolean2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_three_booleans",
+		"act_name" : "py_three_boolean3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_win_percentage",
+		"act_name" : "py_win_percentage",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_win_percentage",
+		"act_name" : "py_win_percentage_input",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_win_percentage",
+		"act_name" : "py_win_percentage_won_equal",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "objects.classes.point",
+		"act_name" : "PointTester1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "objects.classes.point",
+		"act_name" : "PointTester2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "objects.classes.tv",
+		"act_name" : "TVTester1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "objects.classes.tv",
+		"act_name" : "TVTester2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "objects.classes.account",
+		"act_name" : "Transactions1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "objects.classes.account",
+		"act_name" : "Transactions2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "objects.classes.loan",
+		"act_name" : "LoanTester1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "objects.classes.loan",
+		"act_name" : "LoanTester2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "nested_for.repeated_sequence",
+		"act_name" : "JRepeatedSequence1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "nested_for.repeated_sequence",
+		"act_name" : "JRepeatedSequence2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "nested_for.star_patterns",
+		"act_name" : "JStars1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "nested_for.star_patterns",
+		"act_name" : "JStars2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_repeated_sequence",
+		"act_name" : "py_repeated_sequence1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_repeated_sequence",
+		"act_name" : "py_repeated_sequence2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_star_patterns",
+		"act_name" : "py_stars_1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_star_patterns",
+		"act_name" : "py_stars_2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list_basic",
+		"act_name" : "py_list_basic1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_list_basic",
+		"act_name" : "py_list_basic2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list_basic",
+		"act_name" : "py_list_basic3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list_change",
+		"act_name" : "py_list_increment_elements",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_list_change",
+		"act_name" : "py_list_swap_adjacent_elements",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list_fill",
+		"act_name" : "py_list_fill_odds",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_list_fill",
+		"act_name" : "py_list_fill_user_input",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list_min_max",
+		"act_name" : "py_list_max",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_list_min_max",
+		"act_name" : "py_list_min",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list_process_elements",
+		"act_name" : "py_sum_list_elements",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_list_process_elements",
+		"act_name" : "py_average_list_elements",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list_rotate",
+		"act_name" : "py_list_rotate_left",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_list_rotate",
+		"act_name" : "py_list_rotate_left_twice",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list_rotate",
+		"act_name" : "py_list_rotate_right",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list_rotate",
+		"act_name" : "py_list_rotate_right_twice",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_search_list",
+		"act_name" : "py_search_list_of_values",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_search_list",
+		"act_name" : "py_search_list_total_count",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_search_list",
+		"act_name" : "py_search_list_count_each",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_temperature",
+		"act_name" : "py_temperature_above_average",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_temperature",
+		"act_name" : "py_temperature_list_days_above_threshold",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_concat_char_two_str",
+		"act_name" : "py_concat_char_two_str1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_concat_char_two_str",
+		"act_name" : "py_concat_char_two_str2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_concat_str_num",
+		"act_name" : "py_concat_str_num1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_concat_str_num",
+		"act_name" : "py_concat_str_num2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_concat_str_num",
+		"act_name" : "py_concat_string_num3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_str_count",
+		"act_name" : "py_str_count1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_str_count",
+		"act_name" : "py_str_count2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_str_repeat_chars",
+		"act_name" : "py_str_repeat1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_str_repeat_chars",
+		"act_name" : "py_str_repeat2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_char_dict",
+		"act_name" : "py_char_count_dict",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_char_dict",
+		"act_name" : "py_first_char_words_dict",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_student_score",
+		"act_name" : "py_score_dict1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_student_score",
+		"act_name" : "py_score_dict2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_check_age",
+		"act_name" : "py_check_age1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_check_age",
+		"act_name" : "py_check_age2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_check_product_code",
+		"act_name" : "py_check_product_code1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_check_product_code",
+		"act_name" : "py_check_product_code2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_file_input_stat",
+		"act_name" : "py_input_stat1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_file_input_stat",
+		"act_name" : "py_input_stat2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_work_hours",
+		"act_name" : "py_work_hours1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_work_hours",
+		"act_name" : "py_work_hours2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_array_basic",
+		"act_name" : "JArrayBasic1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays.j_array_basic",
+		"act_name" : "JArrayBasic2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_array_basic",
+		"act_name" : "JArrayBasic3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_array_change",
+		"act_name" : "JArrayIncrementElements",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays.j_array_change",
+		"act_name" : "JArraySwapAdjacentElements",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_array_fill",
+		"act_name" : "JArrayFillOdds",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays.j_array_fill",
+		"act_name" : "JArrayFillUserInput",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_array_process_elements",
+		"act_name" : "JSumArrayElements",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays.j_array_process_elements",
+		"act_name" : "JAverageArrayElements",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays2d.j_array2d_basic",
+		"act_name" : "JArrays2dBasic1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays2d.j_array2d_basic",
+		"act_name" : "JArrays2dBasic2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays2d.j_array2d_basic",
+		"act_name" : "JArrays2dBasic3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "exceptions.j_check_age",
+		"act_name" : "JCheckAge1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "exceptions.j_check_age",
+		"act_name" : "JCheckAge2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "files.j_work_hours",
+		"act_name" : "JWorkHours1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "files.j_work_hours",
+		"act_name" : "JWorkHours2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "objects_classes_point",
+		"act_name" : "py_point1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "objects_classes_point",
+		"act_name" : "py_point2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "objects_classes_tv",
+		"act_name" : "py_tv1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "objects_classes_tv",
+		"act_name" : "py_tv2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "objects_classes_account",
+		"act_name" : "py_account1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "objects_classes_account",
+		"act_name" : "py_account2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "objects_classes_loan",
+		"act_name" : "py_loan1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "objects_classes_loan",
+		"act_name" : "py_loan2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list2d_basic",
+		"act_name" : "py_list2d_basic1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_list2d_basic",
+		"act_name" : "py_list2d_basic2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_list2d_basic",
+		"act_name" : "py_list2d_basic3",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_print_medals",
+		"act_name" : "py_print_medals_row_total",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_print_medals",
+		"act_name" : "py_print_medals_row_column_total",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_soda_survey",
+		"act_name" : "py_soda_survey_soda_max",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "py_soda_survey",
+		"act_name" : "py_soda_survey_soda_avg",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "py_soda_survey",
+		"act_name" : "py_soda_survey_soda_respondent_avg",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arraylist.vocabulary",
+		"act_name" : "JVocabulary1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arraylist.vocabulary",
+		"act_name" : "JVocabulary2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_array_min_max",
+		"act_name" : "JArrayMax",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays.j_array_min_max",
+		"act_name" : "JArrayMin",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays2d.j_print_medals",
+		"act_name" : "JPrintMedalsRowTotal",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays2d.j_print_medals",
+		"act_name" : "JPrintMedalsRowColumnTotal",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_temperature",
+		"act_name" : "JTemperatureAboveAverage",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays.j_temperature",
+		"act_name" : "JTemperatureListDaysAboveThreshold",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "exceptions.j_check_producut_code",
+		"act_name" : "JCheckProductCode1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "exceptions.j_check_producut_code",
+		"act_name" : "JCheckProductCode2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "files.j_input_stat",
+		"act_name" : "JInputStat1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "files.j_input_stat",
+		"act_name" : "JInputStat2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_array_rotate",
+		"act_name" : "JArrayRotateLeft",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays.j_array_rotate",
+		"act_name" : "JArrayRotateLeftTwice",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_array_rotate",
+		"act_name" : "JArrayRotateRight",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_array_rotate",
+		"act_name" : "JArrayRotateRightTwice",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_search_array",
+		"act_name" : "JSearchArrayValues",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays.j_search_array",
+		"act_name" : "JSearchArrayTotalCounts",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays.j_search_array",
+		"act_name" : "JSearchArrayCountsEach",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays2d.j_soda_survery",
+		"act_name" : "JSodaSurverySodaMax",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "arrays2d.j_soda_survery",
+		"act_name" : "JSodaSurverySodaAvg",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "arrays2d.j_soda_survery",
+		"act_name" : "JSodaSurverySodaRespondentAvg",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "inheritance.animals",
+		"act_name" : "AnimalTester1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "inheritance.animals",
+		"act_name" : "AnimalTester2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "inheritance.point",
+		"act_name" : "InheritancePointTester1",
+		"act_type" : "PCEX Example"
+	},
+	{
+		"set_name" : "inheritance.point",
+		"act_name" : "InheritancePointTester2",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JFailCourse1_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "SimpleIf_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JIfElseWages1_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JIfElseNumSign1_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JAccountGrowth1_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JPrintNumDesc2_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JStars1_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JRepeatedSequence1_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JPrintingSums_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JDummyEx",
+		"act_type" : ""
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JBooleanDryHot3_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JNestedIfMaxOfThree_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JRentCar2_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JRentCar3_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JForOne2_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JForTwo2_US",
+		"act_type" : "PCEX Challenge"
+	},
+	{
+		"set_name" : "user_study",
+		"act_name" : "JForThree2_US",
+		"act_type" : "PCEX Challenge"
+	}
+]
