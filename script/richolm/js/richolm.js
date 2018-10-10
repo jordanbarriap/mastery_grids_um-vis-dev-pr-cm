@@ -2726,24 +2726,24 @@ function initBipartite(){
            //Code added by @Jordan for rec_exp
            svg.append("text") 
                .attr("class","y-axis-label")
-               .text("Min. prob. of mastery (0%)")
-               .attr("x",barChartLeftPos-30)
+               .text("Min prob. of mastery (0%)")
+               .attr("x",barChartLeftPos-25)
                .attr("y",yStartBipartite+bipartiteBarScale(1)+15);
 
           svg.append("text") 
                .attr("class","y-axis-label")
                .text("Uncertain prob. of mastery (50%)")
-               .attr("x",barChartLeftPos-30)
+               .attr("x",barChartLeftPos-28)
                .attr("y",yStartBipartite-12);
 
           svg.append("text") 
                .attr("class","y-axis-label")
-               .text("Max. prob. of mastery (100%)")
-               .attr("x",barChartLeftPos-30)
+               .text("Max prob. of mastery (100%)")
+               .attr("x",barChartLeftPos-25)
                .attr("y",yStartBipartite-bipartiteBarScale(1)-20);
 
           svg.selectAll(".y-axis-label")
-            .call(wrap,60);
+            .call(wrap,55);
           //end of code added by @Jordan for rec_exp
                
 
@@ -3084,13 +3084,13 @@ function initBipartite(){
       svg.
         append("g").
         attr("class", "helpButton").
+        attr("id", "helpButton-vis").
         //attr("style","background-image: url('img/help.gif');").
         attr("cursor","pointer").
         on("click",function() {
             d3.event.stopPropagation();
             var origin = "bipartite-indiv";
             helpDialogShow(origin,d3.mouse(document.body)[0],d3.mouse(document.body)[1]+57);
-            
         }).
         on("mouseover",function () {d3.select(this).style("opacity","1");}).
         on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
@@ -3099,7 +3099,7 @@ function initBipartite(){
           //  .attr("dy",yStartBipartite-(maxBarHeight/2))//modified by jbarriapineda
           //      .attr("dx",function(d){return barChartLeftPos-this.getComputedTextLength();});
           attr("x", barChartLeftPos + (barWidth*120)).
-          attr("y", yStartBipartite-(maxBarHeight/2)).
+          attr("y", yStartBipartite-maxBarHeight-20).
           attr("width", 22).
           attr("height", 19).
           attr("xlink:href","img/help.png");
@@ -3246,8 +3246,8 @@ function getOrderMap(){
     //Delete elements which we do not have kc estimates from bn_general service - added by @Jordan
     for (var i=0;i<kcs.length;i++){
       if (!(kcs[i].n in kcs_estimates)){
-        console.log("Deleted concept:");
-        console.log(kcs[i]);
+        // console.log("Deleted concept:");
+        // console.log(kcs[i]);
         delete kcs[i];
       }
     }
@@ -4243,8 +4243,6 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
       var concepts = d3.selectAll("[concepttopicId = '"+tid+"~"+kcId+"']").classed("active", true);//d['conceptTopicId']+d["conceptId"]
     }*/
 
-    console.log(actId);
-
     var kcsNotKnown = 0;
     var kcsLearning = 0;
     var kcsKnown = 0;
@@ -4272,7 +4270,6 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
     
     //Estimates probability of understanding the example correctly given the avg of the knowledge in underlying concepts
     if(percent == undefined){
-      console.log("Percent undefined");
       var estimate = 0;
       for(var i=0; i < actId_kcs[actId].length; i++){
         var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
@@ -4283,7 +4280,6 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
       percent = estimate;
     }  
 
-    console.log(percent);
     var tid=lastNodeMouseOver;
 
     kc_state_act=data.learners[learner_id].state.activities[tid][data.resources[resIdx].id][actId].values;
@@ -5436,7 +5432,6 @@ function Needle(el) {
 })();
 
 function createKcsInfo(){
-  console.log("createKcsInfo");
   var chartInset, degToRad, numSections, percent, sectionIndx, valueText, formatValue, k;
 
     numSections = 1;
@@ -5555,30 +5550,7 @@ function createKcsInfo(){
 
       // @@@@ JULIO
   if((state.args.impactMsg || state.args.difficultyMsg) && state.args.uiShowHelp){
-      gsvg.
-        append("g").
-        attr("class", "helpButton").
-        attr("helpId","activity-gauge").
-        attr("serieId","").
-        attr("cursor","pointer"). 
-        style("opacity", "0.7").
-        on("click",function() {
-            d3.event.stopPropagation();
-            var origin = "activity-gauge";
-            helpDialogShow(origin,d3.mouse(document.body)[0],d3.mouse(document.body)[1]+57);
-            
-        }).
-        on("mouseover",function () {d3.select(this).style("opacity","1");}).
-        on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
-        append("image").
-        attr("x", 300).
-        attr("y", 10).
-        attr("width", 22).
-        attr("height", 19).
-        attr("xlink:href","img/help.png");
-
-    }
-
+      
     arc3 = d3.svg.arc().outerRadius(gradius - chartInset).innerRadius(gradius - chartInset - gbarWidth);
     arc2 = d3.svg.arc().outerRadius(gradius - chartInset).innerRadius(gradius - chartInset - gbarWidth);
     arc1 = d3.svg.arc().outerRadius(gradius - chartInset).innerRadius(gradius - chartInset - gbarWidth);
@@ -5648,6 +5620,31 @@ function createKcsInfo(){
       })
       .call(wrap,30);
     //needle.moveTo(0.5);
+
+    gsvg.
+        append("g").
+        attr("class", "helpButton").
+        attr("id","helpButton-gauge").
+        attr("helpId","activity-gauge").
+        attr("serieId","").
+        attr("cursor","pointer"). 
+        style("opacity", "0.7").
+        on("click",function() {
+            d3.event.stopPropagation();
+            var origin = "activity-gauge";
+            helpDialogShow(origin,d3.mouse(document.body)[0],d3.mouse(document.body)[1]+57);
+            
+        }).
+        on("mouseover",function () {d3.select(this).style("opacity","1");}).
+        on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
+        append("image").
+        attr("x",gwidth/2+gaugeWidth/2 + 30).
+        attr("y",(gheight + margin.top) / 2 -40).
+        attr("width", 22).
+        attr("height", 19).
+        attr("xlink:href","img/help.png");
+
+    }
 
 }
 

@@ -73,7 +73,7 @@ var CONST = {
     minCellSizeRatio : 0.25,
     mode             : { grp: 0, ind: 1 },
     seqStars         : true,
-	barChart		 : false,
+  barChart     : false,
     colors             : {
         //me               : colorbrewer.PuRd,
         me               : colorbrewer.Greens,
@@ -328,73 +328,73 @@ function actDone_cb(rsp) {
   visAugmentData_addAvgRes   ([me]);
   
    var scaleMe =  // TODO: Make this scale thing more general.
-			d3.scale.linear().
-			domain(CONST.vis.gridAbs.scales.y).
-			range(["#eeeeee"].concat(CONST.vis.colors.me[data.vis.color.binCount - 1]));
+      d3.scale.linear().
+      domain(CONST.vis.gridAbs.scales.y).
+      range(["#eeeeee"].concat(CONST.vis.colors.me[data.vis.color.binCount - 1]));
   
   // (2) Recommended activities:
   // (2.1) Remove the previous recommendations:
   if($("#act-rec-lst").is(':hidden')) {//Recommendations should change/shown only once and remain static until the iframe closed. It should be refreshed when user tried another activity.
-	   state.vis.act.rsp.rec    = rsp.recommendation;
-	   while (ui.vis.act.recLst.children.length > 2) ui.vis.act.recLst.removeChild(ui.vis.act.recLst.children[2]);
+     state.vis.act.rsp.rec    = rsp.recommendation;
+     while (ui.vis.act.recLst.children.length > 2) ui.vis.act.recLst.removeChild(ui.vis.act.recLst.children[2]);
   
-	  // (2.2) At least one activity has been recommended:
-	  if (rsp.recommendation && rsp.recommendation.length > 0) {
-		  
-		var frameWidth = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-		var recListWidth = (15*frameWidth)/100;
-		  
-		ui.vis.act.frame.style.width = (frameWidth - recListWidth) + "px";
-		ui.vis.act.table.style.width = (frameWidth - recListWidth) + "px";
-		
-		$(ui.vis.act.recLst).width(recListWidth);
-		
-		$show(ui.vis.act.recLst);
-		
-		$clsAdd(ui.vis.act.recLst.children[0], "sel");
-		ui.vis.act.recLstSel = ui.vis.act.recLst.children[0];
-		
-		for (var i=0, ni=rsp.recommendation.length; i < ni; i++) {
-		  var rec = rsp.recommendation[i];
-		  
-		  var topic = null;
-		  for (var j=0, nj=data.topics.length; j < nj; j++) { if (data.topics[j].id === rec.topicId) topic = function (j) { return data.topics[j]; }(j); }
-		  if (topic === null) continue;
-		  
-		  var act = null;
-		  for (var j=0, nj=topic.activities[rec.resourceId].length; j < nj; j++) { if (topic.activities[rec.resourceId][j].id === rec.activityId) act = function (j) { return topic.activities[rec.resourceId][j]; }(j); }
-		  if (act === null) continue;
-		  
-		  var div = $$("div", ui.vis.act.recLst);
-		  $$("span", div, null, "grid-cell", "&nbsp;&nbsp;&nbsp;&nbsp;").style.backgroundColor = scaleMe(getMe().state.activities[rec.topicId][rec.resourceId][rec.activityId].values[getRepLvl().id]);
-		  $$("span", div, null, null, "2." + (i+1) + ". " + act.name);
-		  div.onclick = function (i) {
-			return function (e) {
-			  
-			  if (ui.vis.act.recLstSel !== null) $clsRem(ui.vis.act.recLstSel, "sel");
-			  
-			  var div = $evtTgt(e);
-			  if (div.nodeName.toLowerCase() !== "div") div = div.parentNode;  // in case a nested span element has been clicked
-			  $clsAdd(div, "sel");
-			  ui.vis.act.recLstSel = div;
-			  
-			  actLoadRec(i);
-			};
-		  }(i);
-		}
-	  }
-	  
-	  // (2.3) Nothing has been recommended:
-	  else {
-		$hide(ui.vis.act.recLst);
-		$hide(ui.vis.act.fbRecCont);
-	  }
+    // (2.2) At least one activity has been recommended:
+    if (rsp.recommendation && rsp.recommendation.length > 0) {
+      
+    var frameWidth = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var recListWidth = (15*frameWidth)/100;
+      
+    ui.vis.act.frame.style.width = (frameWidth - recListWidth) + "px";
+    ui.vis.act.table.style.width = (frameWidth - recListWidth) + "px";
+    
+    $(ui.vis.act.recLst).width(recListWidth);
+    
+    $show(ui.vis.act.recLst);
+    
+    $clsAdd(ui.vis.act.recLst.children[0], "sel");
+    ui.vis.act.recLstSel = ui.vis.act.recLst.children[0];
+    
+    for (var i=0, ni=rsp.recommendation.length; i < ni; i++) {
+      var rec = rsp.recommendation[i];
+      
+      var topic = null;
+      for (var j=0, nj=data.topics.length; j < nj; j++) { if (data.topics[j].id === rec.topicId) topic = function (j) { return data.topics[j]; }(j); }
+      if (topic === null) continue;
+      
+      var act = null;
+      for (var j=0, nj=topic.activities[rec.resourceId].length; j < nj; j++) { if (topic.activities[rec.resourceId][j].id === rec.activityId) act = function (j) { return topic.activities[rec.resourceId][j]; }(j); }
+      if (act === null) continue;
+      
+      var div = $$("div", ui.vis.act.recLst);
+      $$("span", div, null, "grid-cell", "&nbsp;&nbsp;&nbsp;&nbsp;").style.backgroundColor = scaleMe(getMe().state.activities[rec.topicId][rec.resourceId][rec.activityId].values[getRepLvl().id]);
+      $$("span", div, null, null, "2." + (i+1) + ". " + act.name);
+      div.onclick = function (i) {
+      return function (e) {
+        
+        if (ui.vis.act.recLstSel !== null) $clsRem(ui.vis.act.recLstSel, "sel");
+        
+        var div = $evtTgt(e);
+        if (div.nodeName.toLowerCase() !== "div") div = div.parentNode;  // in case a nested span element has been clicked
+        $clsAdd(div, "sel");
+        ui.vis.act.recLstSel = div;
+        
+        actLoadRec(i);
+      };
+      }(i);
+    }
+    }
+    
+    // (2.3) Nothing has been recommended:
+    else {
+    $hide(ui.vis.act.recLst);
+    $hide(ui.vis.act.fbRecCont);
+    }
   } else { //Update the progress
-	   for (var i=0, ni=state.vis.act.rsp.rec.length; i < ni; i++) {
-			var recTmp = state.vis.act.rsp.rec[i];
-			var spanCell = ui.vis.act.recLst.children[i+2].children[0];  // +2 to skip to the recommended activities
-			spanCell.style.backgroundColor = scaleMe(getMe().state.activities[recTmp.topicId][recTmp.resourceId][recTmp.activityId].values[getRepLvl().id]);
-	  }
+     for (var i=0, ni=state.vis.act.rsp.rec.length; i < ni; i++) {
+      var recTmp = state.vis.act.rsp.rec[i];
+      var spanCell = ui.vis.act.recLst.children[i+2].children[0];  // +2 to skip to the recommended activities
+      spanCell.style.backgroundColor = scaleMe(getMe().state.activities[recTmp.topicId][recTmp.resourceId][recTmp.activityId].values[getRepLvl().id]);
+    }
   }
   
   
@@ -618,6 +618,7 @@ function actLoadRecOriginal() {
  * Shows the help window
  */
 function helpDialogShow(origin,x,y){
+    console.log("Help opened");
     $removeChildren(ui.vis.helpDlgTitle);
     if (origin === "") {helpTitle = ""; helpSrc = "";}
     //$$("span", ui.vis.helpDlgTitle, "help-title-text", "", helpTitle);
@@ -632,14 +633,15 @@ function helpDialogShow(origin,x,y){
             event.stopPropagation();
             helpDialogHide();
       });
-    
+
     $("#help-dlg").click(function(event){
       event.stopPropagation();
     });
+    
     //end of code added by @Jordan
  
-    ui.vis.helpDlg.style.width = "250px";
-    ui.vis.helpDlg.style.height = "150px";
+    ui.vis.helpDlg.style.width = "300px";
+    ui.vis.helpDlg.style.height = "250px";
     
     //ui.vis.helpDlgCont.innerHTML='<object type="text/html" data="'+helpSrc+'" ></object>';
     ui.vis.helpDlgCont.innerHTML = generateHelp(origin);
@@ -653,6 +655,13 @@ function helpDialogShow(origin,x,y){
 }
 
 function helpDialogHide(){
+    $("#conceptVisSvg").css("z-index","1");
+    if($("#overlay").css("display")!="none"){
+      $("#overlay").css("display","none");
+    }
+    if($("#overlay-act-lst").css("display")!="none"){
+      $("#overlay-act-lst").css("display","none");
+    }
     $hide(ui.vis.helpDlg);
 }
 
@@ -793,7 +802,7 @@ function actLstShow(doMe, doVs, doGrp) {
     
     // $setPosCenter(ui.vis.actLst.cont,  false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y,      true );
     // $setPosCenter(ui.vis.actLst.arrow, false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y - 15, false);
-	
+  
     //code added by @Jordan
     var viewportElement = document.documentElement; 
     var element = $("#grid-me")[0];
@@ -815,8 +824,8 @@ function actLstShow(doMe, doVs, doGrp) {
     //$('#act-lst').css('width',width);
 
     //end of code added by @Jordan
-	
-	  pawswebsocket.ensureSocketIsOpen();
+  
+    pawswebsocket.ensureSocketIsOpen();
   }
 
   //Code added by @Jordan
@@ -858,6 +867,7 @@ function actLstShow(doMe, doVs, doGrp) {
     $("<div id='kcs_act_info'></div>").insertBefore("div#div-kcmap");
     d3.select("div#kcs_act_info")
       .append("svg")
+      .attr("id","svg-kcs_act_info")
       .attr("width","100%")
       .attr("height","100%");
     //$("svg#conceptVisSvg").appendTo("div#div-kcmap");
@@ -871,8 +881,6 @@ function actLstShow(doMe, doVs, doGrp) {
     if(lastNodeMouseOver){
       topicNodeMouseOut(lastNodeMouseOver);//added by @Jordan
     }
-    console.log("Topic id");
-    console.log(data.topics[state.vis.topicIdx].id);
     topicNodeMouseOver(data.topics[state.vis.topicIdx].id);//added by @Jordan
     
     if(state.args.impactMsg || state.args.difficultyMsg){
@@ -890,6 +898,10 @@ function actLstShow(doMe, doVs, doGrp) {
   }
 
   //added by @Jordan for rec_exp
+  //Remove previous concepts highlighting frame if any
+  d3.select(".concepts-frame-label").remove();
+  d3.select(".concepts-frame-rect").remove();
+
   var barWidth=(barChartRightPos-barChartLeftPos)/sorted_kcs.length;
   barWidth = Math.floor(barWidth);
   var x_coords_topic_kcs = [];
@@ -902,19 +914,17 @@ function actLstShow(doMe, doVs, doGrp) {
     var x1 = x_coords_topic_kcs[0]-30; 
     var x2 = x_coords_topic_kcs[x_coords_topic_kcs.length-1]+barWidth-30;
     var paddingHighlightFrame = 3;
+
     d3.select("#conceptVisSvg").select("g")
       .append("text")
       .attr("class","concepts-frame-label")
       .attr("x", x1 + (x2-x1)/2)
       .attr("y",maxBarHeight-10)
+      .attr("font-weight","bold")
       .text("Current topic: "+topic.name);
     d3.select(".concepts-frame-label").attr("transform",function(d){return "translate("+(-1*d3.select(this).node().getComputedTextLength()/2)+",-10)"});  
+    
     var conceptsFrame = d3.select("#conceptVisSvg").select("g")
-     // .append("line")
-     // .attr("class","topic_kcs")
-     // .attr({ x1: x1, y1: maxBarHeight-20, //start of the line
-     //         x2: x2, y2: maxBarHeight-20  //end of the line
-     //  }).style("stroke", function(d) { return "grey"; });
        .append("rect")
         .attr("class","concepts-frame-rect")
         .attr("x", x1-paddingHighlightFrame)
@@ -928,6 +938,19 @@ function actLstShow(doMe, doVs, doGrp) {
         .attr('stroke-width', '1.5')
         .attr("opacity",0.7);
       conceptsFrame.moveToBack();
+  }
+
+  $("#act-lst").append("<div id='overlay-act-lst'></div>");
+
+  //Show help if this is the first time they open the activity in their browser (with the new version)
+  if(!Cookies.get("tutorial-gauge")){
+    Cookies.set('tutorial-gauge', 'shown', { expires: 90});   
+    $("#helpButton-gauge").d3Click();
+    $("#help-dlg").offset($("#helpButton-gauge").position());
+    $("#overlay-act-lst").css("display","block");
+    $("#help-dlg").css("z-index","105");
+    $("#svg-kcs_act_info").css("z-index","104");
+    
   }
   
   //end of code added by @Jordan for exp_rec
@@ -968,10 +991,14 @@ function actLstHide() {
   d3.select("div#chart").select("svg");
             //.style("margin-top","-55px");//added by @Jordan //commented by @Jordan
   deselectAllElements();//added by @Jordan
-  
-  if($("#help-dlg").css("display")=="block"){
-    helpDialogHide();//added by @Jordan
-  }
+
+  d3.select(".concepts-frame-label").remove();
+  d3.select(".concepts-frame-rect").remove();
+
+  //Commented by @Jordan for rec_exp
+  // if($("#help-dlg").css("display")=="block"){
+  //   helpDialogHide();//added by @Jordan
+  // }
 }
 
 
@@ -999,8 +1026,6 @@ function actOpen(resId, actIdx) {
 
   //added by @Jordan for rec_exp
   last.act = JSON.parse(JSON.stringify(state.vis.act))
-  console.log("Last activity opened:");
-  console.log(last.act);
   //end of code added by @Jordan for rec_exp
  
   
@@ -1021,8 +1046,8 @@ function actOpen(resId, actIdx) {
       var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
       //console.log("w: "+display_width+" h: "+display_height);
-	  
-	  ui.vis.act.frame.style.width = display_width + "px";
+    
+    ui.vis.act.frame.style.width = display_width + "px";
       ui.vis.act.frame.style.height = display_height + "px";
 
       ui.vis.act.table.style.width = display_width + "px";
@@ -1050,14 +1075,14 @@ function actOpen(resId, actIdx) {
   //@@@Jordan@@@
   //Code block needed for solving bug in pcrs content loading
   //if(act.url.indexOf("pcrs.teach.cs.toronto.edu")!=-1 && pcrs_counter==0){
-	//  $(ui.vis.act.frame).css("visibility","hidden");
-	//  $(ui.vis.act.frame).one("load", function() {
-	//  	$(ui.vis.act.frame).one("load", function() {
-	//  		$(ui.vis.act.frame).css("visibility","visible");
-	//  		pcrs_counter=1;//It just need to ask for authorization just once
-	//  	});
-	//  	ui.vis.act.frame.src = ui.vis.act.frame.src;
-	//  });
+  //  $(ui.vis.act.frame).css("visibility","hidden");
+  //  $(ui.vis.act.frame).one("load", function() {
+  //    $(ui.vis.act.frame).one("load", function() {
+  //      $(ui.vis.act.frame).css("visibility","visible");
+  //      pcrs_counter=1;//It just need to ask for authorization just once
+  //    });
+  //    ui.vis.act.frame.src = ui.vis.act.frame.src;
+  //  });
  // }
   //@@@Jordan@@@
   
@@ -1348,17 +1373,17 @@ function init() {
 }
 
 function websocketCallback(message) {
-	if (vis) {
-		var action = message.action;
-		var result = message.result;
+  if (vis) {
+    var action = message.action;
+    var result = message.result;
 
 
-		if(action === "actLoad")   vis.actLoad();
-		if(action === "actSubmit") vis.actSubmit();
-		if(action === "actDone") {
-			vis.actDone(parseInt(result));
-		}
-	}
+    if(action === "actLoad")   vis.actLoad();
+    if(action === "actSubmit") vis.actSubmit();
+    if(action === "actDone") {
+      vis.actDone(parseInt(result));
+    }
+  }
 }
 
 
@@ -1419,6 +1444,7 @@ function initUI() {
     ui.vis.grid.cont.me     = $("#grid-me")     [0];
     ui.vis.grid.cont.grp    = $("#grid-grp")    [0];
     ui.vis.grid.cont.others = $("#grid-others") [0];
+
     
     document.onmousedown = function (e) {
       if ($evtMouseBtn(e) === 1) state.isMouseBtn1 = true;
@@ -1680,10 +1706,10 @@ function loadData_cb(res) {
   }
   // (3.1.5) Manual:
   if(data.vis.userManual){
-  	var manualLink = $$("a", $_("tbar-manual"), null, null, "<img id=\"icon-manual\" src=\"./img/manual.png\" alt=\"user manual icon\" />User Manual");
-  	manualLink.href = CONST.uriServer + "manuals/" + data.vis.userManual;
-  	manualLink.target = "_blank";
-  	manualLink.title = "User Manual";
+    var manualLink = $$("a", $_("tbar-manual"), null, null, "<img id=\"icon-manual\" src=\"./img/manual.png\" alt=\"user manual icon\" />User Manual");
+    manualLink.href = CONST.uriServer + "manuals/" + data.vis.userManual;
+    manualLink.target = "_blank";
+    manualLink.title = "User Manual";
   }
   
   // (4) Grids:
@@ -1716,7 +1742,17 @@ function loadData_cb(res) {
       //$('#checkbox-'+kcMap).prop('checked', true);
       inituiCMVis(CONST.vis.gridAbs,uiCMVisId);
     }
-  }, "json" );
+
+    //Show help if this is the first time they open the activity in their browser (with the new version)
+    if(!Cookies.get("tutorial-vis")){
+      Cookies.set('tutorial-vis', 'shown', { expires: 90});   
+      $("#helpButton-vis").d3Click();
+      $("#help-dlg").offset($("#helpButton-vis").position());
+      $("#overlay").css("display","block");
+      $("#help-dlg").css("z-index","105");
+      $("#conceptVisSvg").css("z-index","104");
+    }
+    }, "json" );
   
 
   //end of code added by @Jordan
@@ -2051,6 +2087,7 @@ function stateArgsSet02() {
   state.args.impactMsg = false;
   state.args.difficultyMsg = false;
   state.args.effortMsg = false;
+  state.args.recExp = false;
   //end of code added by @Jordan
   
   // @@@@
@@ -2092,6 +2129,7 @@ function stateArgsSet02() {
       state.args.impactMsg              = (data.vis.ui.params.group.impactMsg != undefined ? data.vis.ui.params.group.impactMsg : state.args.impactMsg);
       state.args.difficultyMsg          = (data.vis.ui.params.group.difficultyMsg != undefined ? data.vis.ui.params.group.difficultyMsg : state.args.difficultyMsg);
       state.args.effortMsg              = (data.vis.ui.params.group.effortMsg != undefined ? data.vis.ui.params.group.effortMsg : state.args.effortMsg);
+      state.args.recExp                 = (data.vis.ui.params.group.recExp != undefined ? data.vis.ui.params.group.recExp : state.args.recExp);//added for rec_exp
       //end of code added by @Jordan
   }
   if(data.vis.ui.params.user){
@@ -2128,6 +2166,7 @@ function stateArgsSet02() {
       state.args.impactMsg              = (data.vis.ui.params.user.impactMsg != undefined ? data.vis.ui.params.user.impactMsg : state.args.impactMsg);
       state.args.difficultyMsg          = (data.vis.ui.params.user.difficultyMsg != undefined ? data.vis.ui.params.user.difficultyMsg : state.args.difficultyMsg);
       state.args.effortMsg              = (data.vis.ui.params.user.effortMsg != undefined ? data.vis.ui.params.user.effortMsg : state.args.effortMsg);
+      state.args.recExp                 = (data.vis.ui.params.user.recExp != undefined ? data.vis.ui.params.user.recExp : state.args.recExp);//added for rec_exp
       //end of code added by @Jordan
   }
   
@@ -3131,13 +3170,13 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   // Title:
   
   if(!title) { //Added for proactive recommendation, need to be checked by a parameter
-	var titleTr = $$("tr", tbl);
-	var recommendationTitle = $$("td",titleTr, null, "rec-title", 'Recommended Activities')
-	var allActivitiesTitle = $$("td",titleTr, null, "rec-title", 'All Activities')
-	$setAttr(recommendationTitle, { colspan: 1 });
-	$setAttr(allActivitiesTitle, { colspan: 1 });
-	
-	$$("td",titleTr);
+  var titleTr = $$("tr", tbl);
+  var recommendationTitle = $$("td",titleTr, null, "rec-title", 'Recommended Activities')
+  var allActivitiesTitle = $$("td",titleTr, null, "rec-title", 'All Activities')
+  $setAttr(recommendationTitle, { colspan: 1 });
+  $setAttr(allActivitiesTitle, { colspan: 1 });
+  
+  $$("td",titleTr);
   }
   
   
@@ -3180,39 +3219,39 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   
   CONST.vis.otherIndCellH.max = sqW;
   
-  var tr = $$("tr", tbl);	
+  var tr = $$("tr", tbl); 
   
    if(!title) { //Added for proactive recommendation, need to be checked by a parameter
-		var recommendationtr = $$("td", tr, null, 'rec-list');
-		
-		var recommendedActivities = $.grep($.map( gridData.series, function(n){
-			return n.data;
-		}), function(activity) {
-			return activity.seq > 0
-		});
-		
-		if(recommendedActivities.length > 0) {
-			var orderedList = document.createElement('ol');
-			$(orderedList).attr('id', 'rec-list');
-			
-			var recommendation = document.createElement('div');
-			$(recommendation).append(orderedList);
-			$(recommendationtr).append(recommendation);  
-			
-			recommendedActivities.sort(function(a, b) { 
-				return b.seq - a.seq
-			}).forEach(function(activity){
-				var recommendationItem = document.createElement('li');
-				$(recommendationItem).html(activity.actName).addClass('recommendation').data('activity', activity);
-				$(orderedList).append(recommendationItem);
-			});
-		} else {
-			var topicMastered = document.createElement('div');
-			$(topicMastered).html("Well done!\nYou mastered this topic.").addClass('no_recommendation');
-			$(recommendationtr).append(topicMastered);  
-		}
-	
-		
+    var recommendationtr = $$("td", tr, null, 'rec-list');
+    
+    var recommendedActivities = $.grep($.map( gridData.series, function(n){
+      return n.data;
+    }), function(activity) {
+      return activity.seq > 0
+    });
+    
+    if(recommendedActivities.length > 0) {
+      var orderedList = document.createElement('ol');
+      $(orderedList).attr('id', 'rec-list');
+      
+      var recommendation = document.createElement('div');
+      $(recommendation).append(orderedList);
+      $(recommendationtr).append(recommendation);  
+      
+      recommendedActivities.sort(function(a, b) { 
+        return b.seq - a.seq
+      }).forEach(function(activity){
+        var recommendationItem = document.createElement('li');
+        $(recommendationItem).html(activity.actName).addClass('recommendation').data('activity', activity);
+        $(orderedList).append(recommendationItem);
+      });
+    } else {
+      var topicMastered = document.createElement('div');
+      $(topicMastered).html("Well done!\nYou mastered this topic.").addClass('no_recommendation');
+      $(recommendationtr).append(topicMastered);  
+    }
+  
+    
    }
   
   // (2.3) Prepare scales:
@@ -3247,7 +3286,13 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
     }).//added by @Jordan
     attr("style", "padding-bottom: " + (gridData.series.length > 1 ? extraPaddingB : 0) + "px;").
     attr("width", visW + (gridData.sepX.length * settings.sepX) + (xLblAngle === 45 ? topicMaxWCos : 0)).
-    attr("height", visH);
+    attr("height", function(d){
+      if (gridData.gridName=="act_me" || gridData.gridName=="act_mevsgrp" || gridData.gridName=="act_grp"){
+        return visH-35;
+      }else{
+        return visH;
+      }
+    });
   
   // (2.6) Mini bar chart series:
   var mini = { svg: null, settings: miniSettings, series: {} };
@@ -3510,8 +3555,8 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           if ( !isNaN(d.valGrp) && d.valGrp != -1 ) tooltip += 'Group ' + getRepLvl().name +' : '+ parseFloat(Math.round(Math.min(d.valGrp,1) * 100)).toFixed(0)+'%';
           return tooltip; 
       });
-	
-	// Grid cells -- Sequencing:
+  
+  // Grid cells -- Sequencing:
     if (s.doShowSeq) {
         if(CONST.vis.seqStars){
             g
@@ -3524,44 +3569,44 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
             //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
             .attr("stroke", "white")
             .style("shape-rendering", "geometricPrecision")
-			
-			g
-			.append("text").
-				attr("x", 15).
-				attr("y", 15).
-				style("text-anchor", "start").
-				text(function (d) { 
-					if(d.actIdx === -1 || d.seq === 0) {
-						return "";
-					} 	
+      
+      g
+      .append("text").
+        attr("x", 15).
+        attr("y", 15).
+        style("text-anchor", "start").
+        text(function (d) { 
+          if(d.actIdx === -1 || d.seq === 0) {
+            return "";
+          }   
 
-					if(d.seq === 1) {
-						return " 1";
-					} else if (d.seq === 0.7) {
-						return " 2";
-					} else {
-						return " 3";
-					}
-					
-					/*if(d.seq === 1) {
-						return "+6";
-					} else if (d.seq === 0.7) {
-						return "+4";
-					} else {
-						return "+2";
-					}*/
-				})
-				.attr("font-family", "sans-serif")
+          if(d.seq === 1) {
+            return " 1";
+          } else if (d.seq === 0.7) {
+            return " 2";
+          } else {
+            return " 3";
+          }
+          
+          /*if(d.seq === 1) {
+            return "+6";
+          } else if (d.seq === 0.7) {
+            return "+4";
+          } else {
+            return "+2";
+          }*/
+        })
+        .attr("font-family", "sans-serif")
                 .attr("font-size", "12px")
-				.attr("style", function(d) {
-					var colorIndex = Math.round(data.vis.color.value2color(d.val)*10);
-					var color = colorbrewer.Oranges[9][8-Math.min(colorIndex,8)];
-					return "fill: " + color + ";"; 
-				});
+        .attr("style", function(d) {
+          var colorIndex = Math.round(data.vis.color.value2color(d.val)*10);
+          var color = colorbrewer.Oranges[9][8-Math.min(colorIndex,8)];
+          return "fill: " + color + ";"; 
+        });
             
-			
-	
-			
+      
+  
+      
         }else{
             g.
             append("circle").
@@ -3726,23 +3771,23 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         on("mouseover", function (e) { ehVisGridBoxMouseOver(e, d3.select(this), gridData, null, null); }).
         on("mouseout", function (e) { ehVisGridBoxMouseOut(e, d3.select(this), null); }).
         on("click", function (e) { ehVisGridBoxClick(e, d3.select(this)); });
-		
-	   $('.recommendation').click(function(event) {
-			var rec_data = $(this).data('activity');
-			var square = getSquareOfGivenActivityData(rec_data);
-				
-			ehVisGridBoxClick(rec_data, d3.select(square));
-		}).hover(function() {
-			var rec_data = $(this).data('activity');
-			var square = getSquareOfGivenActivityData(rec_data);
-			
-			ehVisGridBoxMouseOver(rec_data, d3.select(square), gridData, null, null); 
-		}, function () {
-			var rec_data = $(this).data('activity');
-			var square = getSquareOfGivenActivityData(rec_data);
-			
-			ehVisGridBoxMouseOut(rec_data, d3.select(square), null); 
-		});
+    
+     $('.recommendation').click(function(event) {
+      var rec_data = $(this).data('activity');
+      var square = getSquareOfGivenActivityData(rec_data);
+        
+      ehVisGridBoxClick(rec_data, d3.select(square));
+    }).hover(function() {
+      var rec_data = $(this).data('activity');
+      var square = getSquareOfGivenActivityData(rec_data);
+      
+      ehVisGridBoxMouseOver(rec_data, d3.select(square), gridData, null, null); 
+    }, function () {
+      var rec_data = $(this).data('activity');
+      var square = getSquareOfGivenActivityData(rec_data);
+      
+      ehVisGridBoxMouseOut(rec_data, d3.select(square), null); 
+    });
     }
     else {
       gGrid.
@@ -3763,26 +3808,26 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         ).
         on("click", function (e) { ehVisGridBoxClick(e, d3.select(this)); });
     }
-	
-	$('.recommendation').click(function(event) {
-				var rec_data = $(this).data('activity');
-				var square = getSquareOfGivenActivityData(rec_data);
-				
-				ehVisGridBoxClick(rec_data, d3.select(square));
-		}).hover( function (gridData, miniSvg, miniSeries) {
+  
+  $('.recommendation').click(function(event) {
+        var rec_data = $(this).data('activity');
+        var square = getSquareOfGivenActivityData(rec_data);
+        
+        ehVisGridBoxClick(rec_data, d3.select(square));
+    }).hover( function (gridData, miniSvg, miniSeries) {
             return function (e) {
-				var rec_data = $(this).data('activity');
-				var square = getSquareOfGivenActivityData(rec_data);
+        var rec_data = $(this).data('activity');
+        var square = getSquareOfGivenActivityData(rec_data);
 
-				ehVisGridBoxMouseOver(rec_data, d3.select(square), gridData, miniSvg, miniSeries);
+        ehVisGridBoxMouseOver(rec_data, d3.select(square), gridData, miniSvg, miniSeries);
             };
           }(gridData, mini.svg, mini.series)
-		  , function (miniSvg) {
+      , function (miniSvg) {
             return function (e) {
-				var rec_data = $(this).data('activity');
-				var square = getSquareOfGivenActivityData(rec_data);
-				
-				ehVisGridBoxMouseOut(rec_data, d3.select(square), miniSvg);
+        var rec_data = $(this).data('activity');
+        var square = getSquareOfGivenActivityData(rec_data);
+        
+        ehVisGridBoxMouseOut(rec_data, d3.select(square), miniSvg);
             };
           }(mini.svg));
     
@@ -3792,14 +3837,14 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 }
 
 /**
-	Returns the square element of corresponding activity data. 
+  Returns the square element of corresponding activity data. 
 */
 function getSquareOfGivenActivityData(data) {
-	var rec_idx = data.actIdx;
-	var rec_topic_idx = data.topicIdx;
-	var rec_res_idx = data.resIdx;
+  var rec_idx = data.actIdx;
+  var rec_topic_idx = data.topicIdx;
+  var rec_res_idx = data.resIdx;
 
-	return $("[data-idx=" + rec_idx + "][data-topic-idx='" + rec_topic_idx + "'][ data-res-idx=" + rec_res_idx + "]").get(0);
+  return $("[data-idx=" + rec_idx + "][data-topic-idx='" + rec_topic_idx + "'][ data-res-idx=" + rec_res_idx + "]").get(0);
 }
 
 
@@ -3934,59 +3979,63 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
       percent = estimate;
     }
 
-    //Added by @Jordan for rec_exp
-    var seq           = grpOutterNode.__data__["seq"];
-    var isRecommended = seq>0 && actIdx!=-1;
-    var recScore      = -1;
     var resource = grpOutter.attr("data-var-id");
-    if(isRecommended){
-      recScore = seq;
-      var explanationTxt = ""
-      if(resource=="Challenges"){
-        d3.select()
-        console.log("Recommended activity: challenge");
-        var lastActRes = last.act.resId;
-        if($.isEmptyObject(last.act) == false){
-          var lastActId  = last.act.act.id;
-          var sameSet    = ($.inArray(actId, pcex_sets_info[lastActId]));
-          if (lastActRes=="Examples" && sameSet && seq==1){
-            console.log(last.act);
-            explanationTxt += "<div id='rec-tooltip-content'>This is recommended because <b><i> it allows you to check how well you understood the concepts covered in the example you just reviewed (\"" + $.trim(last.act.act.name)+"\")</i></b></div>";
-          }else{
-            if(percent<0.7){
-              explanationTxt += "<div id='rec-tooltip-content'>This challenge is recommended because <b><i>the estimated probability of solving it correctly - altough not very good- is among the best for this topic</i></b></div>";
-            }else{
-              explanationTxt += "<div id='rec-tooltip-content'>This challenge is recommended because <b><i>the system believes that there is a good chance you can solve it correctly</i></b></div>";
-            }
-          }
-        }else{
-            if(percent<0.7){
-              explanationTxt += "<div id='rec-tooltip-content'>This challenge is recommended because <b><i>the estimated probability of solving it correctly - altough not very good- is among the best for this topic</i></b></div>";
-            }else{
-              explanationTxt += "<div id='rec-tooltip-content'>This challenge is recommended because <b><i>the system believes that there is a good chance you can solve it correctly</i></b></div>";
-            }
-        } 
-      }else{
-        if(resource == "Coding"){
-          if(percent<0.7){
-            explanationTxt += "<div id='rec-tooltip-content'>This problem is recommended because <b><i>the estimated probability of solving it correctly - altough not very good- is among the best for this topic</i></b></div>";
-          }else{
-            explanationTxt += "<div id='rec-tooltip-content'>This problem is recommended because <b><i>the estimated probability of solving it correctly - altough not very good- is among the best for this topic</i></b></div>";
-          }
-        }else{
-          explanationTxt += "<div id='rec-tooltip-content'>This example was recommended because <b><i>the estimated probability of understanding it thoroughly is among the best for this topic</i></b></div>";
-        }
-      }
 
-      recTooltip.transition()    
-        .duration(200)    
-        .style("opacity",.95);    
-      recTooltip.html(explanationTxt)
-        .style("left", (d3.event.pageX) + "px")   
-        .style("top", (d3.event.pageY - 60 - parseInt(d3.select("table.grid").style("height"))) + "px")
-        .style("z-index","100");
-      recTooltip.moveToFront();
+    //Added by @Jordan for rec_exp
+    if(state.args.recExp){
+      var seq           = grpOutterNode.__data__["seq"];
+      var isRecommended = seq>0 && actIdx!=-1;
+      var recScore      = -1;
+      if(isRecommended){
+        recScore = seq;
+        var explanationTxt = ""
+        if(resource=="Challenges"){
+          var lastActRes = last.act.resId;
+          if($.isEmptyObject(last.act) == false){
+            var lastActId  = last.act.act.id;
+            var sameSet    = ($.inArray(actId, pcex_sets_info[lastActId]));
+            if (lastActRes=="Examples" && sameSet && seq==1){
+              explanationTxt += "<div id='rec-tooltip-content'>This challenge is recommended because <b><i>it allows you to check your understanding of concepts you've recently reviewed in the example \"" + $.trim(last.act.act.name)+"\"</i></b></div>";
+            }else{
+              if(percent<0.7){
+                explanationTxt += "<div id='rec-tooltip-content'>This challenge is recommended because <b><i>the estimated probability of solving it correctly - although not very good- is among the highest for this topic</i></b></div>";
+              }else{
+                explanationTxt += "<div id='rec-tooltip-content'>This challenge is recommended because <b><i>the system believes there is a good chance you can solve it correctly</i></b></div>";
+              }
+            }
+          }else{
+              if(percent<0.7){
+                explanationTxt += "<div id='rec-tooltip-content'>This challenge is recommended because <b><i>the estimated probability of solving it correctly - although not very good- is among the highest for this topic</i></b></div>";
+              }else{
+                explanationTxt += "<div id='rec-tooltip-content'>This challenge is recommended because <b><i>the system believes there is a good chance you can solve it correctly</i></b></div>";
+              }
+          } 
+        }else{
+          if(resource == "Coding"){
+            if(percent<0.7){
+              explanationTxt += "<div id='rec-tooltip-content'>This problem is recommended because <b><i>the estimated probability of solving it correctly - although not very good- is among the highest for this topic</i></b></div>";
+            }else{
+              explanationTxt += "<div id='rec-tooltip-content'>This problem is recommended because <b><i>the system believes there is a good chance you can solve it correctly</i></b></div>;"
+            }
+          }else{
+            explanationTxt += "<div id='rec-tooltip-content'>This example is recommended because <b><i>the estimated probability of understanding it thoroughly is among the highest for this topic</i></b></div>";
+          }
+        }
+
+        recTooltip.transition()    
+          .duration(200)    
+          .style("opacity",.95);    
+        recTooltip.html(explanationTxt)
+          //.style("left", (d3.event.pageX) + "px")
+          .style("left",grpOutter.node().getBoundingClientRect().x+"px")  
+          //.style("top", (d3.event.pageY - 60 - parseInt(d3.select("table.grid").style("height"))) + "px")
+          .style("top",(grpOutter.node().getBoundingClientRect().y-d3.select("#act-lst").node().getBoundingClientRect().y-10)+"px")  
+          .style("z-index","100");
+        recTooltip.moveToFront();
+      }
     }
+
+    console.log(resource);
 
     if(resource=="Challenges"){
       d3.select("#label-prob-act").text("Probability of solving this challenge: "+(Math.round(percent*1000) / 10)+"%").call(wrap,120);
@@ -3997,16 +4046,54 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
     if(resource=="Examples"){
       d3.select("#label-prob-act").text("Probability of understanding this example: "+(Math.round(percent*1000) / 10)+"%").call(wrap,120);
     }
+    
 
     //end of code added by @Jordan for rec_exp 
 
-    
+    //Calculate the medians of the probability within the topic
+    var acts_topic = data.learners[learner_id].state.activities[topic.id];
+    var resources_topic = Object.keys(acts_topic);
+    var kc_levels_acts_topic = []
+    var kc_levels_act_topic_by_res = {}
+    for(var i=0;i<resources_topic.length;i++){
+       var resource = resources_topic[i];
+       kc_levels_act_topic_by_res[resource] = [];
+       var acts = acts_topic[resource];
+       var acts_names = Object.keys(acts);
+       for (var j=0;j<acts_names.length;j++){
+          var act = acts[acts_names[j]]; 
+          var percent = kcs_estimates[acts_names[j]];
+          if(percent == undefined){
+            var estimate = 0;
+            for(var k=0; k < actId_kcs[acts_names[j]].length; k++){
+              var kc_info= map_kcs_id_info[actId_kcs[acts_names[j]][k]];
+              var kc_level = kcs_estimates[kc_info.n];
+              estimate = estimate + kc_level;
+            }
+            estimate = estimate/actId_kcs[acts_names[j]].length;
+            percent = estimate;
+          }
+          console.log(resource);
+          console.log(percent);
+          kc_levels_acts_topic.push(percent);
+          kc_levels_act_topic_by_res[resource].push(percent);
+       }
+    }
+
+    var median_prob = Math.round(median(kc_levels_acts_topic)* 100) / 100;
+
+    var log_medians_per_res = "";
+    for(var i=0;i<resources_topic.length;i++){
+      var median_prob = Math.round(median(kc_levels_act_topic_by_res[resources_topic[i]])* 100) / 100;
+      log_medians_per_res = log_medians_per_res + "median_prob_"+resources_topic[i]+ CONST.log.sep02 + median_prob+ CONST.log.sep01;
+    }
 
     var tid=lastNodeMouseOver;
 
     //kc_state_act=data.learners[learner_id].state.activities[tid][data.resources[resIdx].id][actId].values;
 
-    var difficulty = percent;
+    //var difficulty = percent;
+    var probability = percent;
 
     log(
         "action"           + CONST.log.sep02 + "grid-activity-cell-mouseover" + CONST.log.sep01 +
@@ -4020,7 +4107,10 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         "kcsNotKnown"      + CONST.log.sep02 + kcsNotKnown                 + CONST.log.sep01 +
         "kcsLearning"      + CONST.log.sep02 + kcsLearning                 + CONST.log.sep01 +
         "kcsKnown"         + CONST.log.sep02 + kcsKnown                    + CONST.log.sep01 +
-        "difficulty"       + CONST.log.sep02 + difficulty                  + CONST.log.sep01 +
+        //"difficulty"       + CONST.log.sep02 + difficulty                  + CONST.log.sep01 +
+        "probability"       + CONST.log.sep02 + probability                  + CONST.log.sep01 +
+        log_medians_per_res + 
+        "median_prob"       + CONST.log.sep02 + median_prob                 + CONST.log.sep01 +
         //"activeVis"        + CONST.log.sep02 + uiCMVisId                   + CONST.log.sep01 +
         "comparisonMode"   + CONST.log.sep02 + state.args.uiTBarModeGrpChk     ,     
         true
@@ -4040,7 +4130,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
        "row"              + CONST.log.sep02 + row                         + CONST.log.sep01 +
        "cell-topic-id"    + CONST.log.sep02 + topic.id                    + CONST.log.sep01 +
        "cell-resource-id" + CONST.log.sep02 + res.id                      + CONST.log.sep01 +
-       "cell-activity-id" + CONST.log.sep02 + act.id                      + CONST.log.sep01 +
+       //"cell-activity-id" + CONST.log.sep02 + act.id                      + CONST.log.sep01 +
        "act-lst-shown"    + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
        "sequencing"       + CONST.log.sep02 + grpInner.data()[0].seq +
                             CONST.log.sep01 + usrState + CONST.log.sep01 + grpState         + CONST.log.sep01 +
@@ -4144,7 +4234,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
 
 // ------------------------------------------------------------------------------------------------------
 function ehVisGridBoxMouseOut(e, grpOutter, miniSvg) {
-  console.log("Topic node mouseout");
+
   var grpOutterNode = grpOutter.node();
   var grpInner      = grpOutter.select(".grid-cell-inner");
   var box           = grpInner.select(".box");
@@ -4454,7 +4544,8 @@ function ehVisGridBoxClick(e, grpOutter) {
 
       //kc_state_act=data.learners[learner_id].state.activities[tid][data.resources[resIdx].id][actId].values;
 
-      var difficulty = percent;
+      //var difficulty = percent;
+      var probability = percent;
               
       log(
         "action"           + CONST.log.sep02 + "grid-activity-cell-select" + CONST.log.sep01 +
@@ -4468,7 +4559,8 @@ function ehVisGridBoxClick(e, grpOutter) {
         "kcsNotKnown"      + CONST.log.sep02 + kcsNotKnown                 + CONST.log.sep01 +
         "kcsLearning"      + CONST.log.sep02 + kcsLearning                 + CONST.log.sep01 +
         "kcsKnown"         + CONST.log.sep02 + kcsKnown                    + CONST.log.sep01 +
-        "difficulty"       + CONST.log.sep02 + difficulty                  + CONST.log.sep01 +
+        //"difficulty"       + CONST.log.sep02 + difficulty                  + CONST.log.sep01 +
+        "probability"       + CONST.log.sep02 + probability                  + CONST.log.sep01 +
         //"activeVis"        + CONST.log.sep02 + uiCMVisId                   + CONST.log.sep01 +
         "comparisonMode"   + CONST.log.sep02 + state.args.uiTBarModeGrpChk             ,    
         true
@@ -4844,6 +4936,8 @@ function generateHelp(origin){
                 "<td style='padding:2px 0px 2px 5px;'>100%</td>" +
                 "</tr>";
         helpText += "</table>";
+
+        ui.vis.helpDlg.style.height = "150px";
         //"#edf8e9","#c7e9c0","#a1d99b","#74c476","#31a354","#006d2c"
     }
     if(origin === "one-res-mevsgrp-h"){
@@ -4944,7 +5038,8 @@ function generateHelp(origin){
       //              "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars grow and become darker green. Mouse over a concept to highlight its name.</p>";
 
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of mastering a concept</h3>" +
-                   "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars grow and become darker green. Mouse over a concept to highlight its name.</p>";         
+                   "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars will change in order to show the probability of mastering the concept that the system calculates based on your historic performance. <i>Mouseover</i> a concept to highlight its name and its exact probability:"+
+                   "<ul style='margin-top:-5px; padding: 0px 0px 0px 10px;'><li>\><b>50%:</b> for the system it is more likely that you know the concept. Shown as <span style='color:green;font-weight:bold;'>green</span> bars.</li><li><b>50%</b>: uncertain probability, i.e. system is not sure if you know the concept or not. Shown as <b>no bar</b>.</li><li><b>\<50%</b>: for the system it is more likely that you do not know the concept. Shown as  <span style='color:red;font-weight:bold;'>red</span> bars.</li></ul>.</p>";         
         
     }
     if(origin === "bipartite-group"){
@@ -4963,7 +5058,8 @@ function generateHelp(origin){
       //              "<p>This gauge shows an estimation of how much you can learn by doing an activity when you mouse over an activity cell. You will probably learn more in activities which have more <i>new</i> concepts.</p>";
       // }
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of succesfully attempting an activity</h3>" +
-                    "<p>This gauge estimates the probability of solving a challenge/problem correctly or understanding thoroughly an example. This calculation is based on the mastery estimation for each of the concepts covered in the activity. This estimations are based on previous attempts on activities.</p>"; 
+                    "<p>This gauge estimates the probability of solving a challenge/problem correctly or understanding an example thoroughly. This calculation is based on the mastery estimation for each of the concepts covered in the activity. This estimations are based on previous attempts on activities.</p>"; 
+      ui.vis.helpDlg.style.height = "150px";
      
     }
     if(origin === "activity-concepts"){
@@ -4988,3 +5084,24 @@ d3.selection.prototype.moveToBack = function() {
         } 
     });
 };
+jQuery.fn.d3Click = function () {
+  this.each(function (i, e) {
+    var evt = new MouseEvent("click");
+    e.dispatchEvent(evt);
+  });
+};
+//added by @Jordan for rec_exp
+function median(values){
+    values.sort(function(a,b){
+    return a-b;
+  });
+
+  if(values.length ===0) return 0
+
+  var half = Math.floor(values.length / 2);
+
+  if (values.length % 2)
+    return values[half];
+  else
+    return (values[half - 1] + values[half]) / 2.0;
+}

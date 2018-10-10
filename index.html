@@ -27,24 +27,28 @@
   <script type="text/javascript" src="script/websocket.js"></script>
   <script type="text/javascript" src="script/vis.js?v=102"></script>
   <script type="text/javascript" src="script/richolm/js/richolm.js?v=104"></script>
+  <script type="text/javascript" src="script/js-cookie/src/js.cookie.js"></script>
 </head>
 
 
 <body onload="init();">
 
+<!-- Overlay -->
+<div id="overlay"></div>
 
 <!-- Loading -->
 <div id="loading"></div>
 
 
 <!-- Activities list -->
-<div id="act-lst"></div>
+<div id="act-lst"><!-- Overlay -->
+</div>
 <img id="act-lst-arrow" src="img/ui-tabs-arrow.png" />
 
 <!-- Help Dialog -->
 <div id="help-dlg">
-	<div id="help-dlg-title"></div>
-	<div id="help-dlg-cont"></div>
+  <div id="help-dlg-title"></div>
+  <div id="help-dlg-cont"></div>
 </div>
 
 
