@@ -2839,7 +2839,7 @@ function initBipartite(){
                   // //if(barSizeUser==0||barSizeUser==-1)return 5;
                   // //else return (d[barSizeUser]*maxBarHeight); })//commented by jbarriapineda
                   // else return barSizeUser; 
-                  var barSizeUser = 0;
+                  var barSizeUser = .5;
                   if(d.uk>.5){
                     barSizeUser = bipartiteBarScale((d.uk-.5)/.5);
                   }else{
@@ -3215,13 +3215,13 @@ function inituiCMVis(settings,uiCMVisIdOut){
      //sqX += sqW * visGetTopicSize(topic_column_order[i]) + CONST.vis.gridAbsAct.sq.padding;
      var x = resOffsetL/2 + sqX + sqW;
      //mapTopicPos[topic_column_order[j]] = x;
-     //mapTopicPos[data.topics[j].id] = x
-     mapTopicPos[data.topics.filter(function (d) {
+     mapTopicPos[data.topics[j].id] = x ;
+     /*mapTopicPos[data.topics.filter(function (d) {
       if (typeof(d.order) == 'undefined'){
         return d.id=="AVG";
       }
       return d.order==j;}
-     )[0].id] = x;
+     )[0].id] = x;*/
      maxminTemp[j]=x;
   }
 
@@ -3235,7 +3235,15 @@ function getOrderMap(){
   var kcs=data.kcs;
   var topics=data.topics;
   sorted_topics = topics.sort(function(a, b){
-      return a.order == b.order ? 0 : +(a.order  > b.order) || -1;
+      a_order = 0;
+      b_order = 0;
+      if(a.hasOwnProperty("order")){
+        a_order = a.order;
+      }
+      if(b.hasOwnProperty("order")){
+        b_order = b.order;
+      }
+      return a_order == b_order ? 0 : +(a_order  > b_order) || -1;
     });
   if(orderBy=="topic"){
     //for(var i=0; i<idArray.length;i++){//commented by jbarriapineda

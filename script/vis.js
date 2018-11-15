@@ -479,7 +479,7 @@ function actLoadRec(idx) {
     }
   }
   
-  // (2) Identify topic and acticity:
+  // (2) Identify topic and activity:
   state.vis.act.recIdx = idx;
   
   var rec = getRec();
@@ -881,7 +881,7 @@ function actLstShow(doMe, doVs, doGrp) {
     if(lastNodeMouseOver){
       topicNodeMouseOut(lastNodeMouseOver);//added by @Jordan
     }
-    topicNodeMouseOver(data.topics[state.vis.topicIdx].id);//added by @Jordan
+    topicNodeMouseOver(getTopic().id);//added by @Jordan
     
     if(state.args.impactMsg || state.args.difficultyMsg){
       createKcsInfo();
@@ -906,9 +906,11 @@ function actLstShow(doMe, doVs, doGrp) {
   barWidth = Math.floor(barWidth);
   var x_coords_topic_kcs = [];
   var topic_kcs = d3.selectAll("rect.bar.active").each(function(d) {
-  var x_bar_coord = parseFloat(d3.select(this).node().getBoundingClientRect().x);
-  x_coords_topic_kcs.push(x_bar_coord);
+    console.log(d3.select(this).node().getBoundingClientRect());
+    var x_bar_coord = parseFloat(d3.select(this).node().getBoundingClientRect().x);
+    x_coords_topic_kcs.push(x_bar_coord);
   });
+
   if(x_coords_topic_kcs.length>0){
     x_coords_topic_kcs = x_coords_topic_kcs.sort(function(a,b){return a-b;});
     var x1 = x_coords_topic_kcs[0]-30; 
@@ -965,7 +967,7 @@ function actLstShow(doMe, doVs, doGrp) {
 // ------------------------------------------------------------------------------------------------------
 function actLstHide() {
   if (uiCMVisId=="bipartite"){
-    topicNodeMouseOut(data.topics[state.vis.topicIdx]);  //Code added by @Jordan
+    topicNodeMouseOut(data.topics.filter(function(d){return d.order == state.vis.topicIdx;})[0]);  //Code added by @Jordan
   }  
 
   state.vis.grid.cellIdxSel = -1;
@@ -1323,6 +1325,7 @@ function getRepLvl() {
  */
 function getTopic() {
   return (state.vis.topicIdx === -1 ? null : data.topics[state.vis.topicIdx]);
+  //return (state.vis.topicIdx === -1 ? null : data.topics.filter(function(d){return d.order==state.vis.topicIdx;})[0]);
 }
 
 
@@ -3320,10 +3323,11 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         attr("x", 1).
         attr("y", 1).
         style("text-anchor", "start").
-        text(function (d) { return d; }).
+        text(function (d,i) { return d; }).
         attr("transform", function (d,i) {
           if ($.inArray(i, gridData.sepX) !== -1) { txtX += settings.sepX; }
           txtX += (i === 0 ? 0 : sqW * visGetTopicSize(data.topics[i-1]) + settings.sq.padding);
+          //txtX += (i === 0 ? 0 : sqW * visGetTopicSize(data.topics.filter(function(d){return d.order==(i-1);})[0]) + settings.sq.padding);
           return "translate(" + (resOffsetL + paddingL + txtX + 1) + "," + (topicOffsetT + paddingT) + ") rotate(-45)";
         }).
         style("text-rendering", "geometricPrecision");
@@ -3430,11 +3434,14 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           append("g").
           attr("class", "grid-cell-outter").
           attr("topic", function(d){
-              return data.topics[d.topicIdx].id;
+              //return data.topics[d.topicIdx].id;
+              if (d.topicIdx==0) return "AVG";
+              return data.topics.filter(function(elem){return elem.order==d.topicIdx;})[0].id;
           }).
           attr("transform", function (d,i) {
             if ($.inArray(i, gridData.sepX) !== -1) { sqX += settings.sepX; }
-            sqX += (i === 0 ? 0 : sqW * visGetTopicSize(data.topics[i-1]) + settings.sq.padding);
+            //sqX += (i === 0 ? 0 : sqW * visGetTopicSize(data.topics[i-1]) + settings.sq.padding);
+            sqX += (i === 0 ? 0 : sqW * visGetTopicSize(data.topics.filter(function(elem){return elem.order==(i-1);})[0]) + settings.sq.padding);
             var x = resOffsetL + paddingL + sqX;
             var y = ((sqH + settings.sq.padding) * iSeries) + settings.padding.t + topicOffsetT + paddingT;
             if (doUpdActLstTopicCellX && iSeries === 0 && i > 0) ui.vis.actLst.topicCellX.push(x + (sqW / 2));  // save the x-coordinate of cell to align activities list
@@ -3484,7 +3491,8 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           attr("class", "grid-cell-outter").
           attr("transform", function (d,i) {
             if ($.inArray(i, gridData.sepX) !== -1) { sqX += settings.sepX; }
-            sqX += (i === 0 ? 0 : sqW * visGetTopicSize(data.topics[i-1]) + settings.sq.padding);
+            //sqX += (i === 0 ? 0 : sqW * visGetTopicSize(data.topics[i-1]) + settings.sq.padding);
+            sqX += (i === 0 ? 0 : sqW * visGetTopicSize(data.topics.filter(function(elem){return elem.order==(i-1);})[0]) + settings.sq.padding);
             var x = resOffsetL + paddingL + sqX;
             if (d.actIdx>=0 && x>maxActGridSvgWidth){//added by @Jordan
               rowOffsetGrid = rowOffsetGrid+1;//added by @Jordan
@@ -3539,6 +3547,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
       attr("x", 0).
       attr("y", 0).
       attr("width", function (d,i) { return (d.isVis ? sqW * visGetTopicSize(data.topics[i]) : 0); }).
+      //attr("width", function (d,i) { return (d.isVis ? sqW * visGetTopicSize(data.topics.filter(function(d){return d.order==i;})[0]) : 0); }).
       attr("height", function (d) { return (d.isVis ? sqH : 0); }).
       attr("rx", (!visDoVaryCellW() ? cornerRadius : 0)).
       attr("ry", (!visDoVaryCellW() ? cornerRadius : 0)).
@@ -3887,8 +3896,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
   var actIdx        = grpOutterNode.__data__["actIdx"];//added by @Jordan
   var resIdx        = +grpOutter.attr("data-res-idx");//added by @Jordan
   var row           = grpOutter.attr("data-series-idx");//added by @Jordan
-  //var topic         = data.topics[topicIdx];//added by @Jordan
-  var topic         = data.topics.filter(function (d) {return d.order==topicIdx;})[0];
+  var topic         = data.topics[topicIdx];//added by @Jordan
+  //var topic         = data.topics.filter(function (d) {return d.order==topicIdx;})[0];
   var res           = data.resources[resIdx];//added by @Jordan
   var actId         = -1;//added by @Jordan, for the cases of topic grid cells that they do not have an associated actId
   if(actIdx>-1){
@@ -4120,6 +4129,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
   }else{
     //if (state.vis.topicIdx==-1){
      console.log("Topic mouseover");
+     console.log(state.vis.topicIdx);
      var actLstShown=true;
      if(ui.vis.actLst.cont.style.display == 'none'){
        if(topic.order!=0){
@@ -4381,7 +4391,8 @@ function ehVisGridBoxClick(e, grpOutter) {
   var cellIdx       = +grpOutter.attr("data-cell-idx");
   var gridName      = grpOutter.attr("data-grid-name");
   var row           = grpOutter.attr("data-series-idx");
-  var topic         = data.topics[topicIdx];
+  //var topic         = data.topics[topicIdx];
+  var topic         = data.topics.filter(function(d){return d.order==topicIdx;})[0];
   var res           = data.resources[resIdx];
   var act           = (actIdx === -1 ? null : topic.activities[res.id][actIdx]);
 
