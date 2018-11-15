@@ -3209,11 +3209,19 @@ function inituiCMVis(settings,uiCMVisIdOut){
   sqX += gridSetting.sepX+sqW; 
 
   for(var j=0;j<data.topics.length;j++){//todo cambiar los data.topics por sorted_topics (por order)
-     sqX += (j === 0 ? 0 : sqW * visGetTopicSize(data.topics[j].id) + gridSetting.sq.padding);
+     //sqX += (j === 0 ? 0 : sqW * visGetTopicSize(data.topics[j].id) + gridSetting.sq.padding);
+     //data.topics.filter(function (d) {return d.order==topicIdx;})[0];
+     sqX += (j === 0 ? 0 : sqW * visGetTopicSize(data.topics.filter(function (d) {return d.order==j;})[0].id) + gridSetting.sq.padding);
      //sqX += sqW * visGetTopicSize(topic_column_order[i]) + CONST.vis.gridAbsAct.sq.padding;
      var x = resOffsetL/2 + sqX + sqW;
      //mapTopicPos[topic_column_order[j]] = x;
-     mapTopicPos[data.topics[j].id] = x;
+     //mapTopicPos[data.topics[j].id] = x
+     mapTopicPos[data.topics.filter(function (d) {
+      if (typeof(d.order) == 'undefined'){
+        return d.id=="AVG";
+      }
+      return d.order==j;}
+     )[0].id] = x;
      maxminTemp[j]=x;
   }
 

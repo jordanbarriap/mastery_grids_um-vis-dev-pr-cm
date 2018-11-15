@@ -3887,7 +3887,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
   var actIdx        = grpOutterNode.__data__["actIdx"];//added by @Jordan
   var resIdx        = +grpOutter.attr("data-res-idx");//added by @Jordan
   var row           = grpOutter.attr("data-series-idx");//added by @Jordan
-  var topic         = data.topics[topicIdx];//added by @Jordan
+  //var topic         = data.topics[topicIdx];//added by @Jordan
+  var topic         = data.topics.filter(function (d) {return d.order==topicIdx;})[0];
   var res           = data.resources[resIdx];//added by @Jordan
   var actId         = -1;//added by @Jordan, for the cases of topic grid cells that they do not have an associated actId
   if(actIdx>-1){
@@ -4121,7 +4122,9 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
      console.log("Topic mouseover");
      var actLstShown=true;
      if(ui.vis.actLst.cont.style.display == 'none'){
-       topicNodeMouseOver(topic.id);
+       if(topic.order!=0){
+          topicNodeMouseOver(topic.id);
+       }
        actLstShown=false;
      }
      log(
