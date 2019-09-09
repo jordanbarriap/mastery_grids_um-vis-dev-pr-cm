@@ -162,10 +162,6 @@ var barColorScaleProbabilities = d3.scale.linear()
     .domain([0, 0.5, 1])
     .range(['red', '#d3d3d3', 'green']);
 
-var barColorScaleSuccessRate = d3.scale.linear()
-    .domain([0, 0.45, 1])
-    .range(['red', '#e5e065', 'green']);
-
 var conceptYPosMap={};//for conceptlist use only
 
 //used to show or hide sidebar
@@ -197,6 +193,7 @@ $(function($, window){
 
   //body click to deselect nodes, hide menus and so on
   $("body").click(function (e) {
+    // console.log("body");
     // block the click event for some places that set blockClick to true, such as nodes,...
     if(!blockClick) {
 
@@ -530,8 +527,10 @@ $(function($, window){
       })
       .on("click", function(d) {
 
+        // console.log("goal click");
         //the same approach of the mouseover
         var node_id = d3.select(this).attr("id-value");
+        // console.log(goalRemoved, node_id);
         if ((goalRemoved+"") === (node_id+"")) {
           goalRemoved = null;
           return;
@@ -815,6 +814,7 @@ function getCnt(id, id2){
 //get a node by its id
 function getNodeById(id){
   var node = null;
+  // console.log(id);
   //nodes_static.forEach(function(e, i){
   sorted_kcs.forEach(function(e,i){  
     if (e.id == id){
@@ -1092,30 +1092,17 @@ function getConceptFromTopic(topicId){
       counter++;
     }
   }*///commented by jbarriapineda
-  // for(var i = 0; i < kcs.length; i++){
-  //   //if (kcs[i].t == topicId){//Commented by @Jordan in order to make it work for course id=351 (it has different topic names)
-  //   if(state.curr.cid!=367){
-  //     if (correctTopicName(kcs[i].t) == topicId){
-  //       res[counter] = kcs[i].id;
-  //       counter++;
-  //     }
-  //   }else{
-  //     if (correctTopicNameMemphis(kcs[i].t) == topicId){
-  //       res[counter] = kcs[i].id;
-  //       counter++;
-  //     }
-  //   }
-    
-  // }
+  console.log(topicId);
+  console.log(kcs);
   for(var i = 0; i < kcs.length; i++){
     //if (kcs[i].t == topicId){//Commented by @Jordan in order to make it work for course id=351 (it has different topic names)
-    if(state.curr.cid==351){
-      if (map_concept_id_topic[kcs[i].id] == topicId){
+    if(state.curr.cid!=367){
+      if (correctTopicName(kcs[i].t) == topicId){
         res[counter] = kcs[i].id;
         counter++;
       }
     }else{
-      if (kcs[i].t == topicId){
+      if (correctTopicNameMemphis(kcs[i].t) == topicId){
         res[counter] = kcs[i].id;
         counter++;
       }
@@ -1438,6 +1425,8 @@ function loadDynamicData_cb(graph){
 
 function initConceptVis(uiCMVisId){
 
+  console.log("initConceptVis");
+
   removeAll();
 
   if(uiCMVisId=="bipartite"){
@@ -1447,6 +1436,7 @@ function initConceptVis(uiCMVisId){
   }else if(uiCMVisId=="conceptList"){
     initConceptList();
   }else if(uiCMVisId=="conceptMap"){
+    console.log("conceptMap");
     initConceptMap();
   }else if(uiCMVisId=="circle"){
     initcircle();
@@ -1458,17 +1448,6 @@ function initConceptVis(uiCMVisId){
     //$("#kcmap-selection").width($(".svg-grid").width());//code added by jbarriapineda
     //$("#kcmap-selection").width("88%");
     //$("#kcmap-selection").css("display","block");
-  }
-  //Hide the bipartite OLM if kcMapMode is -1 (ent_parameters in aggregate db)
-  if(state.args.kcMapMode==-1){
-    $("div#div-kcmap").hide();
-    $("#kcs_act_info").hide();
-
-    d3.select("#conceptVisSvg")
-      //.style("width", 0 )
-      //.style("height", 0)
-	  .style("display","none")
-      .style("visibility","hidden");
   }
   //end of code added by jbarriapineda
 
@@ -1600,6 +1579,7 @@ function drawConceptMap() {
     .on("click", function(d){ mapLinkClick(d, "map"); }) 
     .on("contextmenu", function(d) {
       d3.event.preventDefault();
+      // console.log("Link Right Click: link" + d[idProperty]);
     });
 
 
@@ -1637,6 +1617,8 @@ function drawConceptMap() {
     .on("click", function(d){ mapClick(d.id, "map"); }) 
     .on("contextmenu", function(d) {
       d3.event.preventDefault();
+      // console.log("Node Right Click: " + d.name);
+
       if (modGoals) {
 
         $("#context-menu .concept-name")
@@ -1957,6 +1939,7 @@ function initConceptList(){
     .on("click", function(d){ mapLinkClick(d, "map"); }) 
     .on("contextmenu", function(d) {
       d3.event.preventDefault();
+      // console.log("Link Right Click: link" + d[idProperty]);
     });
 
 
@@ -2094,6 +2077,7 @@ function initcircle(){
 
   var nodes = cluster.nodes(nodesHierarchy);//,//(packageHierarchy(nodesHierarchy)),
       links = links_static;
+    //// console.log(nodes);
 
   link = link
       .data(bundle(links))
@@ -2623,13 +2607,7 @@ function initBipartite(){
             .append("svg")
             .attr("id","conceptVisSvg")
             .attr("width", "100%")//barChartRightPos+20)//commented by jbarriapineda
-            .attr("height", function(d){
-              if(data.configprops.agg_kc_student_modeling=="bn" || state.args.uiTBarGrpVis){
-                return 340;//two set of bars use more space
-              }else{
-                return 280;
-              }
-            }) 
+            .attr("height", 320) 
             .attr("pointer-events", "all")
             //.style("margin-top","-55px")//commented by @Jordan
             .append('g')
@@ -2680,7 +2658,7 @@ function initBipartite(){
             .attr("class","nodename")
             .attr("id",function(d){return "nodename"+d.id;})//,i){return "nodename" + idArray[i]})
             .attr("topicId",function(d){return d.t;})//,i) { return mapConceptColumnTopic[idArray[i]];})
-            .attr("transform", function(d,i) { 
+            .attr("transform", function(d,i) {
               return "translate("+((barWidth+barSeparation)*(orderMap[d.id])+barChartLeftPos )+",0) rotate(45)";    
               //return "translate("+(barWidth*(orderMap[idArray[i]])+barChartLeftPos )+", 270) rotate(45)";      
               //return "translate("+(barWidth*(orderMap[idArray[i]])+barChartLeftPos )+", 330) rotate(45)";      
@@ -2701,21 +2679,12 @@ function initBipartite(){
              .attr({ x1: barChartLeftPos-2, y1: (yStartBipartite+2), //start of the line
                      x2: ((barWidth+barSeparation)*sorted_kcs.length)+barChartLeftPos, y2: (yStartBipartite+2)  //end of the line
               }).style("stroke", function(d) { return "grey"; });
-		   
-		   if(data.configprops.agg_kc_student_modeling=="cumulate"){//@Kamil
-			  svg.append("line")
-             .attr("class","trivial")
-             .attr({ x1: barChartLeftPos-2, y1: (yStartBipartite+2) , //start of the line
-                     x2: barChartLeftPos-2, y2: (yStartBipartite+2)-bipartiteBarScale(1)  //end of the line
-              }).style("stroke", function(d) { return "grey"; });
-		   } else {
-			  svg.append("line")
+
+           svg.append("line")
              .attr("class","trivial")
              .attr({ x1: barChartLeftPos-2, y1: (yStartBipartite+2)+bipartiteBarScale(1) , //start of the line
                      x2: barChartLeftPos-2, y2: (yStartBipartite+2)-bipartiteBarScale(1)  //end of the line
               }).style("stroke", function(d) { return "grey"; });
-		   }
-          
 
             //added by jbarriapineda
            /* svg.append("line")
@@ -2762,65 +2731,47 @@ function initBipartite(){
            //         offsetLeft=13;
            //       }
            //       return barChartLeftPos-this.getComputedTextLength()-offsetLeft;});
-			
-		   if(data.configprops.agg_kc_student_modeling=="cumulate"){//@Kamil
-  			svg.append("text") 
-  				   .attr("class","y-axis-label")
-  				   .text("Estimated level of knowledge (0%)")
-  				   .attr("x",barChartLeftPos-28)
-  				   .attr("y",yStartBipartite-12);
 
-  			  svg.append("text") 
-  				   .attr("class","y-axis-label")
-  				   .text("Estimated level of knowledge (100%)")
-  				   .attr("x",barChartLeftPos-25)
-  				   .attr("y",yStartBipartite-bipartiteBarScale(1)-20);
-
-  			  svg.selectAll(".y-axis-label")
-  				.call(wrap,55);
-  		   
-  		   } else {
-          if(data.configprops.agg_kc_student_modeling=="bn"){
-  			    //Code added by @Jordan for rec_exp
-  			    svg.append("text") 
-  				   .attr("class","y-axis-label")
-  				   .text("Min prob. of mastery (0%)")
-  				   .attr("x",barChartLeftPos-25)
-  				   .attr("y",yStartBipartite+bipartiteBarScale(1)+15);
-
-    			  svg.append("text") 
-    				   .attr("class","y-axis-label")
-    				   .text("Uncertain prob. of mastery (50%)")
-    				   .attr("x",barChartLeftPos-28)
-    				   .attr("y",yStartBipartite-12);
-
-    			  svg.append("text") 
-    				   .attr("class","y-axis-label")
-    				   .text("Max prob. of mastery (100%)")
-    				   .attr("x",barChartLeftPos-25)
-    				   .attr("y",yStartBipartite-bipartiteBarScale(1)-20);
-
-  			    svg.selectAll(".y-axis-label")
-  				    .call(wrap,55);
-            }
-  			   //end of code added by @Jordan for rec_exp
-  		   }
-		
-         //added by jbarriapineda
-         if(state.args.uiTBarModeGrpChk){
+           //Code added by @Jordan for rec_exp
            svg.append("text") 
-             .attr("class","trivial-group")
-             .text("group")
-             .attr("dy",yStartBipartite+(maxBarHeight/2))
-             .attr("dx",function(d){
-               var offsetLeft=0;
-               if(ui.vis.actLst.cont.style.display !== 'none'){
-                 offsetLeft=23;
-               }
-               return barChartLeftPos-this.getComputedTextLength()-offsetLeft;});
+               .attr("class","y-axis-label")
+               .text("Min prob. of mastery (0%)")
+               .attr("x",barChartLeftPos-25)
+               .attr("y",yStartBipartite+bipartiteBarScale(1)+15);
 
-           $("#kcmap-group-selection").css("margin-top",maxBarHeight-5);
-         }
+          svg.append("text") 
+               .attr("class","y-axis-label")
+               .text("Uncertain prob. of mastery (50%)")
+               .attr("x",barChartLeftPos-28)
+               .attr("y",yStartBipartite-12);
+
+          svg.append("text") 
+               .attr("class","y-axis-label")
+               .text("Max prob. of mastery (100%)")
+               .attr("x",barChartLeftPos-25)
+               .attr("y",yStartBipartite-bipartiteBarScale(1)-20);
+
+          svg.selectAll(".y-axis-label")
+            .call(wrap,55);
+          //end of code added by @Jordan for rec_exp
+               
+
+           //added by jbarriapineda
+           if(state.args.uiTBarModeGrpChk){
+             svg.append("text") 
+               .attr("class","trivial-group")
+               .text("group")
+               .attr("dy",yStartBipartite+(maxBarHeight/2))
+               .attr("dx",function(d){
+                 var offsetLeft=0;
+                 // console.log(this.getComputedTextLength());
+                 if(ui.vis.actLst.cont.style.display !== 'none'){
+                   offsetLeft=23;
+                 }
+                 return barChartLeftPos-this.getComputedTextLength()-offsetLeft;});
+
+             $("#kcmap-group-selection").css("margin-top",maxBarHeight-5);
+           }
 
             /*svg.append("text") 
                 .attr("class","trivial-group")
@@ -2850,216 +2801,146 @@ function initBipartite(){
           for (var i=0;i<learner_kcs.length;i++){
             //learner_kcs[i].uk=getMe().state.kcs[data.kcs[i].id].k; //commented by @Jordan in order to use the learner estimates from bn_general service
             learner_kcs[i].uk = kcs_estimates[learner_kcs[i].n]
-            if(data.configprops.agg_kc_student_modeling=="cumulate"){
-              learner_kcs[i]["sr"] = kcs_success_rates[learner_kcs[i].n];
-              learner_kcs[i]["lastk-sr"] = kcs_lastk_success_rates[learner_kcs[i].n];
-            }
           }
+          //// console.log("learner_kcs");
+          //// console.log(learner_kcs);
 
            // need dynamic data
-          var bars = svg.selectAll("g.bar");
-          //bars = bars.data(nodes_dynamic, function(d) { return d.id;});//commented by jbarriapineda
-          bars  = bars.data(learner_kcs, function(d) { return d.id;})         
+           var bars = svg.selectAll("g.bar");
+            //bars = bars.data(nodes_dynamic, function(d) { return d.id;});//commented by jbarriapineda
+            bars  = bars.data(learner_kcs, function(d) { return d.id;})         
          
-          //this is user bar
-          var userbar = bars.enter().append("g")
-            .attr("class","bar")
-            .attr("id", function(d) { return "g-userbar" + d.id;})// d[idProperty]})//commented by jbarriapineda
-            .attr("transform", function(d) {
-              var barSizeUser = 0;
-              //For Memphis
-              if(state.curr.cid==367){
-                d.uk=1;
-              }
-              if(d.uk>.5){
-                barSizeUser = bipartiteBarScale((d.uk-.5)/.5);
-              }else{
-                if(!d.uk<.5){
-                  barSizeUser = bipartiteBarScale((.5-d.uk)/.5)
-                }
-              }
-              if(isStudentModelingCumulate()){
-                barSizeUser = bipartiteBarScale(d.uk);
-              }
-              //if(d[barSizeUser]==0||d[barSizeUser]==-1) return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (250-5)+")";
-              
-              if(barSizeUser==0||barSizeUser==-1){
-                //return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (yStartBipartite-5)+")";
-                return "translate("+((barWidth+barSeparation)*orderMap[d.id]+barChartLeftPos)+","+ (yStartBipartite-barSizeUser)+")"; 
-              }else{
-                if(d.uk>.5){
-                  return "translate("+((barWidth+barSeparation)*orderMap[d.id]+barChartLeftPos)+","+ (yStartBipartite-barSizeUser)+")"; 
-                }else{
-                  return "translate("+((barWidth+barSeparation)*orderMap[d.id]+barChartLeftPos)+","+ (yStartBipartite-barSizeUser)+")"; 
-                }   
-              }
-            })
-            .attr("topicId",function(d) { return d.t;})//mapConceptColumnTopic[d.id];})//commented by jbarriapineda
-            .append("rect")
-            .attr("class", "bar")
-            .attr("id", function(d) { return "userbar" + d.id;})//[idProperty]})//commented by jbarriapineda
-            .attr("topicId",function(d) { return d.t;})//mapConceptColumnTopic[d.id];})//commented by jbarriapineda
-            .attr("width",function(d){
-              return barWidth;})
-            .attr("height", function(d) {
-              // var barSizeUser = bipartiteBarScale(d.uk);
-              // //if(d[barSizeUser]==0||d[barSizeUser]==-1)return 5;//commented by jbarriapineda
-              // //if(barSizeUser==0||barSizeUser==-1)return 5;
-              // //else return (d[barSizeUser]*maxBarHeight); })//commented by jbarriapineda
-              // else return barSizeUser; 
-              var barSizeUser = .5;
-              if(d.uk>.5){
-                barSizeUser = bipartiteBarScale((d.uk-.5)/.5);
-              }else{
-                if(d.uk<.5){
-                  barSizeUser = bipartiteBarScale((.5-d.uk)/.5)
-                }
-              }
-              if(isStudentModelingCumulate()){
-                barSizeUser = bipartiteBarScale(d.uk);
-              }
-              return barSizeUser;
-            })
-            .attr("transform",function(d){
-              if(data.configprops.agg_kc_student_modeling=="cumulate"){
-                barSizeUser = bipartiteBarScale(d.uk);
-                return "translate(0,0)";
-              }
-              if(d.uk<.5){
-                barSizeUser = bipartiteBarScale((.5-d.uk)/.5)
-                return "translate(0,"+(barSizeUser+5)+")";
-              }else{
-                return "translate(0,0)"
-              }
-            })
-            .style("fill", function(d) {
-              var barSizeUser = bipartiteBarScale(d.uk);
-              //if(d[barSizeUser]==0||d[barSizeUser]==-1)return "#EEEEEE";//commented by jbarriapineda
-              if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){//TODO change to use the type of parameterized recommendation approach (remedial)
-                if(d["lastk-sr"]==-1) return d["uk"]==0?"#EEEEEE": "#999999"; 
-                //eturn "#19195d";
-                return barColorScaleSuccessRate(d["lastk-sr"]);
-              }
-              if(d.uk==0||d.uk==-1)return "#EEEEEE";
-              if (isStudentModelingCumulate()){
-                return colorbrewer[barColorUserProperty][barColorScale][Math.round((barColorScale-1)*d.uk)]; //Added by @Jordan for Fall 2019 study 
-              //else return colorbrewer[barColorUserProperty][barColorScale][Math.round((barColorScale-1)*d[barColorUser])]; })//commented by jbarriapineda
-              //else return colorbrewer[barColorUserProperty][barColorScale][Math.round((barColorScale-1)*d.uk)]; })//commented by jbarriapineda in 09-16-2018
-              }else{
-                return barColorScaleProbabilities(d.uk);
-              }
-            })
-            .style("stroke", function(d) { return "white"; })
-            .style("stroke-width", 1)
-            .style("cursor", "pointer");
-            /*.attr("transform", function(d) {
-              if(d[barSizeUser]==0||d[barSizeUser]==-1) return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (250-5)+")";
-              else return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (250-(d[barSizeUser]*160))+")"; })*///commented by jbarriapineda
-            /*.on("mouseover", function(d){ barMouseOver(d,mapConceptColumnTopic[d.id], "map", "user"); })                  
-            .on("mouseout", function(d){ barMouseOut(d,mapConceptColumnTopic[d.id], "map"); });*///commented today by jbarriapineda
-            //.on("click", function(d){ barClick(d.id, "map"); });
-
-          d3.selectAll("g.bar")//added by jbarriapineda
-            .append("rect")
-            .attr("class","mouseover-bar")
-            .attr("height", function(d) {
-                  return 2*maxBarHeight+5;
+            //this is user bar
+            var userbar = bars.enter().append("g")
+                .attr("class","bar")
+                .attr("id", function(d) { return "g-userbar" + d.id;})// d[idProperty]})//commented by jbarriapineda
+                .attr("transform", function(d) {
+                  var barSizeUser = 0;
+                  if(state.curr.cid==367){
+                    d.uk=1;
+                  }
+                  if(d.uk>.5){
+                    barSizeUser = bipartiteBarScale((d.uk-.5)/.5);
+                  }else{
+                    if(d.uk<.5){
+                      barSizeUser = bipartiteBarScale((.5-d.uk)/.5)
+                    }
+                  }
+                  //if(d[barSizeUser]==0||d[barSizeUser]==-1) return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (250-5)+")";
+                  if(barSizeUser==0||barSizeUser==-1){
+                    //return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (yStartBipartite-5)+")";
+                    return "translate("+((barWidth+barSeparation)*orderMap[d.id]+barChartLeftPos)+","+ (yStartBipartite-barSizeUser)+")"; 
+                  }else{
+                    if(d.uk>.5){
+                      return "translate("+((barWidth+barSeparation)*orderMap[d.id]+barChartLeftPos)+","+ (yStartBipartite-barSizeUser)+")"; 
+                    }else{
+                      return "translate("+((barWidth+barSeparation)*orderMap[d.id]+barChartLeftPos)+","+ (yStartBipartite-barSizeUser)+")"; 
+                    }   
+                  }
                 })
-            .attr("width",function(d){
-                return barWidth;})
-            .style("color","white")
-            .style("opacity",0)
-            .style("cursor","pointer")
-            .attr("transform", function(d) {
-                //var barSizeUser = bipartiteBarScale(d.uk);
-                //if(d[barSizeUser]==0||d[barSizeUser]==-1) return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (250-5)+")";
-                var barSizeUser = 0;
-                if(d.uk>.5){
-                  barSizeUser = bipartiteBarScale((d.uk-.5)/.5);
-                  return "translate("+0+","+ (barSizeUser-maxBarHeight)+")";
-                }else{
+                .attr("topicId",function(d) { return d.t;})//mapConceptColumnTopic[d.id];})//commented by jbarriapineda
+                .append("rect")
+                .attr("class", "bar")
+                .attr("id", function(d) { return "userbar" + d.id;})//[idProperty]})//commented by jbarriapineda
+                .attr("topicId",function(d) { return d.t;})//mapConceptColumnTopic[d.id];})//commented by jbarriapineda
+                .attr("width",function(d){
+                  return barWidth;})
+                .attr("height", function(d) {
+                  // var barSizeUser = bipartiteBarScale(d.uk);
+                  // //if(d[barSizeUser]==0||d[barSizeUser]==-1)return 5;//commented by jbarriapineda
+                  // //if(barSizeUser==0||barSizeUser==-1)return 5;
+                  // //else return (d[barSizeUser]*maxBarHeight); })//commented by jbarriapineda
+                  // else return barSizeUser; 
+                  var barSizeUser = .5;
+                  if(d.uk>.5){
+                    barSizeUser = bipartiteBarScale((d.uk-.5)/.5);
+                  }else{
+                    if(d.uk<.5){
+                      barSizeUser = bipartiteBarScale((.5-d.uk)/.5)
+                    }
+                  }
+                  return barSizeUser;
+                })
+                .attr("transform",function(d){
                   if(d.uk<.5){
                     barSizeUser = bipartiteBarScale((.5-d.uk)/.5)
+                    return "translate(0,"+(barSizeUser+5)+")";
+                  }else{
+                    return "translate(0,0)"
+                  }
+                })
+                .style("fill", function(d) {
+                  var barSizeUser = bipartiteBarScale(d.uk);
+                  //if(d[barSizeUser]==0||d[barSizeUser]==-1)return "#EEEEEE";//commented by jbarriapineda
+                  if(d.uk==0||d.uk==-1)return "#EEEEEE";
+                  //else return colorbrewer[barColorUserProperty][barColorScale][Math.round((barColorScale-1)*d[barColorUser])]; })//commented by jbarriapineda
+                  //else return colorbrewer[barColorUserProperty][barColorScale][Math.round((barColorScale-1)*d.uk)]; })//commented by jbarriapineda in 09-16-2018
+                  else return barColorScaleProbabilities(d.uk);})
+                .style("stroke", function(d) { return "white"; })
+                .style("stroke-width", 1)
+                .style("cursor", "pointer");
+                /*.attr("transform", function(d) {
+                  if(d[barSizeUser]==0||d[barSizeUser]==-1) return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (250-5)+")";
+                  else return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (250-(d[barSizeUser]*160))+")"; })*///commented by jbarriapineda
+                /*.on("mouseover", function(d){ barMouseOver(d,mapConceptColumnTopic[d.id], "map", "user"); })                  
+                .on("mouseout", function(d){ barMouseOut(d,mapConceptColumnTopic[d.id], "map"); });*///commented today by jbarriapineda
+                //.on("click", function(d){ barClick(d.id, "map"); });
+
+            d3.selectAll("g.bar")//added by jbarriapineda
+              .append("rect")
+              .attr("class","mouseover-bar")
+              .attr("height", function(d) {
+                    return 2*maxBarHeight+5;
+                  })
+              .attr("width",function(d){
+                  return barWidth;})
+              .style("color","white")
+              .style("opacity",0)
+              .style("cursor","pointer")
+              .attr("transform", function(d) {
+                  //var barSizeUser = bipartiteBarScale(d.uk);
+                  //if(d[barSizeUser]==0||d[barSizeUser]==-1) return "translate("+(barWidth*orderMap[d.id]+barChartLeftPos)+","+ (250-5)+")";
+                  var barSizeUser = 0;
+                  if(d.uk>.5){
+                    barSizeUser = bipartiteBarScale((d.uk-.5)/.5);
                     return "translate("+0+","+ (barSizeUser-maxBarHeight)+")";
-                  }
-                }
-                if(barSizeUser==0||barSizeUser==-1) return "translate("+0+","+ (-maxBarHeight)+")";})
-		  // .on("click", function(d){
-			 // if(isStudentModelingCumulate()) {
-			 //  var recTooltip = d3.select("#chart").append("div") 
-				// .attr("class", "userbar-click-tooltip")       
-				// .style("opacity", 0);
-			  
-			 //  recTooltip.transition()    
-				//   .duration(200)    
-				//   .style("opacity",.95);    
-				// recTooltip.html("Test")
-				//   .style("left", $(this).position().left + 15 + "px")  
-				//   .style("top", $(this).position().top + "px")  
-				//   .style("z-index","100");
-				// recTooltip.moveToFront();
-			 // }
-			
-		  // })
-            .on("mouseover", function(d){ barMouseOver(d,mapConceptColumnTopic[d.id], "map", "user"); })                  
-            .on("mouseout", function(d){ 
-      					barMouseOut(d,mapConceptColumnTopic[d.id], "map"); 
-      					d3.selectAll(".userbar-click-tooltip").remove()
-      			 });
-          //end of code added by jbarriapineda 
-          
-          //Add the percentage text label associated with each bar
-          svg.selectAll("g.bar")
-              .append("text")
-              .attr("class","text-userbar")
-              .attr("id", function(d) { return "text-userbar" + d.id;})//d[idProperty]})//commented by jbarriapineda
-              .attr("topicId",function(d) { return d.t;})
-              .text(function(d){return Math.round(100*d.uk*10)/10+"%";})//d.uK*100+"%";})
-              .attr("transform",function(d){
-                if(d.uk>=.5){
-                  return "rotate(-45)"
-                }else{
-                  return isStudentModelingCumulate()? "rotate(-45)": "translate(0,"+(2*bipartiteBarScale((.5-d.uk)/.5)+20)+") rotate(-45)";
-                }
-              })
-              .attr("opacity",0)
-              .style("pointer-events","none");
-
-          if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial" ){
-            svg.selectAll("g.bar").append("svg:image")
-              .attr('x', data.configprops.agg_proactiverec_enabled && isStudentModelingCumulate()? 5 :-2)
-              .attr('y', data.configprops.agg_proactiverec_enabled &&  isStudentModelingCumulate()? -10:-14)
-              .attr('width', 10)
-              .attr('height', 10)
-              .attr("xlink:href", function(d){
-                if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
-                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>=0){
-                    return  "./img/warning-icon2.png";
                   }else{
-                     "./img/white.png";
+                    if(d.uk<.5){
+                      barSizeUser = bipartiteBarScale((.5-d.uk)/.5)
+                      return "translate("+0+","+ (barSizeUser-maxBarHeight)+")";
+                    }
                   }
-                }
-                return "./img/white.png";
-              })
-              .attr("class", function(d){
-                if(data.configprops.agg_proactiverec_enabled &&  data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
-                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>=0){
-                     return "warning";
+                  if(barSizeUser==0||barSizeUser==-1) return "translate("+0+","+ (-maxBarHeight)+")";})
+                  //else 
+                  //return "translate("+0+","+ (barSizeUser-maxBarHeight)+")"; })
+              .on("mouseover", function(d){ barMouseOver(d,mapConceptColumnTopic[d.id], "map", "user"); })                  
+              .on("mouseout", function(d){ barMouseOut(d,mapConceptColumnTopic[d.id], "map"); });
+            //end of code added by jbarriapineda 
+            
+            //Add the percentage text label associated with each bar
+            svg.selectAll("g.bar")
+                .append("text")
+                .attr("class","text-userbar")
+                .attr("id", function(d) { return "text-userbar" + d.id;})//d[idProperty]})//commented by jbarriapineda
+                .attr("topicId",function(d) { return d.t;})
+                .text(function(d){return Math.round(100*d.uk*10)/10+"%";})//d.uK*100+"%";})
+                .attr("transform",function(d){
+                  if(d.uk>=.5){
+                    return "rotate(-45)"
                   }else{
-                     return "no-warning";
+                    return "translate(0,"+(2*bipartiteBarScale((.5-d.uk)/.5)+20)+") rotate(-45)";
                   }
-                }
-                return "no-warning";
-            });
-          }
+                })
+                .attr("opacity",0)
+                .style("pointer-events","none");
 
-          //added by jbarriapineda
-          //Social comparison concept-based visualization
+            //added by jbarriapineda
+            //this is group bar
 
-          if(state.args.uiTBarGrpVis){
+            
             var group_kcs = data.kcs.slice(0);
             group_kcs = group_kcs.filter(String);//delete empty elements of the array
-
+            console.log(group_kcs);
             for (var j=0;j<group_kcs.length;j++){
               //var group_kc=data.kcs[i];
               group_kcs[j].gk=getGrp().state.kcs[group_kcs[j].id].k;
@@ -3146,10 +3027,11 @@ function initBipartite(){
                 .style("pointer-events","none");
 
             //if the group view is activated (By default or by the user)
-            //if(state.args.uiTBarModeGrpChk){ // before it was a wrong parameters
-            showSocialComparisonBipartite();
-          }
-          //end of code added by jbarriapineda
+            if(state.args.uiTBarModeGrpChk){
+              showSocialComparisonBipartite()
+            }
+
+            //end of code added by jbarriapineda
             
 
            //this part is supposed to show the black dot differently than each other
@@ -3167,8 +3049,8 @@ function initBipartite(){
 
             //diagonal are the curved lines
             var diagonal = d3.svg.diagonal()
-                  .source(function(d) { return {"x":((barWidth+barSeparation)*orderMap[d.conceptId]+barChartLeftPos), "y":(yStartBipartite-maxBarHeight-5)}; })            
-                  .target(function(d) { return {"x":mapTopicPos[d.topicId] + gridSetting.sq.w/2 , "y":0};})
+                  .source(function(d) { return {"x":((barWidth+barSeparation)*orderMap[d.conceptId]+barChartLeftPos), "y":(yStartBipartite-maxBarHeight-2)}; })            
+                  .target(function(d) { return {"x":mapTopicPos[d.topicId]-gridSetting.sq.w/2-10, "y":10}; })
                   .projection(function(d) { return [d.x, d.y]; });
 
            // var diagonal = d3.svg.diagonal.radial()
@@ -3181,8 +3063,7 @@ function initBipartite(){
            for (var i=0; i<sorted_kcs.length;i++){
               var topic_concept = {};
               if(state.curr.cid!=367){
-                var topicId = sorted_kcs[i].t;
-                //var topicId = correctTopicName(sorted_kcs[i].t);
+                var topicId = correctTopicName(sorted_kcs[i].t);
               }else{
                 var topicId = correctTopicNameMemphis(sorted_kcs[i].t);
               }
@@ -3197,24 +3078,23 @@ function initBipartite(){
            diagonals = diagonals.data(topics_concepts);
 
            diagonals = diagonals.enter().append("path")
-               .attr("class",function(d) { return "diagonals";})
-               .attr("id",function(d,i){return "diagonals"+i})
-               .attr("conceptId",function(d) { return "diagonals"+d['conceptId'];})
-               .attr("concepttopicId",function(d) {d.concepttopicId=d['topicId']+"~"+d["conceptId"]; return d['topicId']+"~"+d["conceptId"];})
-               .attr("d", diagonal)
-               .style("shape-rendering", "geometricPrecision")//added by jbarriapineda
-               //.attr("stroke", function(d){return "#444444";})//function(d){var rgb = 200*(1-d.totalProgress); return d3.rgb(rgb,rgb,rgb);})
-               //.attr("stroke-width" ,function(d) { return (d.cnt.length+1);})
-               .style("opacity", 0);
-               /*.on("mouseover", function(d,i){ 
-                 if(d3.select(this).classed("selected"))
-                diagonalsMouseOver(d.conceptId,d.topicId,i); })                  
-               .on("mouseout", function(d){ diagonalsMouseOut(d.conceptId,d.topicId); })
-               .on("click", function(d){ 
-                if(d3.select(this).classed("active") || d3.select(this).classed("selected"))
-                    diagonalsClick(d.conceptId, d.cnt, "map"); 
-                });*///commented by jbarriapineda
-
+                       .attr("class",function(d) { return "diagonals";})
+                       .attr("id",function(d,i){return "diagonals"+i})
+                       .attr("conceptId",function(d) { return "diagonals"+d['conceptId'];})
+                       .attr("concepttopicId",function(d) {d.concepttopicId=d['topicId']+"~"+d["conceptId"]; return d['topicId']+"~"+d["conceptId"];})
+                       .attr("d", diagonal)
+                       .style("shape-rendering", "geometricPrecision")//added by jbarriapineda
+                       //.attr("stroke", function(d){return "#444444";})//function(d){var rgb = 200*(1-d.totalProgress); return d3.rgb(rgb,rgb,rgb);})
+                       //.attr("stroke-width" ,function(d) { return (d.cnt.length+1);})
+                       .style("opacity", 0);
+                       /*.on("mouseover", function(d,i){ 
+                         if(d3.select(this).classed("selected"))
+                        diagonalsMouseOver(d.conceptId,d.topicId,i); })                  
+                       .on("mouseout", function(d){ diagonalsMouseOut(d.conceptId,d.topicId); })
+                       .on("click", function(d){ 
+                        if(d3.select(this).classed("active") || d3.select(this).classed("selected"))
+                            diagonalsClick(d.conceptId, d.cnt, "map"); 
+                        });*///commented by jbarriapineda
           // @@@@ JULIO
     if(state.args.uiShowHelp){
       svg.
@@ -3234,14 +3114,14 @@ function initBipartite(){
           append("image").
           //  .attr("dy",yStartBipartite-(maxBarHeight/2))//modified by jbarriapineda
           //      .attr("dx",function(d){return barChartLeftPos-this.getComputedTextLength();});
-          attr("x", barChartLeftPos + (barWidth*learner_kcs.length) + learner_kcs.length*3.5).
+          attr("x", barChartLeftPos + (barWidth*120)).
           attr("y", yStartBipartite-maxBarHeight-20).
           attr("width", 22).
           attr("height", 19).
           attr("xlink:href","img/help.png");
 
     }
-    if(state.args.uiTBarGrpVis){
+    if(state.args.uiTBarModeGrpChk){
         if(state.args.uiShowHelp){
           svg.
           append("g").
@@ -3269,15 +3149,10 @@ function initBipartite(){
 
         }
     }
-    //if(!state.args.uiTBarModeGrpChk){//this was the wrong parameter
-    if(!state.args.uiTBarGrpVis){
+    if(!state.args.uiTBarModeGrpChk){
       hideSocialComparisonBipartite();
     }
 
-}
-
-function isStudentModelingCumulate() {
-	return data.configprops.agg_kc_student_modeling=="cumulate"
 }
 
 
@@ -3322,6 +3197,7 @@ function createFakeLinks(){
 
 //added by Haoran Zhao
 function inituiCMVis(settings,uiCMVisIdOut){
+ // // console.log(uiCMVisIdOut);//added by jbarriapineda
   uiCMVisId=uiCMVisIdOut;
   gridSetting = settings;
 
@@ -3337,24 +3213,23 @@ function inituiCMVis(settings,uiCMVisIdOut){
   //calculating course topic  and position mapping
   var resNames  = $map(function (x) { return x.name; }, data.resources.slice(1));
 
-  var resOffsetL = svgGetMaxTextBB(resNames).width;
+  var resOffsetL = svgGetMaxTextBB(resNames).width + 50;
 
   var paddingL = gridSetting.padding.l;//(doShowYAxis ? settings.padding.l : 10);
 
-  var sqX = 5;//this number is actually from txtX
-  mapTopicPos["AVG"] = resOffsetL + paddingL + sqX;
+  var sqX = 6;//this number is actually from txtX
+  mapTopicPos["AVG"] = resOffsetL + paddingL+sqX;
   var sqW = gridSetting.sq.w;
 
   //var y = ((sqH + CONST.vis.gridAbsAct.sq.padding) * iSeries) + CONST.vis.gridAbsAct.padding.t + topicOffsetT + paddingT;
   sqX += gridSetting.sepX+sqW; 
 
-  for(var j=0;j<data.topics.length;j++){//TODO cambiar los data.topics por sorted_topics (por order)
+  for(var j=0;j<data.topics.length;j++){//todo cambiar los data.topics por sorted_topics (por order)
      //sqX += (j === 0 ? 0 : sqW * visGetTopicSize(data.topics[j].id) + gridSetting.sq.padding);
      //data.topics.filter(function (d) {return d.order==topicIdx;})[0];
-     sqX += (j === 0 ? 0 : sqW * visGetTopicSize(data.topics.filter(function (d,i) {return i==j || d.order==j;})[0].id) + gridSetting.sq.padding);
+     sqX += (j === 0 ? 0 : sqW * visGetTopicSize(data.topics.filter(function (d) {return d.order==j;})[0].id) + gridSetting.sq.padding);
      //sqX += sqW * visGetTopicSize(topic_column_order[i]) + CONST.vis.gridAbsAct.sq.padding;
-     //var x = resOffsetL/2 + sqX + sqW;
-     var x = resOffsetL + sqX - (sqW+gridSetting.sepX)/2;
+     var x = resOffsetL/2 + sqX + sqW;
      //mapTopicPos[topic_column_order[j]] = x;
      mapTopicPos[data.topics[j].id] = x ;
      /*mapTopicPos[data.topics.filter(function (d) {
@@ -3394,6 +3269,7 @@ function getOrderMap(){
       var resources = Object.keys(activities);
       for (var j=0;j<resources.length;j++){
         var acts = activities[resources[j]];
+        console.log(acts);
       }
     } 
   }
@@ -3415,27 +3291,35 @@ function getOrderMap(){
     //Delete elements which we do not have kc estimates from bn_general service - added by @Jordan
     for (var i=0;i<kcs.length;i++){
       if (!(kcs[i].n in kcs_estimates)){
+        // console.log("Deleted concept:");
+        // console.log(kcs[i]);
         delete kcs[i];
       }
     }
 
     kcs = kcs.filter(n => n);//Delete the empty values that were deleted in the previous for loop - added by @Jordan
-    sorted_kcs = kcs.filter(function(el){ return el.id in map_concept_id_topic});
+    sorted_kcs = kcs.sort(function(a, b){
+      if(state.curr.cid!=367){
+        var topic_a = correctTopicName(a.t);
+        var topic_b = correctTopicName(b.t);
+        if (topic_b == "ArrayList"){
+          topic_b = "ArrayLists";
+        }
+      }else{
+        var topic_a = correctTopicNameMemphis(a.t);
+        var topic_b = correctTopicNameMemphis(b.t);
+        if (topic_b == "ArrayList"){
+          topic_b = "ArrayLists";
+        }
+      }
 
-    //Update kc topic according to the topic that they first appear and not according the one that is associated with them in the db 
-    sorted_kcs.forEach(function(el){el.t=map_concept_id_topic[el.id]});
-
-    sorted_kcs = sorted_kcs.sort(function(a, b){
-      // var topic_a = correctTopicName(a.t);
-      // var topic_b = correctTopicName(b.t);
-      // if (topic_b == "ArrayList"){
-      //   topic_b = "ArrayLists";
-      // }
-
-      var topic_a = a.t;
-      var topic_b = b.t;
       var order_a = parseInt(topic_order[topic_a]);
       var order_b = parseInt(topic_order[topic_b]);
+
+      // console.log(topic_a);
+      // console.log(order_a);
+      // console.log(topic_b);
+      // console.log(order_b);
       
       if (parseInt(topic_order[topic_a])  > parseInt(topic_order[topic_b])){
         return 1;
@@ -3475,6 +3359,7 @@ function getOrderMap(){
     for(var j=0; j<sorted_kcs.length; j++){
         orderMap[sorted_kcs[j].id] = j;
     }
+    //// console.log(orderMap);
   }else if(orderBy =="alphabet"){
     /*var temp = new Array(conceptArray);
     temp = conceptArray.slice();
@@ -3574,6 +3459,7 @@ function getOrderMap(){
 }
 
 function removeAll(){
+  //// console.log("remove All #conceptVisSvg");//added by jbarriapineda
   d3.select("#conceptVisSvg").remove();
     // d3.selectAll(".bar").remove();
     // d3.selectAll(".nodename").remove();
@@ -3684,53 +3570,25 @@ function barMouseOver(d, tid,origin,bartype) {
 
   if (origin && lastNodeMouseOver !== d.id) {
      var k_learner=d3.select("#g-userbar"+d.id).node().__data__.uk;
-     var k_learner_lastk_sr = d3.select("#g-userbar"+d.id).node().__data__["lastk-sr"];
+     var k_group=d3.select("#g-groupbar"+d.id).node().__data__.gk;
      var actLstShown=false;
      if(ui.vis.actLst.cont.style.display !== 'none'){
        actLstShown=true;
      }
-     var log_concept_mouseover = "";
-     if(state.args.uiTBarGrpVis){
-       var k_group=d3.select("#g-groupbar"+d.id).node().__data__.gk;
-       log_concept_mouseover = 
-         "action"                + CONST.log.sep02 + "cm-concept-mouseover"  + CONST.log.sep01 +
-         "concept-name"          + CONST.log.sep02 + d.n                    + CONST.log.sep01 +
-         "topic-name"            + CONST.log.sep02 + d.t                     + CONST.log.sep01 +
-         "k-learner"             + CONST.log.sep02 + k_learner               + CONST.log.sep01 +
-         "k-group"               + CONST.log.sep02 + k_group                 + CONST.log.sep01 +
-         "bar-type"              + CONST.log.sep02 + bartype                 + CONST.log.sep01 +
-         "act-lst-shown"         + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
-         //"concept-radius"        + CONST.log.sep02 + d.faveSize              + CONST.log.sep01 +
-         //"min-size"              + CONST.log.sep02 + minWidthNode            + CONST.log.sep01 +
-         //"max-size"              + CONST.log.sep02 + maxWidthNode            + CONST.log.sep01 +
-         //"concept-color"         + CONST.log.sep02 + d.favesColor             + CONST.log.sep01 +
-         //"concept-completeness"  + CONST.log.sep02 + d.completeness          + CONST.log.sep01 +
-         "origin"                + CONST.log.sep02 + origin;
-     }else{
-       log_concept_mouseover = 
-         "action"                + CONST.log.sep02 + "cm-concept-mouseover"  + CONST.log.sep01 +
-         "concept-name"          + CONST.log.sep02 + d.n                    + CONST.log.sep01 +
-         "topic-name"            + CONST.log.sep02 + d.t                     + CONST.log.sep01 +
-         "k-learner"             + CONST.log.sep02 + k_learner               + CONST.log.sep01 +
-         "bar-type"              + CONST.log.sep02 + bartype                 + CONST.log.sep01 +
-         "act-lst-shown"         + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
-         //"concept-radius"        + CONST.log.sep02 + d.faveSize              + CONST.log.sep01 +
-         //"min-size"              + CONST.log.sep02 + minWidthNode            + CONST.log.sep01 +
-         //"max-size"              + CONST.log.sep02 + maxWidthNode            + CONST.log.sep01 +
-         //"concept-color"         + CONST.log.sep02 + d.favesColor             + CONST.log.sep01 +
-         //"concept-completeness"  + CONST.log.sep02 + d.completeness          + CONST.log.sep01 +
-         "origin"                + CONST.log.sep02 + origin;
-     }
-     
-
-    //Check if lastk success rate is calculated, if yes it adds it to the logs
-    if (k_learner_lastk_sr !== undefined){
-      var is_warning = !d3.select("#g-userbar"+d.id).select("image.warning").empty();
-      log_concept_mouseover = log_concept_mouseover + CONST.log.sep01 
-      + "lastk-sr"             + CONST.log.sep02 + k_learner_lastk_sr + CONST.log.sep01
-      + "warning"             + CONST.log.sep02 + is_warning;
-    }
-     log(log_concept_mouseover,
+     log(
+       "action"                + CONST.log.sep02 + "cm-concept-mouseover"  + CONST.log.sep01 +
+       "concept-name"          + CONST.log.sep02 + d.n                    + CONST.log.sep01 +
+       "topic-name"            + CONST.log.sep02 + d.t                     + CONST.log.sep01 +
+       "k-learner"             + CONST.log.sep02 + k_learner               + CONST.log.sep01 +
+       "k-group"               + CONST.log.sep02 + k_group                 + CONST.log.sep01 +
+       "bar-type"              + CONST.log.sep02 + bartype                 + CONST.log.sep01 +
+       "act-lst-shown"         + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
+       //"concept-radius"        + CONST.log.sep02 + d.faveSize              + CONST.log.sep01 +
+       //"min-size"              + CONST.log.sep02 + minWidthNode            + CONST.log.sep01 +
+       //"max-size"              + CONST.log.sep02 + maxWidthNode            + CONST.log.sep01 +
+       //"concept-color"         + CONST.log.sep02 + d.favesColor             + CONST.log.sep01 +
+       //"concept-completeness"  + CONST.log.sep02 + d.completeness          + CONST.log.sep01 +
+       "origin"                + CONST.log.sep02 + origin,
        true
      );
   }
@@ -3872,67 +3730,6 @@ function barMouseOut(d,tid, origin){
 
   svg.selectAll(".baractive").classed("baractive", false);
 
-  //Register mouseout as well in order to get a more accurate sense of time spent on mouseovering
-  if (origin && lastNodeMouseOver !== d.id) {
-     var k_learner=d3.select("#g-userbar"+d.id).node().__data__.uk;
-     var k_learner_lastk_sr = d3.select("#g-userbar"+d.id).node().__data__["lastk-sr"];
-
-     var actLstShown=false;
-     if(ui.vis.actLst.cont.style.display !== 'none'){
-       actLstShown=true;
-     }
-
-     var log_concept_mouseout = "";
-
-     if(state.args.uiTBarGrpVis){
-         var k_group=d3.select("#g-groupbar"+d.id).node().__data__.gk;
-         log_concept_mouseout = 
-           "action"                + CONST.log.sep02 + "cm-concept-mouseout"  + CONST.log.sep01 +
-           "concept-name"          + CONST.log.sep02 + d.n                    + CONST.log.sep01 +
-           "topic-name"            + CONST.log.sep02 + d.t                     + CONST.log.sep01 +
-           "k-learner"             + CONST.log.sep02 + k_learner               + CONST.log.sep01 +
-           "k-group"               + CONST.log.sep02 + k_group                 + CONST.log.sep01 +
-           //"bar-type"              + CONST.log.sep02 + bartype                 + CONST.log.sep01 +
-           "act-lst-shown"         + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
-           //"concept-radius"        + CONST.log.sep02 + d.faveSize              + CONST.log.sep01 +
-           //"min-size"              + CONST.log.sep02 + minWidthNode            + CONST.log.sep01 +
-           //"max-size"              + CONST.log.sep02 + maxWidthNode            + CONST.log.sep01 +
-           //"concept-color"         + CONST.log.sep02 + d.favesColor             + CONST.log.sep01 +
-           //"concept-completeness"  + CONST.log.sep02 + d.completeness          + CONST.log.sep01 +
-           "origin"                + CONST.log.sep02 + origin;
-
-     }else{
-     
-         log_concept_mouseout = 
-           "action"                + CONST.log.sep02 + "cm-concept-mouseout"  + CONST.log.sep01 +
-           "concept-name"          + CONST.log.sep02 + d.n                    + CONST.log.sep01 +
-           "topic-name"            + CONST.log.sep02 + d.t                     + CONST.log.sep01 +
-           "k-learner"             + CONST.log.sep02 + k_learner               + CONST.log.sep01 +
-           //"bar-type"              + CONST.log.sep02 + bartype                 + CONST.log.sep01 +
-           "act-lst-shown"         + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
-           //"concept-radius"        + CONST.log.sep02 + d.faveSize              + CONST.log.sep01 +
-           //"min-size"              + CONST.log.sep02 + minWidthNode            + CONST.log.sep01 +
-           //"max-size"              + CONST.log.sep02 + maxWidthNode            + CONST.log.sep01 +
-           //"concept-color"         + CONST.log.sep02 + d.favesColor             + CONST.log.sep01 +
-           //"concept-completeness"  + CONST.log.sep02 + d.completeness          + CONST.log.sep01 +
-           "origin"                + CONST.log.sep02 + origin;
-
-     }
-
-     
-
-    //Check if lastk success rate is calculated, if yes it adds it to the logs
-    if (k_learner_lastk_sr !== undefined){
-      var is_warning = !d3.select("#g-userbar"+d.id).select("image.warning").empty();
-      log_concept_mouseout = log_concept_mouseout + CONST.log.sep01 
-      + "lastk-sr"             + CONST.log.sep02 + k_learner_lastk_sr + CONST.log.sep01
-      + "warning"             + CONST.log.sep02 + is_warning;
-    }
-     log(log_concept_mouseout,
-       true
-     );
-  }
-
 }
 //not quite right with this function, not added to the diagonals
 function diagonalsMouseOver(id,tid,i){
@@ -4010,6 +3807,7 @@ function diagonalsClick(id, cnt, origin){
     var el = null;
     d3.selectAll(".grid-cell-outter").each(function(e){
       if (e.topicIdx === dotCntTemp[i].topicIdx && !e.isInt && el === null){
+        //// console.log(e, d3.select(this));
         el = d3.select(this);
       }
     });
@@ -4133,6 +3931,7 @@ function barClick(id, origin){
     .classed("active", false);
 
   if ($(".tipsyClick").length > 0) {
+   //  // console.log("Node Clicked in 1");
     if (!d3.select("#node"+id).classed("tipsyClick")) {
       //$(".tipsyClick").tipsy("hide");//something is wrong in my code about using tipsy, so the code here will block the part done
       d3.selectAll(".tipsyClick").classed("tipsyClick", false);
@@ -4163,6 +3962,7 @@ function barClick(id, origin){
     var el = null;
     d3.selectAll(".grid-cell-outter").each(function(e){
       if (e.topicIdx === qz[i].topicIdx && !e.isInt && el === null){
+        //// console.log(e, d3.select(this));
         el = d3.select(this);
       }
     });
@@ -4220,6 +4020,7 @@ function barClick(id, origin){
 
   }
   
+ // // console.log("Node Click: " + mapConceptName[id], id);
 
   log(
     "action"                + CONST.log.sep02 + "cm-concept-select"   + CONST.log.sep01 +
@@ -4247,8 +4048,7 @@ function topicNodeMouseOver(tid,origin) {
   
   d3.selectAll(".bar").filter(function(d){
     if(state.curr.cid!=367){
-      return d.t==tid;
-      //return correctTopicName(d.t)==tid;
+      return correctTopicName(d.t)==tid;
     }else{
       return correctTopicNameMemphis(d.t)==tid;
     }}).classed("active", true);
@@ -4257,8 +4057,7 @@ function topicNodeMouseOver(tid,origin) {
   //d3.selectAll(".nodename").filter(function(d){return correctTopicName(d.t)==tid}).classed("active", true);//Commented by @Jordan for Memphis
   d3.selectAll(".nodename").filter(function(d){
     if(state.curr.cid!=367){
-      return d.t==tid;
-      //return correctTopicName(d.t)==tid;
+      return correctTopicName(d.t)==tid;
     }else{
       return correctTopicNameMemphis(d.t)==tid;
     }}).classed("active", true);
@@ -4266,8 +4065,7 @@ function topicNodeMouseOver(tid,origin) {
   //d3.selectAll(".text-userbar").filter(function(d){return correctTopicName(d.t)==tid}).classed("active", true);//Commented by @Jordan for Memphis
   d3.selectAll(".text-userbar").filter(function(d){
     if(state.curr.cid!=367){
-      return d.t==tid;
-      //return correctTopicName(d.t)==tid;
+      return correctTopicName(d.t)==tid;
     }else{
       return correctTopicNameMemphis(d.t)==tid;
     }}).classed("active", true);
@@ -4525,45 +4323,37 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
     var kcsLearning = 0;
     var kcsKnown = 0;
 
-    var percent = -1;
-    if(actId in actId_kcs){
-      percent = 0;
-      for(var i=0; i < actId_kcs[actId].length; i++){
-        var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
-        var kc_level = kcs_estimates[kc_info.n];
-        if (kc_level>=0.666){
-          kcsKnown = kcsKnown + 1;
+    var percent = 0;
+
+    for(var i=0; i < actId_kcs[actId].length; i++){
+      var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
+      var kc_level = kcs_estimates[kc_info.n];
+      if (kc_level>=0.666){
+        kcsKnown = kcsKnown + 1;
+      }else{
+        if(kc_level>=0.333){
+          kcsLearning = kcsLearning + 1;
+          percent = percent + 0.5;
         }else{
-          if(kc_level>=0.333){
-            kcsLearning = kcsLearning + 1;
-            percent = percent + 0.5;
-          }else{
-            kcsNotKnown = kcsNotKnown + 1;
-            percent = percent + 1;
-          }
+          kcsNotKnown = kcsNotKnown + 1;
+          percent = percent + 1;
         }
       }
-      percent = percent/actId_kcs[actId].length;//percentage is the weighted avg of the number of kcs according to their category (see UMAP'18 paper for equation)- added by @Jordan
     }
-    
+
+    percent = percent/actId_kcs[actId].length;//percentage is the weighted avg of the number of kcs according to their category (see UMAP'18 paper for equation)- added by @Jordan
     percent = kcs_estimates[actId];
-    console.log("Percent: "+percent);
     
     //Estimates probability of understanding the example correctly given the avg of the knowledge in underlying concepts
     if(percent == undefined){
-      var estimate = -1;
-      if (actId in actId_kcs){
-        estimate = 0;
-        for(var i=0; i < actId_kcs[actId].length; i++){
-          var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
-          var kc_level = kcs_estimates[kc_info.n];
-          //console.log(kc_info.n);
-          //console.log(kc_level);
-          estimate = estimate + kc_level;
-        }
-        estimate = estimate/actId_kcs[actId].length;
-        percent = estimate;
+      var estimate = 0;
+      for(var i=0; i < actId_kcs[actId].length; i++){
+        var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
+        var kc_level = kcs_estimates[kc_info.n];
+        estimate = estimate + kc_level;
       }
+      estimate = estimate/actId_kcs[actId].length;
+      percent = estimate;
     }  
 
     var tid=lastNodeMouseOver;
@@ -4582,29 +4372,11 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
     //percent = kc_state_act.difficulty; //Commented by @Jordan for the use of MG pr version + concept vis
 
     if(needle && (state.args.impactMsg || state.args.difficultyMsg)){
-      if(data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial"){
-        var act_difficulty = 0;
-        var mouseovered_act = recommended_activities.filter(function(d){return d.id==actId;})[0];
-        if (mouseovered_act){
-          act_difficulty = mouseovered_act["rec_score"];
-          needle.moveTo(act_difficulty);
-        }
-      }else{
-        console.log("Needle will move to: "+percent);
-        if(state.args.difficultyMsg || state.args.impactMsg){
-          if(state.args.difficultyMsg){
-            needle.moveTo(1-percent);
-          }
-          if(state.args.impactMsg){
-            needle.moveTo(percent);
-          }
-        }else{
-          needle.moveTo(percent);
-        }
-      }
+      needle.moveTo(percent);
     }
 
     //setTimeout(displayValue, 1350);
+    // console.log(kc_state_act);
     if(actId_kcs[actId]){
 
     d3.selectAll(".bar").filter(function(d){
@@ -4726,6 +4498,7 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
       });
 
       /*if(state.vis.topicIdx==-1){
+           // console.log(state.vis.topicIdx);
             svg.selectAll(".diagonals")
               .transition()
               .style("opacity", function(p){
@@ -4807,6 +4580,7 @@ function highlightKcsOnActivityMouseOut(actId){
       });
 
       if(state.vis.topicIdx==-1){
+           //// console.log(state.vis.topicIdx);
             svg.selectAll(".diagonals")
               .transition()
               .style("opacity", function(p){
@@ -4868,6 +4642,8 @@ function mapLinkClick(d, origin) {
   $("#none-concept-selected").hide();
   $("#collapse-concept-selected").collapse('show');
 
+  //// console.log("Link Click: link" + d[idProperty], d.id);
+  //// console.log("source: ", d.source.n, " target: ", d.target.n);
 
   log(
     "action"      + CONST.log.sep02 + "cm-link-select"  + CONST.log.sep01 +
@@ -5061,6 +4837,7 @@ function mapMouseOut(d,tid, origin){
 d3.select("#node"+d.id)
       .attr("title", function(v) { return styleTooltip(mapConceptName[v.id]);});
   if (d3.select("#node"+d.id).classed("tipsyOver")) {
+        // // console.log("Node over in 1");
     $(".node").each(function(){
        $(this).tipsy('hide');});
     //$("#node"+d.id).tipsy('hide');
@@ -5116,6 +4893,8 @@ function dotClick(id, cnt, origin){
   svg.selectAll(".active")
     .classed("active", false);
 
+ // // console.log("dot Click: " + id);
+ // // console.log("dot Click: " + cnt);
 
   var cntTemp = getCnt(id);
   var dotCntTemp = [];
@@ -5140,6 +4919,7 @@ function dotClick(id, cnt, origin){
     var el = null;
     d3.selectAll(".grid-cell-outter").each(function(e){
       if (e.topicIdx === dotCntTemp[i].topicIdx && !e.isInt && el === null){
+        //// console.log(e, d3.select(this));
         el = d3.select(this);
       }
     });
@@ -5215,6 +4995,7 @@ function dotClick(id, cnt, origin){
 //-------------------------------------------------------------------------------------
 //map the mouse click function on the nodes
 function mapClick(id, origin){
+       // // console.log("mapClick");
 
   blockClick = true;
 
@@ -5247,6 +5028,7 @@ function mapClick(id, origin){
     .classed("active", false);
 
   if ($(".tipsyClick").length > 0) {
+     //// console.log("Node Clicked in 1");
     if (!d3.select("#node"+id).classed("tipsyClick")) {
       //$(".tipsyClick").tipsy("hide");//something is wrong in my code about using tipsy, so the code here will block the part done
       d3.selectAll(".tipsyClick").classed("tipsyClick", false);
@@ -5304,6 +5086,7 @@ function mapClick(id, origin){
     var el = null;
     d3.selectAll(".grid-cell-outter").each(function(e){
       if (e.topicIdx === qz[i].topicIdx && !e.isInt && el === null){
+        //// console.log(e, d3.select(this));
         el = d3.select(this);
       }
     });
@@ -5370,7 +5153,7 @@ function mapClick(id, origin){
   //popup window for concept list
 
     // var cont  = $("#collapse-menu")[0];
-    
+    // // console.log(cont);
     // var sqW = CONST.vis.gridAbs.sq.w;
 
     // cont.style.position = "absolute";
@@ -5381,19 +5164,25 @@ function mapClick(id, origin){
     // var cumulativeOffset = nodeSelected.offset();
     // var nodeSelectedRadius = parseFloat(nodeSelected.attr("r"));
 
+    // // console.log(nodeSelectedRadius);
+
 
     // cont.style.left = (cumulativeOffset.left+nodeSelectedRadius)+ "px";
+    //     // console.log(mapTopicPos[mapConceptColumnTopic[id]] + "px");
 
     
 
     // cont.style.top  = (cumulativeOffset.top+nodeSelectedRadius)+ "px";
+    //     // console.log(((2+conceptYPosMap[id])*sqW +gridMeCont.height()+nodeSelectedRadius)+ "px");
 
+    // // console.log(cont);
 
     // $("#collapse-menu").css("display", "block");
 
     //$setPosCenter(ui.vis.actLst.arrow, false, mapTopicPos[mapConceptColumnTopic[id]], (2+conceptYPosMap[d.id])*sqW, false);
 
   
+ // // console.log("Node Click: " + mapConceptName[id], id);
 
   log(
     "action"                + CONST.log.sep02 + "cm-concept-select"   + CONST.log.sep01 +
@@ -5535,15 +5324,8 @@ function hideSocialComparisonBipartite(){
       var transform = d3.transform(d3.select(this).attr("transform"));
       var current_x = transform.translate[0];
       var current_y = transform.translate[1];
-	  
-      //
-		if(data.configprops.agg_kc_student_modeling=="cumulate"){//@Kamil
-			return "translate("+current_x+","+(current_y+170)+") rotate(45)";
-		} else {
-			return "translate("+current_x+","+(yStartBipartite+maxBarHeight+10)+") rotate(45)";
-		}
-	  
-	  });
+      //return "translate("+current_x+","+(current_y+165)+") rotate(45)";});
+      return "translate("+current_x+","+(yStartBipartite+maxBarHeight+10)+") rotate(45)";});
 }
 
 
@@ -5685,6 +5467,7 @@ function Needle(el) {
     };
 
     Needle.prototype.moveTo = function(perc) {
+      //// console.log(perc);
       var self,
           oldValue = this.perc || 0.5;
       this.perc = perc;
@@ -5705,6 +5488,7 @@ function Needle(el) {
 
       this.el.transition().delay(100).ease('bounce').duration(800).select('.needle').tween('progress', function() {
         return function(percentOfPercent) {
+          //// console.log(percentOfPercent);
           var progress = (percentOfPercent) * (perc-0.5) + 0.5;
           
           
@@ -5751,6 +5535,7 @@ function createKcsInfo(){
 
     // Create SVG element
     var gsvg = d3.select("#kcs_act_info").select("svg");//.attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
+   // // console.log(gsvg);
     // Add layer for the panel
     chart = gsvg.append('g')
               .attr("id","gauge")
@@ -5783,8 +5568,7 @@ function createKcsInfo(){
                       .style("fill", '#000000');
     formatValue = d3.format('1%');*/
 
-    if (data.configprops.agg_kc_student_modeling=="bn"){
-      gsvg.append("text")
+    gsvg.append("text")
       //.attr("id","label-prob-act")
       .attr("id","label-prob-act")
       .text("Probability of ...")
@@ -5792,8 +5576,7 @@ function createKcsInfo(){
       .attr("y",(gheight + margin.top) / 2 + 30)
       //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
       .call(wrap,120);
-    }
-    
+
     gsvg.append("text")
       .attr("id","kcsNotKnown")
       .attr("class","text-kc")
@@ -5803,11 +5586,11 @@ function createKcsInfo(){
     gsvg.append("text")
       .attr("id","label-kcsNotKnown")
       .attr("class","label-kc")
+      .text("New concepts")
       .attr("x",(3.5*gwidth) / 5 + margin.left)
       .attr("y",(gheight + margin.top) / 2 +40)
-      .text("New concepts")
       //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
-      .call(wrap,40);
+      .call(wrap,50);
 
     gsvg.append("text")
       .attr("id","kcsLearning")
@@ -5818,11 +5601,11 @@ function createKcsInfo(){
     gsvg.append("text")
       .attr("id","label-kcsNotLearning")
       .attr("class","label-kc")
+      .text("Familiar concepts")
       .attr("x",(2.5*gwidth) / 5 + margin.left)
       .attr("y",(gheight + margin.top) / 2 +40)
-      .text("Familiar Concepts")
       //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
-      .call(wrap,40);
+      .call(wrap,50);
 
      gsvg.append("text")
       .attr("id","kcsKnown")
@@ -5833,16 +5616,11 @@ function createKcsInfo(){
      gsvg.append("text")
       .attr("id","label-kcsKnown")
       .attr("class","label-kc")
+      .text("Known concepts")
       .attr("x",(1.4*gwidth) / 5 + margin.left)
       .attr("y",(gheight + margin.top) / 2 +40)
-      .text("Known Concepts")
       //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
-      .call(wrap,40);
-
-      if((state.args.impactMsg || state.args.difficultyMsg) && data.configprops.agg_kc_student_modeling=="bn"){
-        d3.selectAll(".label-kc").style("display","none");
-        d3.selectAll(".text-kc").style("display","none");
-      }
+      .call(wrap,50);
 
     
 
@@ -5865,16 +5643,13 @@ function createKcsInfo(){
       .attr("x",gwidth/2-gaugeWidth/2-15)
       .attr("y",(gheight + margin.top) / 2 -50)
       .text(function(d){
-        if(state.args.difficultyMsg || state.args.impactMsg){
-          if(state.args.difficultyMsg){
-            return "easy";
-          }
-          if(state.args.impactMsg){
-            return "learn less";
-          }
-        }else{
-          return "Low";
-        }
+        // if(state.args.difficultyMsg){
+        //   return "easy";
+        // }
+        // if(state.args.impactMsg){
+        //   return "learn less";
+        // }
+        return "Low";
       })
       .attr('transform', function(d){
         // if(state.args.difficultyMsg){
@@ -5902,17 +5677,13 @@ function createKcsInfo(){
       .attr("x",gwidth/2+gaugeWidth/2+15)
       .attr("y",(gheight + margin.top) / 2 -50)
       .text(function(d){
-        if(state.args.difficultyMsg || state.args.impactMsg){
-          if(state.args.difficultyMsg){
-            return "hard";
-          }
-          if(state.args.impactMsg){
-            return "learn more";
-          }
-        }
-        else{
-          return "High";
-        }
+        // if(state.args.difficultyMsg){
+        //   return "hard";
+        // }
+        // if(state.args.impactMsg){
+        //   return "learn more";
+        // }
+        return "High";
       })
       .attr('transform', function(d){
         // if(state.args.difficultyMsg){
@@ -6034,29 +5805,7 @@ function redrawBipartite(){
   $("svg#conceptVisSvg").remove();
   $("#kcmap-group-selection").remove();
   if(uiCMVisId=="bipartite"){
-    console.log("Redraw bipartite");
     $.get( "http://pawscomp2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp, function(kcs_data) {
-      // var item_kc_estimates = kcs_data["item-kc-estimates"]
-      // for (var i=0;i<item_kc_estimates.length;i++){
-      //   var kc_name = item_kc_estimates[i]["name"];
-      //   kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
-      //   var kc_obj = data.kcs.find(kc => {
-      //     return kc.n === kc_name
-      //   });
-      //   if(kc_obj){
-      //     map_kcs_id_info[kc_obj.id] = kc_obj;
-      //   }
-      // }
-      // initBipartite();
-      //Delete elements which we do not have kc estimates from bn_general service - added by @Jordan
-      // for (var i=0;i<data.kcs.length;i++){
-      //   if (!(data.kcs[i].n in kcs_estimates)){
-      //     delete data.kcs[i];
-      //   }
-      // }
-
-      data.kcs = data.kcs.filter(n => n);
-      
       var item_kc_estimates = kcs_data["item-kc-estimates"]
       for (var i=0;i<item_kc_estimates.length;i++){
         var kc_name = item_kc_estimates[i]["name"];
@@ -6068,14 +5817,7 @@ function redrawBipartite(){
           map_kcs_id_info[kc_obj.id] = kc_obj;
         }
       }
-      if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){
-        var kcMap = "bipartite";
-        uiCMVisId = kcMap;
-        //uiCMVisId = "interactivecm";
-        //$('#checkbox-'+kcMap).prop('checked', true);
-        inituiCMVis(CONST.vis.gridAbs,uiCMVisId);
-      }
-
+      initBipartite();
       // if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){
       //   var kcMap = "bipartite";
       //   uiCMVisId = kcMap;

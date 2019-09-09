@@ -25,26 +25,31 @@
   <script type="text/javascript" src="script/$.js"></script>
   <script type="text/javascript" src="script/vis/BarChart.js"></script>
   <script type="text/javascript" src="script/websocket.js"></script>
-  <script type="text/javascript" src="script/vis.js?v=102"></script>
+  <script type="text/javascript" src="script/recommendations/recommender.js"></script>
+  <script type="text/javascript" src="script/vis.js?v=106"></script>
   <script type="text/javascript" src="script/richolm/js/richolm.js?v=104"></script>
+  <script type="text/javascript" src="script/js-cookie/src/js.cookie.js"></script>
 </head>
 
 
 <body onload="init();">
 
+<!-- Overlay -->
+<div id="overlay"></div>
 
 <!-- Loading -->
 <div id="loading"></div>
 
 
 <!-- Activities list -->
-<div id="act-lst"></div>
+<div id="act-lst"><!-- Overlay -->
+</div>
 <img id="act-lst-arrow" src="img/ui-tabs-arrow.png" />
 
 <!-- Help Dialog -->
 <div id="help-dlg">
-	<div id="help-dlg-title"></div>
-	<div id="help-dlg-cont"></div>
+  <div id="help-dlg-title"></div>
+  <div id="help-dlg-cont"></div>
 </div>
 
 
@@ -137,19 +142,20 @@
 <div id="grids">
   <div id="grid-me"></div>
   <div id="grid-grp"></div>
+  <!-- Knowledge component visualization (kcmap) -->
+  <!--added by @Jordan -->
+  <div id="chart">
+    <div id="kcmap-selection" style="display:none;">
+      <form id="kcmap-selection-form">
+          <input id="checkbox-bipartite" type="radio" name="kcmap" value="bipartite">Bipartite &emsp;
+          <input id="checkbox-circle" type="radio" name="kcmap" value="circle">Circle
+      </form> 
+    </div>
+  </div>
   <div id="grid-others"></div>
 </div>
 
-<!-- Knowledge component visualization (kcmap) -->
-<!--added by @Jordan -->
-<div id="chart">
-  <div id="kcmap-selection" style="display:none;">
-    <form id="kcmap-selection-form">
-        <input id="checkbox-bipartite" type="radio" name="kcmap" value="bipartite">Bipartite &emsp;
-        <input id="checkbox-circle" type="radio" name="kcmap" value="circle">Circle
-    </form> 
-  </div>
-</div>
+
 
 
 <!-- Activity windows -->
