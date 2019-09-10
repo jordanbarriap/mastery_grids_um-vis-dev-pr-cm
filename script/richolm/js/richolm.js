@@ -858,6 +858,7 @@ function deselectAllElements(){
   /*svg.selectAll(".link.selected")
     .transition()
     .style("visibility", "hidden");*/
+  $("#conceptVisSvg").show();
 
   svg.selectAll(".nodename")
     .transition()
@@ -1437,9 +1438,7 @@ function loadDynamicData_cb(graph){
 
 
 function initConceptVis(uiCMVisId){
-
-  removeAll();
-
+  //removeAll();
   if(uiCMVisId=="bipartite"){
     initBipartite();
   }else if(uiCMVisId=="conceptMatrix"){
@@ -1461,6 +1460,7 @@ function initConceptVis(uiCMVisId){
   }
   //Hide the bipartite OLM if kcMapMode is -1 (ent_parameters in aggregate db)
   if(state.args.kcMapMode==-1){
+    console.log("Hiding concept map visualization ...");
     $("div#div-kcmap").hide();
     $("#kcs_act_info").hide();
 
@@ -2583,6 +2583,8 @@ function packageHierarchy(classes) {
 
 
 function initBipartite(){
+    removeAll();
+
     $(".btn-conceptMatrix").hide();
     $(".btn-bipartite").show();
 
@@ -2627,13 +2629,16 @@ function initBipartite(){
               if(data.configprops.agg_kc_student_modeling=="bn" || state.args.uiTBarGrpVis){
                 return 340;//two set of bars use more space
               }else{
-                return 280;
+                return 290;
               }
             }) 
             .attr("pointer-events", "all")
             //.style("margin-top","-55px")//commented by @Jordan
             .append('g')
             .attr("width", "100%");//added by jbarriapineda
+    
+     var bipartite = $("svg#conceptVisSvg");
+     if (actLstShow) bipartite.appendTo("div#div-kcmap");
 
           /*var  fakeNode = svg.selectAll("g.fakeNode");
           fakeNode = fakeNode.data(groups);
@@ -2762,52 +2767,10 @@ function initBipartite(){
            //         offsetLeft=13;
            //       }
            //       return barChartLeftPos-this.getComputedTextLength()-offsetLeft;});
-			
-		   if(data.configprops.agg_kc_student_modeling=="cumulate"){//@Kamil
-  			svg.append("text") 
-  				   .attr("class","y-axis-label")
-  				   .text("Estimated level of knowledge (0%)")
-  				   .attr("x",barChartLeftPos-28)
-  				   .attr("y",yStartBipartite-12);
-
-  			  svg.append("text") 
-  				   .attr("class","y-axis-label")
-  				   .text("Estimated level of knowledge (100%)")
-  				   .attr("x",barChartLeftPos-25)
-  				   .attr("y",yStartBipartite-bipartiteBarScale(1)-20);
-
-  			  svg.selectAll(".y-axis-label")
-  				.call(wrap,55);
-  		   
-  		   } else {
-          if(data.configprops.agg_kc_student_modeling=="bn"){
-  			    //Code added by @Jordan for rec_exp
-  			    svg.append("text") 
-  				   .attr("class","y-axis-label")
-  				   .text("Min prob. of mastery (0%)")
-  				   .attr("x",barChartLeftPos-25)
-  				   .attr("y",yStartBipartite+bipartiteBarScale(1)+15);
-
-    			  svg.append("text") 
-    				   .attr("class","y-axis-label")
-    				   .text("Uncertain prob. of mastery (50%)")
-    				   .attr("x",barChartLeftPos-28)
-    				   .attr("y",yStartBipartite-12);
-
-    			  svg.append("text") 
-    				   .attr("class","y-axis-label")
-    				   .text("Max prob. of mastery (100%)")
-    				   .attr("x",barChartLeftPos-25)
-    				   .attr("y",yStartBipartite-bipartiteBarScale(1)-20);
-
-  			    svg.selectAll(".y-axis-label")
-  				    .call(wrap,55);
-            }
-  			   //end of code added by @Jordan for rec_exp
-  		   }
+         
 		
          //added by jbarriapineda
-         if(state.args.uiTBarModeGrpChk){
+         if(state.args.uiTBarGrpVis){
            svg.append("text") 
              .attr("class","trivial-group")
              .text("group")
@@ -3215,6 +3178,51 @@ function initBipartite(){
                     diagonalsClick(d.conceptId, d.cnt, "map"); 
                 });*///commented by jbarriapineda
 
+      if(data.configprops.agg_kc_student_modeling=="cumulate"){//@Kamil
+        svg.append("text") 
+              .attr("id","bottom-y-axis-label")
+              .attr("class","y-axis-label")
+              .text("Estimated knowledge level (0%)")
+              .attr("x",barChartLeftPos-28)
+              .attr("y",yStartBipartite-12)
+              .call(wrap,50);
+
+          svg.append("text") 
+              .attr("id","top-y-axis-label")
+              .attr("class","y-axis-label")
+              .attr("x",barChartLeftPos-25)
+              .attr("y",yStartBipartite-bipartiteBarScale(1)-20)
+              .text("Estimated knowledge level (100%)")
+              .call(wrap,50);
+            
+          
+          } else {
+          if(data.configprops.agg_kc_student_modeling=="bn"){
+            //Code added by @Jordan for rec_exp
+            svg.append("text") 
+              .attr("class","y-axis-label")
+              .attr("x",barChartLeftPos-25)
+              .attr("y",yStartBipartite+bipartiteBarScale(1)+15)
+              .text("Min prob. of mastery (0%)")
+              .call(wrap,55);
+
+            svg.append("text") 
+                .attr("class","y-axis-label")
+                .attr("x",barChartLeftPos-28)
+                .attr("y",yStartBipartite-12)
+                .text("Uncertain prob. of mastery (50%)")
+                .call(wrap,55);
+
+            svg.append("text") 
+                .attr("class","y-axis-label")
+                .attr("x",barChartLeftPos-25)
+                .attr("y",yStartBipartite-bipartiteBarScale(1)-20)
+                .text("Max prob. of mastery (100%)")
+                .call(wrap,55);			    
+            }
+            //end of code added by @Jordan for rec_exp
+          }
+
           // @@@@ JULIO
     if(state.args.uiShowHelp){
       svg.
@@ -3322,6 +3330,7 @@ function createFakeLinks(){
 
 //added by Haoran Zhao
 function inituiCMVis(settings,uiCMVisIdOut){
+  console.log(settings);
   uiCMVisId=uiCMVisIdOut;
   gridSetting = settings;
 
@@ -3366,7 +3375,7 @@ function inituiCMVis(settings,uiCMVisIdOut){
      maxminTemp[j]=x;
   }
 
-  barChartLeftPos = svgGetMaxTextBB(resNames).width;//d3.min(maxminTemp)-sqW/2;
+  barChartLeftPos = 55;//svgGetMaxTextBB(resNames).width - 35;//d3.min(maxminTemp)-sqW/2;
   barChartRightPos = d3.max(maxminTemp)+sqW*2+50;
   
   initConceptVis(uiCMVisId);
@@ -3583,7 +3592,7 @@ function removeAll(){
 }
 
 
-// @@@@ here the redraww  shit methods
+// @@@@ here the redraw methods
 
 //-----------------------------------------------------------------------------------
 //open the window with the selected question
@@ -5805,7 +5814,7 @@ function createKcsInfo(){
       .attr("class","label-kc")
       .attr("x",(3.5*gwidth) / 5 + margin.left)
       .attr("y",(gheight + margin.top) / 2 +40)
-      .text("New concepts")
+      .text("New Concepts")
       //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
       .call(wrap,40);
 
@@ -5973,6 +5982,8 @@ function wrap(text, width) {
         while (word = words.pop()) {
             line.push(word);
             tspan.text(line.join(" "));
+            //console.log(line.join(" "));
+            //console.log(tspan.node().getComputedTextLength());
             if (tspan.node().getComputedTextLength() > width) {
                 line.pop();
                 tspan.text(line.join(" "));
@@ -5983,10 +5994,12 @@ function wrap(text, width) {
                             .attr("dy", ++lineNumber * lineHeight + dy + "em")
                             .style("text-anchor","middle")
                             .text(word);
+                //console.log(line);
             }
         }
     });
 }
+
 
 //added by jbarriapineda
 function reorderBipartiteBars(){
@@ -6031,43 +6044,54 @@ function reorderBipartiteBars(){
 
 //added by jbarriapineda
 function redrawBipartite(){
-  $("svg#conceptVisSvg").remove();
+  
   $("#kcmap-group-selection").remove();
   if(uiCMVisId=="bipartite"){
-    console.log("Redraw bipartite");
-    $.get( "http://pawscomp2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp, function(kcs_data) {
-      // var item_kc_estimates = kcs_data["item-kc-estimates"]
-      // for (var i=0;i<item_kc_estimates.length;i++){
-      //   var kc_name = item_kc_estimates[i]["name"];
-      //   kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
-      //   var kc_obj = data.kcs.find(kc => {
-      //     return kc.n === kc_name
-      //   });
-      //   if(kc_obj){
-      //     map_kcs_id_info[kc_obj.id] = kc_obj;
-      //   }
-      // }
-      // initBipartite();
-      //Delete elements which we do not have kc estimates from bn_general service - added by @Jordan
-      // for (var i=0;i<data.kcs.length;i++){
-      //   if (!(data.kcs[i].n in kcs_estimates)){
-      //     delete data.kcs[i];
-      //   }
-      // }
+    console.log("Redraw bipartite...");
+    if(data.configprops.agg_kc_student_modeling=="bn"){
+      $.get( "http://pawscomp2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp, function(kcs_data) {
+        // var item_kc_estimates = kcs_data["item-kc-estimates"]
+        // for (var i=0;i<item_kc_estimates.length;i++){
+        //   var kc_name = item_kc_estimates[i]["name"];
+        //   kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
+        //   var kc_obj = data.kcs.find(kc => {
+        //     return kc.n === kc_name
+        //   });
+        //   if(kc_obj){
+        //     map_kcs_id_info[kc_obj.id] = kc_obj;
+        //   }
+        // }
+        // initBipartite();
+        //Delete elements which we do not have kc estimates from bn_general service - added by @Jordan
+        // for (var i=0;i<data.kcs.length;i++){
+        //   if (!(data.kcs[i].n in kcs_estimates)){
+        //     delete data.kcs[i];
+        //   }
+        // }
 
-      data.kcs = data.kcs.filter(n => n);
-      
-      var item_kc_estimates = kcs_data["item-kc-estimates"]
-      for (var i=0;i<item_kc_estimates.length;i++){
-        var kc_name = item_kc_estimates[i]["name"];
-        kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
-        var kc_obj = data.kcs.find(kc => {
-          return kc.n === kc_name
-        });
-        if(kc_obj){
-          map_kcs_id_info[kc_obj.id] = kc_obj;
+        data.kcs = data.kcs.filter(n => n);
+        
+        var item_kc_estimates = kcs_data["item-kc-estimates"]
+        for (var i=0;i<item_kc_estimates.length;i++){
+          var kc_name = item_kc_estimates[i]["name"];
+          kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
+          var kc_obj = data.kcs.find(kc => {
+            return kc.n === kc_name
+          });
+          if(kc_obj){
+            map_kcs_id_info[kc_obj.id] = kc_obj;
+          }
         }
-      }
+        if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){
+          var kcMap = "bipartite";
+          uiCMVisId = kcMap;
+          //uiCMVisId = "interactivecm";
+          //$('#checkbox-'+kcMap).prop('checked', true);
+          inituiCMVis(CONST.vis.gridAbs,uiCMVisId);
+        }
+      }, "json" );
+
+    }else{
       if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){
         var kcMap = "bipartite";
         uiCMVisId = kcMap;
@@ -6075,15 +6099,7 @@ function redrawBipartite(){
         //$('#checkbox-'+kcMap).prop('checked', true);
         inituiCMVis(CONST.vis.gridAbs,uiCMVisId);
       }
-
-      // if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){
-      //   var kcMap = "bipartite";
-      //   uiCMVisId = kcMap;
-      //   //uiCMVisId = "interactivecm";
-      //   //$('#checkbox-'+kcMap).prop('checked', true);
-      //   inituiCMVis(CONST.vis.gridAbs,uiCMVisId);
-      // }
-    }, "json" );
+    }
   }
 }
 
