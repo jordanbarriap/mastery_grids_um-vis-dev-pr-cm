@@ -822,7 +822,7 @@ function actLstShow(doMe, doVs, doGrp) {
 
   // (0) Generate proactive recommendations in case km is the rec method that is invoked
   if(data.configprops.agg_proactiverec_method=="km"){
-    recommended_activities = generateKMRecommendations(topics_concepts, topic, data.topics, data.learners[0].state.kcs, data.kcs, 0.5);
+    recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[0].state.activities[topic.name],data.learners[0].state.kcs, data.kcs, 0.5);
 
     top_recommended_activities = recommended_activities.slice(0,3);
 
