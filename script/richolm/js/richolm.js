@@ -6071,6 +6071,7 @@ function redrawBipartite(){
 
         data.kcs = data.kcs.filter(n => n);
         
+         //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
         var item_kc_estimates = kcs_data["item-kc-estimates"]
         for (var i=0;i<item_kc_estimates.length;i++){
           var kc_name = item_kc_estimates[i]["name"];
@@ -6080,6 +6081,7 @@ function redrawBipartite(){
           });
           if(kc_obj){
             map_kcs_id_info[kc_obj.id] = kc_obj;
+            data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
           }
         }
         if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){

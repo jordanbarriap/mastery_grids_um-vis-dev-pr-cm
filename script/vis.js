@@ -349,7 +349,6 @@ function actDone_cb(rsp) {
   visAugmentData_addAvgRes   ([me]);
   
   var scaleMe =  // TODO: Make this scale thing more general.
-
       d3.scale.linear().
       domain(CONST.vis.gridAbs.scales.y).
       range(["#eeeeee"].concat(CONST.vis.colors.me[data.vis.color.binCount - 1]));
@@ -456,17 +455,17 @@ function actDone_cb(rsp) {
 		if(kc_obj){
 		  map_kcs_id_info[kc_obj.id] = kc_obj;
 		}
-	  }
+	}
 	  
 	  
 	  //@Jordan
 	  //Generate recommendations based on problematic concepts (added by @Jordan)
 	  if (data.configprops.agg_proactiverec_enabled){
-	  	  recommended_activities = [];
+	  	recommended_activities = [];
 		  map_topic_max_rank_rec_act = {};
 		  rank_recommended_activities = {};
 
-		  recommended_activities = generateRecommendations(data.topics, data.learners[0].state.kcs, data.kcs, 0.5, 0.5);
+		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[0].state.kcs, data.kcs, 0.5, 0.5);
 		  var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
 		  if (top_rec_list_first_index<0){
 			top_rec_list_first_index=0;
@@ -516,12 +515,14 @@ function actDone_cb(rsp) {
 			  });
 		  }
 		}
-	  }
+	}
 	 
 
 	if (data.configprops.agg_kc_student_modeling=="bn" | data.configprops.agg_kc_student_modeling=="cumulate"){
-	  redrawBipartite();
-	}
+    redrawBipartite();
+    console.log("Finished draw bipartite");
+  }
+  
 }
 
 
@@ -723,7 +724,6 @@ function actLoadRecOriginal() {
  * Shows the help window
  */
 function helpDialogShow(origin,x,y){
-    console.log("Help opened");
     $removeChildren(ui.vis.helpDlgTitle);
     if (origin === "") {helpTitle = ""; helpSrc = "";}
     //$$("span", ui.vis.helpDlgTitle, "help-title-text", "", helpTitle);
@@ -779,6 +779,8 @@ function helpDialogHide(){
 		  $("#conceptVisSvg").css("z-index","104");
 		}
 	}
+	
+    
 }
 
 // ------------------------------------------------------------------------------------------------------
@@ -817,6 +819,55 @@ function actLstShow(doMe, doVs, doGrp) {
   var res       = getRes();
   var resNames  = $map(function (x) { return x.name; }, data.resources.slice(1));
   var title     = "";  // "<span class=\"info\">Activities</span>";
+
+  // (0) Generate proactive recommendations in case km is the rec method that is invoked
+  if(data.configprops.agg_proactiverec_method=="km"){
+    recommended_activities = generateKMRecommendations(topics_concepts, topic, data.topics, data.learners[0].state.kcs, data.kcs, 0.5);
+
+    top_recommended_activities = recommended_activities.slice(0,3);
+
+    console.log("Top recommended activities:");
+    console.log(top_recommended_activities);
+        
+    //Here we get the maximum rank of the items recommended per topic
+    for(var i=0;i<top_recommended_activities.length;i++){
+      var rec_act_topic = top_recommended_activities[i]["topic"];
+      var rec_act_name  = top_recommended_activities[i]["name"];
+      var rec_act_id  = top_recommended_activities[i]["id"];
+      if (!(rec_act_topic in map_topic_max_rank_rec_act)){
+        map_topic_max_rank_rec_act[rec_act_topic] = i;
+      }
+      rank_recommended_activities[rec_act_id] = i;
+    }
+
+    //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
+    if(recommended_activities.length>0){
+        //Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
+        for(var j=0;j<recommended_activities.length;j++){
+          var rec_act_id  = recommended_activities[j]["id"];
+          if (rec_act_id in rank_recommended_activities){
+            recommended_activities[j]["isRecommended"]="1";
+          }else{
+            recommended_activities[j]["isRecommended"]="0";
+          }
+        }
+        var millisecondsDate = (new Date).getTime();
+        $.ajax({
+          type: "POST",
+          data :JSON.stringify({"usr":state.curr.usr,
+          "grp":state.curr.grp,
+          "sid":state.curr.sid,
+          "cid":state.curr.cid,
+          "sid":state.curr.sid,
+          "logRecId":millisecondsDate.toString(),
+          "recMethod":"bn-KM",
+          "recommendations":recommended_activities}),
+          url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+          contentType: "application/json"
+        });
+    }
+  }
+  
   
   $($$input("button", ui.vis.actLst.cont, "btn-act-lst-close", "small-btn", "close")).button().click(actLstHide);
   
@@ -946,7 +997,6 @@ function actLstShow(doMe, doVs, doGrp) {
 
   //Code added by @Jordan
   if (uiCMVisId=="interactivecm"){
-    var cmNameTemporal="Brasil, Rio";
     var cmName=data.topics[state.vis.topicIdx].name;
     var svgCM=d3.select("div#act-lst")//.append("svg")
       .append("div")
@@ -954,7 +1004,7 @@ function actLstShow(doMe, doVs, doGrp) {
       .append("svg")
       .attr("id","svg-kcmap");
       //.attr("width","100%")
-      //.attr("height","100%");//TODO: @Jordan detectar las coordenada exacta donde termina la parte superior de la pantalla y la parte derecha para asi ajustar el CM usando el maximo de area posible
+      //.attr("height","100%");//TODO: @Jordan detectar las coordenadas exacta donde termina la parte superior de la pantalla y la parte derecha para asi ajustar el CM usando el maximo de area posible
     
     var maxKcmap = ($(document).width() - ($(".svg-grid-act").offset().left + $(".svg-grid-act").outerWidth())-25);
     $('#div-kcmap').css('width',maxKcmap);
@@ -965,7 +1015,7 @@ function actLstShow(doMe, doVs, doGrp) {
 
     var kcLevel = []
 
-    drawConceptMapByName(svgCM,cmNameTemporal,kcLevel);
+    drawConceptMapByName(svgCM,cmName,kcLevel);
   }
   if (uiCMVisId=="circle"){
     var svgCM=d3.select("div#act-lst")//.append("svg")
@@ -1020,7 +1070,6 @@ function actLstShow(doMe, doVs, doGrp) {
   barWidth = Math.floor(barWidth);
   var x_coords_topic_kcs = [];
   var topic_kcs = d3.selectAll("rect.bar.active").each(function(d) {
-
     var x_bar_coord = parseFloat(d3.select(this).node().getBoundingClientRect().x);
     x_coords_topic_kcs.push(x_bar_coord);
   });
@@ -1037,6 +1086,7 @@ function actLstShow(doMe, doVs, doGrp) {
       .attr("x", x1 + (x2-x1)/2)
       .attr("y",maxBarHeight-10)
       .attr("font-weight","bold")
+      .text("Current topic: " + topic.name);
     d3.select(".concepts-frame-label").attr("transform",function(d){return "translate("+(-1*d3.select(this).node().getComputedTextLength()/2)+",-10)"});  
     
     var conceptsFrame = d3.select("#conceptVisSvg").select("g")
@@ -1057,40 +1107,45 @@ function actLstShow(doMe, doVs, doGrp) {
 
   $("#act-lst").append("<div id='overlay-act-lst'></div>");
 
-  if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_kc_student_modeling=="cumulate"){
-    d3.selectAll("g.grid-cell-outter").each( function(d, i){
-		var current_topic = data.topics[d.topicIdx]
-		var mg_activities = current_topic ? current_topic.activities:undefined;
-		var data_resource = data.resources[d.resIdx]
-		var data_resource_id = data_resource ? data_resource.id:undefined;
-		var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
-		var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
-		//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
-		if(mg_activity) {
-			var act_id = mg_activity.id
-			var act_name = d.actName;
-			var act_is_recommended = (act_id in rank_recommended_activities);
-			if(act_is_recommended){
-			  
-			  let recOrderedListData = $('.recommendation[data-act-id="' + act_id +'"').data('activity')
-			  recOrderedListData["actIdx"] = d.actIdx;
-			  recOrderedListData["topicIdx"] = d.topicIdx;
-			  recOrderedListData["resIdx"] = d.resIdx;
-				
-			  d3.select(this).classed("recommended_act", true);
-			  d3.select(this).append("svg:image")
-				.attr('x', 8)
-				.attr('y', 2)
-				.attr('width', scaleRecommendationStar(rank_recommended_activities[act_id]))
-				.attr('height', scaleRecommendationStar(rank_recommended_activities[act_id]))
-				.attr("xlink:href", function(d){
-					return "./img/star.png";
-			  })
-        .style("pointer-events","none");
-			};
-		}
-		
-    });
+  
+
+  if(data.configprops.agg_proactiverec_enabled){
+    
+    if((data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_method=="remedial") || (data.configprops.agg_kc_student_modeling=="bn" && data.configprops.agg_proactiverec_method=="km")){
+      d3.selectAll("g.grid-cell-outter").each( function(d, i){
+      var current_topic = data.topics[d.topicIdx]
+      var mg_activities = current_topic ? current_topic.activities:undefined;
+      var data_resource = data.resources[d.resIdx]
+      var data_resource_id = data_resource ? data_resource.id:undefined;
+      var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
+      var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
+      //var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
+      if(mg_activity) {
+        var act_id = mg_activity.id
+        var act_name = d.actName;
+        var act_is_recommended = (act_id in rank_recommended_activities);
+        if(act_is_recommended){
+          
+          let recOrderedListData = $('.recommendation[data-act-id="' + act_id +'"').data('activity')
+          recOrderedListData["actIdx"] = d.actIdx;
+          recOrderedListData["topicIdx"] = d.topicIdx;
+          recOrderedListData["resIdx"] = d.resIdx;
+          
+          d3.select(this).classed("recommended_act", true);
+          d3.select(this).append("svg:image")
+          .attr('x', 8)
+          .attr('y', 2)
+          .attr('width', scaleRecommendationStar(rank_recommended_activities[act_id]))
+          .attr('height', scaleRecommendationStar(rank_recommended_activities[act_id]))
+          .attr("xlink:href", function(d){
+            return "./img/star.png";
+          })
+          .style("pointer-events","none");
+        };
+      }
+      
+      });
+    }
   }
 
   //Show help if this is the first time they open the activity in their browser (with the new version)
@@ -1105,7 +1160,7 @@ function actLstShow(doMe, doVs, doGrp) {
 		
 	  }
   }
-
+  
   
   //end of code added by @Jordan for exp_rec
 
@@ -1199,6 +1254,7 @@ function actOpen(resId, actIdx) {
       var display_width = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
       var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
+      
     ui.vis.act.frame.style.width = display_width + "px";
       ui.vis.act.frame.style.height = display_height + "px";
 
@@ -1906,6 +1962,7 @@ function loadData_cb(res) {
     data_topics[i].concepts.sort((a,b) => (a.weight > b.weight) ? -1 : ((b.weight > a.weight) ? 1 : 0));
     var covered_concepts = data_topics[i].concepts.filter(function(el){return el.weight>0 & !(el.id in map_concept_id_topic);});
     var topic_id=data_topics[i].id;
+    var topic_order = i;
    
     for (var j=0;j<covered_concepts.length;j++){
       var topic_concept={};
@@ -1913,6 +1970,7 @@ function loadData_cb(res) {
       map_concept_id_topic[concept_id]=topic_id;
       topic_concept["topicId"] = topic_id;
       topic_concept["conceptId"] = concept_id;
+      topic_concept["topicOrder"] = topic_order;
       topics_concepts.push(topic_concept);
     }
   }
@@ -1995,10 +2053,13 @@ function loadData_cb(res) {
   // added by @Jordan
   // (5) Display concept knowledge visualization
   // Get kcs estimates fron BN_general student model developed by @Roya
+  console.log("Drawing concept visualization...");
   if(data.configprops.agg_kc_student_modeling){
     if(data.configprops.agg_kc_student_modeling=="bn"){
       $.get( "http://pawscomp2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp, function(kcs_data) {
-        var item_kc_estimates = kcs_data["item-kc-estimates"]
+        
+      //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
+      var item_kc_estimates = kcs_data["item-kc-estimates"]
         for (var i=0;i<item_kc_estimates.length;i++){
           var kc_name = item_kc_estimates[i]["name"];
           kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
@@ -2007,10 +2068,12 @@ function loadData_cb(res) {
           });
           if(kc_obj){
             map_kcs_id_info[kc_obj.id] = kc_obj;
+            data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
           }
         }
+
+        
         if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){
-          console.log("Bipartite test");
           var kcMap = "bipartite";
           uiCMVisId = kcMap;
           //uiCMVisId = "interactivecm";
@@ -2052,81 +2115,84 @@ function loadData_cb(res) {
         inituiCMVis(CONST.vis.gridAbs,uiCMVisId);
       }
       //@Jordan
-      //Generate recommendations based on problematic concepts (added by @Jordan)
       if(data.configprops.agg_proactiverec_enabled){
-      	  recommended_activities = [];
+      	recommended_activities = [];
 	      map_topic_max_rank_rec_act = {};
-	      rank_recommended_activities = {};
+        rank_recommended_activities = {};
+        
+        //Generate recommendations based on problematic concepts (added by @Jordan)
+        if(data.configprops.agg_proactiverec_method=="remedial"){
+          recommended_activities = generateRemedialRecommendations(data.topics, data.learners[0].state.kcs, data.kcs, 0.5, 0.5);
 
-	      recommended_activities = generateRecommendations(data.topics, data.learners[0].state.kcs, data.kcs, 0.5, 0.5);
-	      var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
-	      if (top_rec_list_first_index<0){
-	        top_rec_list_first_index=0;
-	      }
-	      var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
-	      if(top_rec_list_last_index > recommended_activities.length-1){
-	        top_rec_list_last_index = recommended_activities.length-1;
-	      }
-	      top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
-	      
-	      
-	      //Here we get the maximum rank of the items recommended per topic
-	      for(var i=0;i<top_recommended_activities.length;i++){
-	        var rec_act_topic = top_recommended_activities[i]["topic"];
-	        var rec_act_name  = top_recommended_activities[i]["name"];
-	        var rec_act_id  = top_recommended_activities[i]["id"];
-	        if (!(rec_act_topic in map_topic_max_rank_rec_act)){
-	          map_topic_max_rank_rec_act[rec_act_topic] = i;
-	        }
-	        rank_recommended_activities[rec_act_id] = i;
-	      }
+          var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
+          if (top_rec_list_first_index<0){
+            top_rec_list_first_index=0;
+          }
+          var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
+          if(top_rec_list_last_index > recommended_activities.length-1){
+            top_rec_list_last_index = recommended_activities.length-1;
+          }
+          top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+          
+          
+          //Here we get the maximum rank of the items recommended per topic
+          for(var i=0;i<top_recommended_activities.length;i++){
+            var rec_act_topic = top_recommended_activities[i]["topic"];
+            var rec_act_name  = top_recommended_activities[i]["name"];
+            var rec_act_id  = top_recommended_activities[i]["id"];
+            if (!(rec_act_topic in map_topic_max_rank_rec_act)){
+              map_topic_max_rank_rec_act[rec_act_topic] = i;
+            }
+            rank_recommended_activities[rec_act_id] = i;
+          }
 
-	      //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
-	      if(recommended_activities.length>0){
-	          //Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
-	          for(var j=0;j<recommended_activities.length;j++){
-	            var rec_act_id  = recommended_activities[j]["id"];
-	            if (rec_act_id in rank_recommended_activities){
-	              recommended_activities[j]["isRecommended"]="1";
-	            }else{
-	              recommended_activities[j]["isRecommended"]="0";
-	            }
-	          }
-	          var millisecondsDate = (new Date).getTime();
-	          $.ajax({
-	            type: "POST",
-	            data :JSON.stringify({"usr":state.curr.usr,
-	             "grp":state.curr.grp,
-	             "sid":state.curr.sid,
-	             "cid":state.curr.cid,
-	             "sid":state.curr.sid,
-	             "logRecId":millisecondsDate.toString(),
-	             "recMethod":"remedialCUMULATE",
-	             "recommendations":recommended_activities}),
-	            url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
-	            contentType: "application/json"
-	          });
-	      }
+          //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
+          if(recommended_activities.length>0){
+              //Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
+              for(var j=0;j<recommended_activities.length;j++){
+                var rec_act_id  = recommended_activities[j]["id"];
+                if (rec_act_id in rank_recommended_activities){
+                  recommended_activities[j]["isRecommended"]="1";
+                }else{
+                  recommended_activities[j]["isRecommended"]="0";
+                }
+              }
+              var millisecondsDate = (new Date).getTime();
+              $.ajax({
+                type: "POST",
+                data :JSON.stringify({"usr":state.curr.usr,
+                "grp":state.curr.grp,
+                "sid":state.curr.sid,
+                "cid":state.curr.cid,
+                "sid":state.curr.sid,
+                "logRecId":millisecondsDate.toString(),
+                "recMethod":"remedialCUMULATE",
+                "recommendations":recommended_activities}),
+                url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+                contentType: "application/json"
+              });
+          }
 
-	      d3.selectAll("g.grid-cell-outter").each( function(d){
-	          var topic_name = d3.select(this).attr("topic");
-	         
-	          var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
-	          if(topic_has_recommended_acts){
-	            d3.select(this).append("svg:image")
-	              .attr('x', 8)
-	              .attr('y', 2)
-	              .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-	              .attr('height', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-	              .attr("max_rec_rank_act",map_topic_max_rank_rec_act[topic_name])
-	              .attr("class","rec_topic")
-	              .attr("xlink:href", function(d){
-	                  return "./img/star.png";
-	            })
-	              .style("pointer-events","none");
-	          };
-	      });
+          d3.selectAll("g.grid-cell-outter").each( function(d){
+              var topic_name = d3.select(this).attr("topic");
+            
+              var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
+              if(topic_has_recommended_acts){
+                d3.select(this).append("svg:image")
+                  .attr('x', 8)
+                  .attr('y', 2)
+                  .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
+                  .attr('height', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
+                  .attr("max_rec_rank_act",map_topic_max_rank_rec_act[topic_name])
+                  .attr("class","rec_topic")
+                  .attr("xlink:href", function(d){
+                      return "./img/star.png";
+                })
+                  .style("pointer-events","none");
+              };
+          });
 
+        }
       }
 
  
@@ -2143,19 +2209,8 @@ function loadData_cb(res) {
 		  
 		}
     }
-
-
-    //Show help if this is the first time they open the activity in their browser (with the new version)
-    if(!Cookies.get("tutorial-vis")){
-      Cookies.set('tutorial-vis', 'shown', { expires: 90});   
-      $("#helpButton-vis").d3Click();
-      $("#help-dlg").offset($("#helpButton-vis").position());
-      $("#overlay").css("display","block");
-      $("#help-dlg").css("z-index","105");
-      $("#conceptVisSvg").css("z-index","104");
-    }
-    }, "json" );
-
+  }
+  
   
 
   //end of code added by @Jordan
@@ -2493,9 +2548,7 @@ function stateArgsSet02() {
   state.args.difficultyMsg = false;
   state.args.effortMsg = false;
   state.args.recExp = false;
-
   state.args.kcResouceIds = data.resources.map(res => res.id)
-
   //end of code added by @Jordan
   
   // @@@@
@@ -2539,9 +2592,7 @@ function stateArgsSet02() {
       state.args.difficultyMsg          = (data.vis.ui.params.group.difficultyMsg != undefined ? data.vis.ui.params.group.difficultyMsg : state.args.difficultyMsg);
       state.args.effortMsg              = (data.vis.ui.params.group.effortMsg != undefined ? data.vis.ui.params.group.effortMsg : state.args.effortMsg);
       state.args.recExp                 = (data.vis.ui.params.group.recExp != undefined ? data.vis.ui.params.group.recExp : state.args.recExp);//added for rec_exp
-
 	  state.args.kcResouceIds           = (data.vis.ui.params.group.kcResouceIds != undefined ? data.vis.ui.params.group.kcResouceIds : state.args.kcResouceIds);
-
       //end of code added by @Jordan
   }
   if(data.vis.ui.params.user){
@@ -2580,9 +2631,7 @@ function stateArgsSet02() {
       state.args.difficultyMsg          = (data.vis.ui.params.user.difficultyMsg != undefined ? data.vis.ui.params.user.difficultyMsg : state.args.difficultyMsg);
       state.args.effortMsg              = (data.vis.ui.params.user.effortMsg != undefined ? data.vis.ui.params.user.effortMsg : state.args.effortMsg);
       state.args.recExp                 = (data.vis.ui.params.user.recExp != undefined ? data.vis.ui.params.user.recExp : state.args.recExp);//added for rec_exp
-
 	  state.args.kcResouceIds			= (data.vis.ui.params.user.kcResouceIds != undefined ? data.vis.ui.params.user.kcResouceIds : state.args.kcResouceIds);
-
       //end of code added by @Jordan
   }
   
@@ -3584,7 +3633,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   // (1) Header:
   // Title:
   
-
   if(data.configprops.agg_proactiverec_enabled && !title) { //Added for proactive recommendation, need to be checked by a parameter
 	  var titleTr = $$("tr", tbl);
 	  var recommendationTitle = $$("td",titleTr, null, "rec-title", 'Recommended Activities')
@@ -3593,7 +3641,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 	  $setAttr(allActivitiesTitle, { colspan: 1 });
 	  
 	  $$("td",titleTr);
-
   }
   
   
@@ -3638,12 +3685,12 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   
   var tr = $$("tr", tbl); 
   
-
    if(data.configprops.agg_proactiverec_enabled && !title) { //Added for proactive recommendation, need to check with a parameter but should work only for topic based grid, not the main one. Title is the only way that I could find @Kamil
     var recommendationtr = $$("td", tr, null, 'rec-list');
     
-	if(data.configprops.agg_kc_student_modeling=="cumulate"){
-		if(top_recommended_activities && top_recommended_activities.length > 0) {
+	if((data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_method=="remedial") || data.configprops.agg_kc_student_modeling=="bn" && data.configprops.agg_proactiverec_method=="km"){
+
+    if(top_recommended_activities && top_recommended_activities.length > 0) {
 			var orderedList = document.createElement('ol');
 			$(orderedList).attr('id', 'rec-list');
 			  
@@ -3701,7 +3748,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 		}
 	}
     
-
   
     
    }
@@ -3951,10 +3997,8 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           attr("topic", function(d){
               //return data.topics[d.topicIdx].id;
               if (d.topicIdx==0) return "AVG";
-
               //return data.topics.filter(function(elem,i){return i==d.topicIdx || elem.order==d.topicIdx;})[0].id;
               return data.topics.filter(function(elem,i){return i==d.topicIdx;})[0].id;
-
           }).
           attr("transform", function (d,i) {
             if ($.inArray(i, gridData.sepX) !== -1) { sqX += settings.sepX; }
@@ -4098,7 +4142,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           if ( !isNaN(d.valGrp) && d.valGrp != -1 ) tooltip += 'Group ' + getRepLvl().name +' : '+ parseFloat(Math.round(Math.min(d.valGrp,1) * 100)).toFixed(0)+'%';
           return tooltip; 
       });
-
 	  
 	if(state.args.uiIncenCheck){
       g.append("svg:image")
@@ -4123,7 +4166,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 			           }
             }});
     }
-
   
   // Grid cells -- Sequencing:
     if (s.doShowSeq) {
@@ -4346,9 +4388,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
       var square = getSquareOfGivenActivityData(rec_data);
         
       ehVisGridBoxClick(rec_data, d3.select(square));
-
     }).hover(function(e) {
-
       var rec_data = $(this).data('activity');
       var square = getSquareOfGivenActivityData(rec_data);
       
@@ -4403,25 +4443,27 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           }(mini.svg));
     
   }
-
-  d3.selectAll("g.grid-cell-outter").each( function(d){
-    var topic_name = d3.select(this).attr("topic");
-   
-    var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
-    if(topic_has_recommended_acts){
-      d3.select(this).append("svg:image")
-        .attr('x', 8)
-        .attr('y', 2)
-        .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-        .attr('height', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-        .attr("max_rec_rank_act",map_topic_max_rank_rec_act[topic_name])
-        .attr("class","rec_topic")
-        .attr("xlink:href", function(d){
-            return "./img/star.png";
-      })
-        .style("pointer-events","none");
-    };
-});
+  if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial"){
+    d3.selectAll("g.grid-cell-outter").each( function(d){
+      var topic_name = d3.select(this).attr("topic");
+     
+      var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
+      if(topic_has_recommended_acts){
+        d3.select(this).append("svg:image")
+          .attr('x', 8)
+          .attr('y', 2)
+          .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
+          .attr('height', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
+          .attr("max_rec_rank_act",map_topic_max_rank_rec_act[topic_name])
+          .attr("class","rec_topic")
+          .attr("xlink:href", function(d){
+              return "./img/star.png";
+          })
+          .style("pointer-events","none");
+        };
+    });
+  }
+  
   
   return svg;
 }
@@ -4578,7 +4620,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
 
     //Added by @Jordan for rec_exp
     if(data.configprops.agg_proactiverec_enabled && state.args.recExp){
-
       var seq           = grpOutterNode.__data__["seq"];
       var isRecommended = seq>0 && actIdx!=-1;
       var recScore      = -1;
@@ -4652,7 +4693,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
     }
 
     console.log("The value of the percent for the gauge is: "+percent);
-
     if(resource=="Challenges"){
       d3.select("#label-prob-act").text("Probability of solving this challenge: "+(Math.round(percent*1000) / 10)+"%").call(wrap,120);
     }
@@ -4680,7 +4720,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
           var act = acts[acts_names[j]]; 
           var percent = kcs_estimates[acts_names[j]];
           if(percent == undefined){
-
             var estimate = -1;
             if (!acts_names[j] in actId_kcs){
               estimate = 0;
@@ -4713,7 +4752,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
 
     //var difficulty = percent;
     var probability = percent;
-
 
     if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_kc_student_modeling=="cumulate"){
       var current_topic = data.topics[topicIdx];
@@ -4757,7 +4795,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
           "rec_score"   + CONST.log.sep02 + rec_score;
         }
 
-
         //Logs the activity mouseover in ent_tracking (aggregate db)
         log(
           act_mouseover_log,     
@@ -4791,7 +4828,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
 
   }else{
     //if (state.vis.topicIdx==-1){
-
+   
      var actLstShown=true;
      if(ui.vis.actLst.cont.style.display == 'none'){
        if(topic.order!=0){
@@ -4807,9 +4844,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
        "cell-topic-id"    + CONST.log.sep02 + topic.id                    + CONST.log.sep01 +
        "cell-resource-id" + CONST.log.sep02 + res.id                      + CONST.log.sep01 +
        //"cell-activity-id" + CONST.log.sep02 + act.id                      + CONST.log.sep01 +
-
        "act-lst-shown"    + CONST.log.sep02 + actLstShown                 + CONST.log.sep01 +
-
        "sequencing"       + CONST.log.sep02 + grpInner.data()[0].seq +
                             CONST.log.sep01 + usrState + CONST.log.sep01 + grpState         + CONST.log.sep01 +
        //"activeVis"        + CONST.log.sep02 + uiCMVisId                   + CONST.log.sep01 +
@@ -5180,6 +5215,7 @@ function ehVisGridBoxMouseOut(e, grpOutter, miniSvg) {
 
 // ------------------------------------------------------------------------------------------------------
 function ehVisGridBoxClick(e, grpOutter) {
+  
   if(d3.event) //@Kamil, need to check if there is any event
 	  d3.event.stopPropagation();//added by @Jordan for preventing this click to be detected as a body click
 
@@ -5199,10 +5235,8 @@ function ehVisGridBoxClick(e, grpOutter) {
   var gridName      = grpOutter.attr("data-grid-name");
   var row           = grpOutter.attr("data-series-idx");
   //var topic         = data.topics[topicIdx];
-
   var topic         = data.topics[topicIdx];
   //var topic         = data.topics.filter(function(d){return d.order==topicIdx;})[0];
-
   var res           = data.resources[resIdx];
   var act           = (actIdx === -1 ? null : topic.activities[res.id][actIdx]);
 
@@ -5349,9 +5383,6 @@ function ehVisGridBoxClick(e, grpOutter) {
         }
         percent = percent/actId_kcs[actId].length;//percentage is the weighted avg of the number of kcs according to their category (see UMAP'18 paper for equation)- added by @Jordan
       }
-      
-
-      
 
       percent = kcs_estimates[actId];
 
@@ -5486,7 +5517,6 @@ function ehVisGridBoxClick(e, grpOutter) {
           true
         );
       }
-
       //End of code added by @Jordan
       
               
@@ -5881,7 +5911,6 @@ function generateHelp(origin){
                 "<td style='background-color:#006d2c; padding:2px 5px 2px 5px;'>&nbsp;</td>" +
                 "<td style='padding:2px 0px 2px 5px;'>100%</td>" +
                 "</tr>";
-
 			helpText += "</table>";
 			
 		}
@@ -5897,7 +5926,6 @@ function generateHelp(origin){
 		}
 		
 		ui.vis.helpDlg.style.height = height + "px";
-
         //"#edf8e9","#c7e9c0","#a1d99b","#74c476","#31a354","#006d2c"
     }
     if(origin === "one-res-mevsgrp-h"){
@@ -5997,7 +6025,6 @@ function generateHelp(origin){
       // helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>My progress on concepts</h3>" +
       //              "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars grow and become darker green. Mouse over a concept to highlight its name.</p>";
 
-
 	  if(data.configprops.agg_kc_student_modeling=="cumulate"){
       if(data.configprops.agg_proactiverec_method=="remedial"){
   		  helpText = "<h4 style='margin: 0px; padding: 0px 10px 0px 0px;'>Knowledge Level and Success Rate of Concepts</h4>" +
@@ -6036,7 +6063,7 @@ function generateHelp(origin){
         ui.vis.helpDlg.style.height = "250px";
       }
 	  }
-
+	  
     }
     if(origin === "bipartite-group"){
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Group progress on concepts</h3>" +
