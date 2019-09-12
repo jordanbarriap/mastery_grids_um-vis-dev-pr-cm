@@ -822,7 +822,7 @@ function actLstShow(doMe, doVs, doGrp) {
 
   // (0) Generate proactive recommendations in case km is the rec method that is invoked
   if(data.configprops.agg_proactiverec_method=="km"){
-    recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[0].state.activities[topic.name],data.learners[0].state.kcs, data.kcs, 0.5);
+    recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[0].state.activities, data.learners[0].state.kcs, data.kcs, 0.5);
 
     top_recommended_activities = recommended_activities.slice(0,3);
 
@@ -1889,6 +1889,7 @@ function loadData_cb(res) {
   data.kcs = data.kcs.filter(function(kc){return all_resource_kcs.has(kc.id)})
   //end @Kamil
 
+  //Calculate concept weights per topic
   for(var i=0;i<data.kcs.length;i++){
     var kc_data = data.kcs[i];
     kc_data.topics = {};
@@ -1899,7 +1900,6 @@ function loadData_cb(res) {
     concept_weights[kc_data.id]=kc_data;
   }
 
-  
   for(var i=0;i<data_topics.length;i++){
     topic_data = data_topics[i];
     var topic_id = topic_data.id;
@@ -1971,6 +1971,9 @@ function loadData_cb(res) {
       topic_concept["topicId"] = topic_id;
       topic_concept["conceptId"] = concept_id;
       topic_concept["topicOrder"] = topic_order;
+      topic_concept["topicActs"] = data_topics[i].total_acts;
+      topic_concept["conceptActs"] = concept_weights[concept_id].topics[topic_id]["n_acts"];
+      //topic_concept["conceptInfo"] = covered_concepts[j];
       topics_concepts.push(topic_concept);
     }
   }

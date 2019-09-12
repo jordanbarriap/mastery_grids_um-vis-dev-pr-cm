@@ -144,7 +144,7 @@ Peter's explanation text:
  * Generate a list of recommended content list based on the balance between the knowledge of
  * prerequisite and outcome concepts
  */
-function generateKMRecommendations(topics_concepts, topic, topic_activities, kc_levels, kc_topic_weights, weight_kcs){
+function generateKMRecommendations(topics_concepts, topic, topics_activities, kc_levels, kc_topic_weights, weight_kcs){
 	//Define the outcome and prerequisites for the current topic
 	var topicOrder = -1;
 	var topic_name = topic.name;
@@ -154,6 +154,7 @@ function generateKMRecommendations(topics_concepts, topic, topic_activities, kc_
 	if (topicInfo && topicInfo.length>0){
 		topicOrder = topicInfo[0].topicOrder;
 	}
+	var topic_activities = topics_activities[topic_name];
 
 	var prerequisites = []
 	prerequisites = topics_concepts.filter(function(d){return d.topicOrder < topicOrder});
@@ -174,6 +175,41 @@ function generateKMRecommendations(topics_concepts, topic, topic_activities, kc_
 	var set_outcomes = new Set(outcomes.map(function(d){ return d.conceptId}));
 	console.log("Set of outcomes:");
 	console.log(set_outcomes);
+
+	// Calculate the weights for outcomes and prerequisite concepts using TF-IDF (boolean in this case as we do not have number of times that concept appears in an activity)
+	// starting from idf values
+	var idf_values = {};
+	var total_acts_prev_topics = topics_concepts.filter(function(d){return d.topicOrder<=topicOrder;}).map(function(d){return d.topicActs;}).reduce(function(a, b) { return a + b; });
+	for(var i=0;i<prerequisites.length;i++){
+		var prerequisite = prerequisites[i];
+		var prerequisite_id = prerequisite.conceptId;
+		var prerequisite_prev_appereances = topics_concepts.filter(function(d){return (d.topicOrder<=topicOrder && d.conceptId==prerequisite_id)});
+		var num_acts_prerequisite = prerequisite_prev_appereances.map(function(d){return d.conceptActs}).reduce(function(a, b) { return a + b; });
+		var idf_concept =  Math.log(total_acts_prev_topics/num_acts_prerequisite);
+	}
+
+	for(var i=0;i<prerequisites.length;i++){
+		var prerequisite = prerequisites[i];
+		var prerequisite_id = prerequisite.conceptId;
+		var prerequisite_prev_appereances = topics_concepts.filter(function(d){return (d.topicOrder<=topicOrder && d.conceptId==prerequisite_id)});
+		var num_acts_prerequisite = prerequisite_prev_appereances.map(function(d){return d.conceptActs}).reduce(function(a, b) { return a + b; });
+		var idf_concept =  Math.log(total_acts_prev_topics/num_acts_prerequisite);
+		idf_values[prerequisite_id] = idf_concept;
+	}
+
+	for(var i=0;i<outcomes.length;i++){
+		var outcome = outcomes[i];
+		var outcome_id = outcome.conceptId;
+		var outcome_prev_appereances = topics_concepts.filter(function(d){return (d.topicOrder<=topicOrder && d.conceptId==outcome_id)});
+		var num_acts_outcome = outcome_prev_appereances.map(function(d){return d.conceptActs}).reduce(function(a, b) { return a + b; });
+		var idf_concept =  Math.log(total_acts_prev_topics/num_acts_outcome);
+		idf_values[outcome_id] = idf_concept;
+	}
+
+	console.log("Idf values:");
+	console.log(idf_values);
+   
+	//}
 
 	// var proficiency_threshold = .66;
 	// var filtered_kcs = kc_topic_weights.map(function(d){return d.id});
@@ -245,6 +281,8 @@ function generateKMRecommendations(topics_concepts, topic, topic_activities, kc_
 				if(overlap_non_attempted_outcomes_kcs.length>0 && act_progress<1){
 					//Total number of concepts needed for solving the problem / understanding the example
 					var total_kcs = 0;
+					var total_prerequisites = 0;
+					var total_outcomes = 0;
 	
 					//Variables needed for estimating the amount of knowledge already learned associated with prerequisite concepts
 					var prerequisites_mastery = 0;
@@ -260,41 +298,40 @@ function generateKMRecommendations(topics_concepts, topic, topic_activities, kc_
 						if (kc_id in kc_levels){ //Check if we have an estimation of the knowledge on that specific concept
 							//if a concept is a prerequisite for the topic, it adds its knowledge value to the amount of mastered prereq knowledge
 							if (set_prerequisites.has(kc_id)){
-								var prerequisite_weight = 1;
+								var prerequisite_weight = 1*idf_values[kc_id];
 								prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].k;
 								total_kcs = total_kcs + 1
 								weight_prerequisites = prerequisite_weight + weight_prerequisites
+								total_prerequisites = total_prerequisites + 1;
 							}else{
 								//if a concept is an outcome for the topic, it adds the amount of knowledge yet to be known for that concept
 								if(set_outcomes.has(kc_id)){
-									var outcome_weight = 1;
+									var outcome_weight = 1*idf_values[kc_id];
 									outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].k);
 									total_kcs = total_kcs + 1
 									weight_outcomes = outcome_weight + weight_outcomes
+									total_outcomes = total_outcomes + 1;
 								}
 							}
 						}
 					}		
 					if(weight_prerequisites>0){
-						rec_score = rec_score + prerequisites_mastery/weight_prerequisites;
+						rec_score = rec_score + total_prerequisites * prerequisites_mastery/weight_prerequisites;
 					}
 					if(weight_outcomes>0){
-						rec_score = rec_score + outcomes_lack_mastery/weight_outcomes;
+						rec_score = rec_score + total_outcomes * outcomes_lack_mastery/weight_outcomes;
 					}
-					rec_score=rec_score/2;
+					rec_score=rec_score/total_kcs;
 					
 					console.log("Rec score: "+rec_score);
 	
 					var rec_explanation = "This example is recommended because it present concepts that are new for you in the context of this topic";
 
-	
 					ranked_activity = Object.assign({}, activity);
 					ranked_activity["rec_score"] = rec_score;
 					ranked_activity["topic"] = topic_name;
 					ranked_activity["explanation"] = rec_explanation;
 					example_recommendations.push(ranked_activity);
-					// }
-					//end of Jordan's comment
 				}	
 			}
 			if(example_recommendations.length>0){
@@ -328,6 +365,8 @@ function generateKMRecommendations(topics_concepts, topic, topic_activities, kc_
 				if(act_progress<1){
 					//Total number of concepts needed for solving the problem / understanding the example
 					var total_kcs = 0;
+					var total_prerequisites =0;
+					var total_outcomes =0;
 
 					//Variables needed for estimating the amount of knowledge already learned associated with prerequisite concepts
 					var prerequisites_mastery = 0;
@@ -343,17 +382,19 @@ function generateKMRecommendations(topics_concepts, topic, topic_activities, kc_
 						if (kc_id in kc_levels){ //Check if we have an estimation of the knowledge on that specific concept
 							//if a concept is a prerequisite for the topic, it adds its knowledge value to the amount of mastered prereq knowledge
 							if (set_prerequisites.has(kc_id)){
-								var prerequisite_weight = 1;
+								var prerequisite_weight = 1*idf_values[kc_id];
 								prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].k;
 								total_kcs = total_kcs + 1
 								weight_prerequisites = prerequisite_weight + weight_prerequisites
+								total_prerequisites = total_prerequisites + 1;
 							}else{
 								//if a concept is an outcome for the topic, it adds the amount of knowledge yet to be known for that concept
 								if(set_outcomes.has(kc_id)){
-									var outcome_weight = 1;
+									var outcome_weight = 1*idf_values[kc_id];
 									outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].k);
 									total_kcs = total_kcs + 1
 									weight_outcomes = outcome_weight + weight_outcomes
+									total_outcomes = total_outcomes + 1;
 								}
 							}
 							// var kc_diff = kc_levels[kc_id]["diff"];
@@ -394,12 +435,12 @@ function generateKMRecommendations(topics_concepts, topic, topic_activities, kc_
 					// console.log("Outcomes weights: "+weight_outcomes);
 					
 					if(weight_prerequisites>0){
-						rec_score = rec_score + prerequisites_mastery/weight_prerequisites;
+						rec_score = rec_score + total_prerequisites * prerequisites_mastery/weight_prerequisites;
 					}
 					if(weight_outcomes>0){
-						rec_score = rec_score + outcomes_lack_mastery/weight_outcomes;
+						rec_score = rec_score + total_outcomes * outcomes_lack_mastery/weight_outcomes;
 					}
-					rec_score=rec_score/2;
+					rec_score=rec_score/total_kcs;
 					
 					console.log("Rec score: "+rec_score);
 
@@ -445,14 +486,11 @@ function generateKMRecommendations(topics_concepts, topic, topic_activities, kc_
 		}
 	}
 	//}
-
 	if(recommendations.length>0){
 		recommendations.sort(compareActivities);
 	}
-
 	//Delete the activities from the topics that were decided to not to be recommended
 	//recommendations = recommendations.filter(function(d){return !non_recommended_topics.includes(d.topic);});
-
 	// if(!condition_to_generate_recommendations){
 	// 	recommendations = [];
 	// }
