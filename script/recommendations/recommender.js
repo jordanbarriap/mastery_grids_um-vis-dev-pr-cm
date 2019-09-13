@@ -490,6 +490,8 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 						avg_k_prerequisite_concepts = avg_k_prerequisite_concepts + k_concept;
 					}
 
+					if(top_prerequisite_concepts.length<top_num_concepts) top_num_concepts=top_prerequisite_concepts.length;
+
 					var prerequisite_explanation = "";
 					if(top_prerequisite_concepts && top_prerequisite_concepts.length>0){
 						avg_k_prerequisite_concepts = avg_k_prerequisite_concepts/top_prerequisite_concepts.length;
