@@ -4646,6 +4646,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
       var seq           = grpOutterNode.__data__["seq"];
       var isRecommended = seq>0 && actIdx!=-1;
       var recScore      = -1;
+      $('div[id=rec-tooltip-content]').remove()
       if(isRecommended){
         recScore = seq;
         var explanationTxt = ""
@@ -4682,34 +4683,37 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
           }
         }
 
-        recTooltip.transition()    
+        $('#kcs_act_info').prepend(explanationTxt)
+
+        /*recTooltip.transition()    
           .duration(200)    
           .style("opacity",.95);    
         recTooltip.html(explanationTxt)
-          //.style("left", (d3.event.pageX) + "px")
           .style("left",grpOutter.node().getBoundingClientRect().x+"px")  
-          //.style("top", (d3.event.pageY - 60 - parseInt(d3.select("table.grid").style("height"))) + "px")
           .style("top",(grpOutter.node().getBoundingClientRect().y-d3.select("#act-lst").node().getBoundingClientRect().y-10)+"px")  
           .style("z-index","100");
-        recTooltip.moveToFront();
+        recTooltip.moveToFront();*/
       }
 	  
   		if(data.configprops.agg_proactiverec_method=="remedial" || data.configprops.agg_proactiverec_method=="km" ){//Changed by @Jordan before it was only data.configprops.agg_kc_student_modeling=="cumulate"
-  		  if(d3.select(grpOutterNode).classed('recommended_act')) {
+      $('div[id=rec-tooltip-content]').remove()
+        if(d3.select(grpOutterNode).classed('recommended_act')) {
   			  let recommended_activity_arr = top_recommended_activities.filter(rec_act => rec_act.name == e.actName || rec_act.id == e.id);
   			  if(recommended_activity_arr.length > 0) {
   				  var explanationTxt = ""
-  				  explanationTxt += "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
-  				  recTooltip.transition()    
+            explanationTxt += "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
+            
+            $('#kcs_act_info').prepend(explanationTxt)
+
+  				  /*recTooltip.transition()    
   					  .duration(200)    
-  					  .style("opacity",.95);    
-  					recTooltip.html(explanationTxt)
+  					  .style("opacity",.95);    */
+  					/*recTooltip.html(explanationTxt)
   					  .style("left",(grpOutter.node().getBoundingClientRect().x + 17)+"px")  
-  					  .style("top",(grpOutter.node().getBoundingClientRect().y-d3.select("#act-lst").node().getBoundingClientRect().y-45)+"px")  
+  					  .style("top",(grpOutter.node().getBoundingClientRect().y-d3.select("#act-lst").node().getBoundingClientRect().y-45)+"px")  */
   					  //.style("z-index","150");
   					//recTooltip.moveToFront();
   					
-  				  $('#rec-tooltip-content').css( "z-index", 150 )
   			  }			   
   		  }
 		  }
