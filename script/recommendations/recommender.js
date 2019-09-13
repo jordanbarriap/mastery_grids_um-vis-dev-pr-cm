@@ -335,7 +335,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					//console.log(activity.id)
 					//console.log("Rec score: "+rec_score);
 	
-					var rec_explanation = "This example is recommended because it present concepts that are new for you in the context of this topic";
+					var rec_explanation = "This example is recommended because it presents concept(s) that are new to you.";
 
 					ranked_activity = Object.assign({}, activity);
 					ranked_activity["rec_score"] = rec_score;
