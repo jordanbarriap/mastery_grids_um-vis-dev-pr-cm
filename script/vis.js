@@ -2206,17 +2206,7 @@ function loadData_cb(res) {
             
               var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
               if(topic_has_recommended_acts){
-                d3.select(this).append("svg:image")
-                  .attr('x', 8)
-                  .attr('y', 2)
-                  .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-                  .attr('height', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-                  .attr("max_rec_rank_act",map_topic_max_rank_rec_act[topic_name])
-                  .attr("class","rec_topic")
-                  .attr("xlink:href", function(d){
-                      return "./img/star.png";
-                })
-                  .style("pointer-events","none");
+                addRecommendationStar()
               };
           });
 
@@ -2242,6 +2232,20 @@ function loadData_cb(res) {
   
 
   //end of code added by @Jordan
+}
+
+function addRecommendationStar() {
+  d3.select(this).append("svg:image")
+                  .attr('x', 8)
+                  .attr('y', 2)
+                  .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
+                  .attr('height', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
+                  .attr("max_rec_rank_act",map_topic_max_rank_rec_act[topic_name])
+                  .attr("class","rec_topic")
+                  .attr("xlink:href", function(d){
+                      return "./img/star.png";
+                })
+                  .style("pointer-events","none");
 }
 
 
@@ -4197,18 +4201,18 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
     }
   
   // Grid cells -- Sequencing:
-    if (s.doShowSeq) {
-        if(CONST.vis.seqStars){
-            g
-            .append("svg:polygon")
-            .attr("id", "star_1")
-            .attr("visibility", "visible")
-            //.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
-            .attr("points", function (d) {  return ((d.actIdx === -1 || d.seq === 0) ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
-            .attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
-            //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
-            .attr("stroke", "white")
-            .style("shape-rendering", "geometricPrecision")
+  if (s.doShowSeq) {
+    if(CONST.vis.seqStars){
+      g
+        .append("svg:polygon")
+        .attr("id", "star_1")
+        .attr("visibility", "visible")
+        //.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
+        .attr("points", function (d) {  return ((d.actIdx === -1 || d.seq === 0) ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+        .attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
+        //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
+        .attr("stroke", "white")
+        .style("shape-rendering", "geometricPrecision")
       
       g
       .append("text").
@@ -4247,24 +4251,24 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
       
   
       
-        }else{
-            g.
-            append("circle").
-            attr("class", "seq").
-            attr("cx", 6).
-            attr("cy", 6).
-            //attr("r", function (d) { return (d.seq === 0 ? 0 : Math.max(d.seq * 4, 1)); }).
-            attr("r", function (d) { return (d.seq === 0 ? 0 : 4); }).
-            attr("stroke", "white").
+      } else{
+          g.
+          append("circle").
+          attr("class", "seq").
+          attr("cx", 6).
+          attr("cy", 6).
+          //attr("r", function (d) { return (d.seq === 0 ? 0 : Math.max(d.seq * 4, 1)); }).
+          attr("r", function (d) { return (d.seq === 0 ? 0 : 4); }).
+          attr("stroke", "white").
 
-            // append("path").
-            // attr("class", "seq").
-            // attr("d", function (d,i) { return (i > 0 && Math.random() <= 0.10 ? "M0,8 v-6 l2,-2 h6 z" : "M0,0"); }).
-            attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; }).
-            //attr("style", function (d) { return "fill: #000000;" }).
-            style("shape-rendering", "geometricPrecision"); 
-        }
- 
+          // append("path").
+          // attr("class", "seq").
+          // attr("d", function (d,i) { return (i > 0 && Math.random() <= 0.10 ? "M0,8 v-6 l2,-2 h6 z" : "M0,0"); }).
+          attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; }).
+          //attr("style", function (d) { return "fill: #000000;" }).
+          style("shape-rendering", "geometricPrecision"); 
+      }
+
     }
     
     //g.on("mouseover", function (d,i) { console.log(d); })
@@ -4478,17 +4482,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
      
       var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
       if(topic_has_recommended_acts){
-        d3.select(this).append("svg:image")
-          .attr('x', 8)
-          .attr('y', 2)
-          .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-          .attr('height', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-          .attr("max_rec_rank_act",map_topic_max_rank_rec_act[topic_name])
-          .attr("class","rec_topic")
-          .attr("xlink:href", function(d){
-              return "./img/star.png";
-          })
-          .style("pointer-events","none");
+          addRecommendationStar()
         };
     });
   }
