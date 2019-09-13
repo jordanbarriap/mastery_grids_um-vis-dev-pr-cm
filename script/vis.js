@@ -514,13 +514,88 @@ function actDone_cb(rsp) {
 				contentType: "application/json"
 			  });
 		  }
-		}
-	}
-	 
-
-	if (data.configprops.agg_kc_student_modeling=="bn" | data.configprops.agg_kc_student_modeling=="cumulate"){
+    }
+    
+    //Draw bipartite graph
     redrawBipartite();
     console.log("Finished draw bipartite");
+
+  }
+  
+  if(data.configprops.agg_kc_student_modeling=="bn"){
+    $.get( "http://pawscomp2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp, function(kcs_data) {
+
+      data.kcs = data.kcs.filter(n => n);
+      
+        //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
+      var item_kc_estimates = kcs_data["item-kc-estimates"]
+      for (var i=0;i<item_kc_estimates.length;i++){
+        var kc_name = item_kc_estimates[i]["name"];
+        kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
+        var kc_obj = data.kcs.find(kc => {
+          return kc.n === kc_name
+        });
+        if(kc_obj){
+          map_kcs_id_info[kc_obj.id] = kc_obj;
+          data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
+        }
+      }
+
+      if(ui.vis.actLst.cont.style.display != 'none' && data.configprops.agg_proactiverec_method=="km"){
+        console.log("Generate KM recommendations after getting updates on the data...");
+
+        var topic     = getTopic();
+
+        recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[0].state.activities, data.learners[0].state.kcs, data.kcs, 0.5);
+
+        top_recommended_activities = recommended_activities.slice(0,3);
+
+        console.log("Top recommended activities:");
+        console.log(top_recommended_activities);
+            
+        //Here we get the maximum rank of the items recommended per topic
+        for(var i=0;i<top_recommended_activities.length;i++){
+          var rec_act_topic = top_recommended_activities[i]["topic"];
+          var rec_act_name  = top_recommended_activities[i]["name"];
+          var rec_act_id  = top_recommended_activities[i]["id"];
+          if (!(rec_act_topic in map_topic_max_rank_rec_act)){
+            map_topic_max_rank_rec_act[rec_act_topic] = i;
+          }
+          rank_recommended_activities[rec_act_id] = i;
+        }
+
+        //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
+        if(recommended_activities.length>0){
+            //Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
+            for(var j=0;j<recommended_activities.length;j++){
+              var rec_act_id  = recommended_activities[j]["id"];
+              if (rec_act_id in rank_recommended_activities){
+                recommended_activities[j]["isRecommended"]="1";
+              }else{
+                recommended_activities[j]["isRecommended"]="0";
+              }
+            }
+            var millisecondsDate = (new Date).getTime();
+            $.ajax({
+              type: "POST",
+              data :JSON.stringify({"usr":state.curr.usr,
+              "grp":state.curr.grp,
+              "sid":state.curr.sid,
+              "cid":state.curr.cid,
+              "sid":state.curr.sid,
+              "logRecId":millisecondsDate.toString(),
+              "recMethod":"bn-KM",
+              "recommendations":recommended_activities}),
+              url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+              contentType: "application/json"
+            });
+        }
+      }
+
+      //Draw bipartite graph
+      redrawBipartite();
+      console.log("Finished draw bipartite");
+    });
   }
   
 }
@@ -819,58 +894,13 @@ function actLstShow(doMe, doVs, doGrp) {
   var res       = getRes();
   var resNames  = $map(function (x) { return x.name; }, data.resources.slice(1));
   var title     = "";  // "<span class=\"info\">Activities</span>";
-
-  // (0) Generate proactive recommendations in case km is the rec method that is invoked
-  if(data.configprops.agg_proactiverec_method=="km"){
-    recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[0].state.activities, data.learners[0].state.kcs, data.kcs, 0.5);
-
-    top_recommended_activities = recommended_activities.slice(0,3);
-
-    console.log("Top recommended activities:");
-    console.log(top_recommended_activities);
-        
-    //Here we get the maximum rank of the items recommended per topic
-    for(var i=0;i<top_recommended_activities.length;i++){
-      var rec_act_topic = top_recommended_activities[i]["topic"];
-      var rec_act_name  = top_recommended_activities[i]["name"];
-      var rec_act_id  = top_recommended_activities[i]["id"];
-      if (!(rec_act_topic in map_topic_max_rank_rec_act)){
-        map_topic_max_rank_rec_act[rec_act_topic] = i;
-      }
-      rank_recommended_activities[rec_act_id] = i;
-    }
-
-    //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
-    if(recommended_activities.length>0){
-        //Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
-        for(var j=0;j<recommended_activities.length;j++){
-          var rec_act_id  = recommended_activities[j]["id"];
-          if (rec_act_id in rank_recommended_activities){
-            recommended_activities[j]["isRecommended"]="1";
-          }else{
-            recommended_activities[j]["isRecommended"]="0";
-          }
-        }
-        var millisecondsDate = (new Date).getTime();
-        $.ajax({
-          type: "POST",
-          data :JSON.stringify({"usr":state.curr.usr,
-          "grp":state.curr.grp,
-          "sid":state.curr.sid,
-          "cid":state.curr.cid,
-          "sid":state.curr.sid,
-          "logRecId":millisecondsDate.toString(),
-          "recMethod":"bn-KM",
-          "recommendations":recommended_activities}),
-          url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
-          contentType: "application/json"
-        });
-    }
+  
+  if(data.configprops.agg_proactiverec_enabled){
+    generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
   }
-  
-  
+
   $($$input("button", ui.vis.actLst.cont, "btn-act-lst-close", "small-btn", "close")).button().click(actLstHide);
-  
+
   // (1) Generate the activities grid:
   // (1.1) All resources:
   if (state.vis.resIdx < 0) {
@@ -1107,45 +1137,8 @@ function actLstShow(doMe, doVs, doGrp) {
 
   $("#act-lst").append("<div id='overlay-act-lst'></div>");
 
-  
-
   if(data.configprops.agg_proactiverec_enabled){
-    
-    if((data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_method=="remedial") || (data.configprops.agg_kc_student_modeling=="bn" && data.configprops.agg_proactiverec_method=="km")){
-      d3.selectAll("g.grid-cell-outter").each( function(d, i){
-      var current_topic = data.topics[d.topicIdx]
-      var mg_activities = current_topic ? current_topic.activities:undefined;
-      var data_resource = data.resources[d.resIdx]
-      var data_resource_id = data_resource ? data_resource.id:undefined;
-      var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
-      var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
-      //var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
-      if(mg_activity) {
-        var act_id = mg_activity.id
-        var act_name = d.actName;
-        var act_is_recommended = (act_id in rank_recommended_activities);
-        if(act_is_recommended){
-          
-          let recOrderedListData = $('.recommendation[data-act-id="' + act_id +'"').data('activity')
-          recOrderedListData["actIdx"] = d.actIdx;
-          recOrderedListData["topicIdx"] = d.topicIdx;
-          recOrderedListData["resIdx"] = d.resIdx;
-          
-          d3.select(this).classed("recommended_act", true);
-          d3.select(this).append("svg:image")
-          .attr('x', 8)
-          .attr('y', 2)
-          .attr('width', scaleRecommendationStar(rank_recommended_activities[act_id]))
-          .attr('height', scaleRecommendationStar(rank_recommended_activities[act_id]))
-          .attr("xlink:href", function(d){
-            return "./img/star.png";
-          })
-          .style("pointer-events","none");
-        };
-      }
-      
-      });
-    }
+    addRecommendationsToUI();
   }
 
   //Show help if this is the first time they open the activity in their browser (with the new version)
@@ -1363,7 +1356,6 @@ function actUpdGrids(doReqState, fnCb) {
   }
   else actUpdGrids_cb(fnCb);
 
-
 }
 
 function updateLearnerData(rsp){
@@ -1373,11 +1365,77 @@ function updateLearnerData(rsp){
     visAugmentData_addAvgTopic ([me]);
     visAugmentData_addAvgRes   ([me]);
     
+    console.log("Alternative student modeling (bn) updates...");
+    // if(data.configprops.agg_kc_student_modeling=="bn"){
+    //   loadBnData();
+    // }
+
+    if(data.configprops.agg_kc_student_modeling=="cumulate"){
+      for (var i=0;i<data.kcs.length;i++){
+        var kc_name = data.kcs[i].n;
+        var kc_id = data.kcs[i].id;
+        kcs_estimates[kc_name] = data.learners[0].state.kcs[kc_id].k;
+        kcs_success_rates[kc_name] = data.learners[0].state.kcs[kc_id].sr;
+        kcs_lastk_success_rates[kc_name] = data.learners[0].state.kcs[kc_id]["lastk-sr"];
+        
+        var kc_obj = data.kcs.find(kc => {
+          return kc.n === kc_name
+        });
+        if(kc_obj){
+          map_kcs_id_info[kc_obj.id] = kc_obj;
+        }
+      }
+    }
+
     actUpdGrids_cb(function () { vis.loadingHide();});
     
     
 }
 
+function loadBnData(){
+  $.get( "http://pawscomp2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp, loadBnData_cb, "json" );
+}
+
+function loadBnData_cb(kcs_data){
+  data.kcs = data.kcs.filter(n => n);
+        
+  //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
+  var item_kc_estimates = kcs_data["item-kc-estimates"]
+    for (var i=0;i<item_kc_estimates.length;i++){
+      var kc_name = item_kc_estimates[i]["name"];
+      kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
+      var kc_obj = data.kcs.find(kc => {
+        return kc.n === kc_name
+      });
+      if(kc_obj){
+        map_kcs_id_info[kc_obj.id] = kc_obj;
+        data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
+      }
+    }
+
+    if(data.configprops.agg_proactiverec_enabled){
+      generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
+      addRecommendationsToUI();
+    }
+
+    if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){
+      var kcMap = "bipartite";
+      uiCMVisId = kcMap;
+      //uiCMVisId = "interactivecm";
+      //$('#checkbox-'+kcMap).prop('checked', true);
+      inituiCMVis(CONST.vis.gridAbs,uiCMVisId);
+    }
+
+    //Show help if this is the first time they open the activity in their browser (with the new version)
+    if(!Cookies.get("tutorial-vis")){
+      Cookies.set('tutorial-vis', 'shown', { expires: 90});   
+      $("#helpButton-vis").d3Click();
+      $("#help-dlg").offset($("#helpButton-vis").position());
+      $("#overlay").css("display","block");
+      $("#help-dlg").css("z-index","105");
+      $("#conceptVisSvg").css("z-index","104");
+    }
+}
 
 // ----^----
 function actUpdGrids_cb(fnCb) {
@@ -2054,47 +2112,14 @@ function loadData_cb(res) {
   log("action" + CONST.log.sep02 + "app-ready",     true );
 
   // added by @Jordan
-  // (5) Display concept knowledge visualization
+  // (5) Generates recommendations and display concept knowledge visualization
   // Get kcs estimates fron BN_general student model developed by @Roya
-  console.log("Drawing concept visualization...");
   if(data.configprops.agg_kc_student_modeling){
+
     if(data.configprops.agg_kc_student_modeling=="bn"){
-      $.get( "http://pawscomp2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp, function(kcs_data) {
-        
-      //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
-      var item_kc_estimates = kcs_data["item-kc-estimates"]
-        for (var i=0;i<item_kc_estimates.length;i++){
-          var kc_name = item_kc_estimates[i]["name"];
-          kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
-          var kc_obj = data.kcs.find(kc => {
-            return kc.n === kc_name
-          });
-          if(kc_obj){
-            map_kcs_id_info[kc_obj.id] = kc_obj;
-            data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
-          }
-        }
-
-        
-        if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){
-          var kcMap = "bipartite";
-          uiCMVisId = kcMap;
-          //uiCMVisId = "interactivecm";
-          //$('#checkbox-'+kcMap).prop('checked', true);
-          inituiCMVis(CONST.vis.gridAbs,uiCMVisId);
-        }
-
-        //Show help if this is the first time they open the activity in their browser (with the new version)
-        if(!Cookies.get("tutorial-vis")){
-          Cookies.set('tutorial-vis', 'shown', { expires: 90});   
-          $("#helpButton-vis").d3Click();
-          $("#help-dlg").offset($("#helpButton-vis").position());
-          $("#overlay").css("display","block");
-          $("#help-dlg").css("z-index","105");
-          $("#conceptVisSvg").css("z-index","104");
-        }
-      }, "json" );
+      loadBnData();
     }
+
     if(data.configprops.agg_kc_student_modeling=="cumulate"){
       for (var i=0;i<data.kcs.length;i++){
         var kc_name = data.kcs[i].n;
@@ -3629,7 +3654,7 @@ function visDoVaryCellW() {
  * Generates a grid.
  */
 function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXLabels, sqHFixed, cornerRadius, topicMaxW, xLblAngle, extraPaddingB, isInteractive, miniVis, miniSettings, resNames, doShowResNames, doShowTimeline, doReserveTimelineSpace, doUpdActLstTopicCellX, helpId) {
-
+  console.log(cont);
   var tbl = $$tbl(cont, null, "grid", 3, 2);
   if (doUpdActLstTopicCellX) ui.vis.actLst.topicCellX = [];
   
@@ -3692,7 +3717,8 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
     var recommendationtr = $$("td", tr, null, 'rec-list');
     
 	if((data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_method=="remedial") || data.configprops.agg_kc_student_modeling=="bn" && data.configprops.agg_proactiverec_method=="km"){
-
+    console.log("Add recommendation classes to cells...");
+    console.log(top_recommended_activities);
     if(top_recommended_activities && top_recommended_activities.length > 0) {
 			var orderedList = document.createElement('ol');
 			$(orderedList).attr('id', 'rec-list');
@@ -3704,7 +3730,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 			var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)
 			
 			if(topic_rec_activities.length > 0) {
-				topic_rec_activities.sort((a,b) => b.rec_score - a.rec_score)
+				topic_rec_activities//.sort((a,b) => b.rec_score - a.rec_score)
 					.forEach(function(activity){
 						var recommendationItem = document.createElement('li');
 						$(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
@@ -6131,3 +6157,4 @@ function median(values){
   else
     return (values[half - 1] + values[half]) / 2.0;
 }
+

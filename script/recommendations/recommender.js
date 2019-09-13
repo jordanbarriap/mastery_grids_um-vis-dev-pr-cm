@@ -247,7 +247,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 		}
 	}
 
-	console.log(num_non_attempted_concepts+" concepts have not been attempted in the past");
+	console.log(num_non_attempted_concepts+" outcome concepts have not been attempted in the past");
 	console.log(non_attempted_concepts);
 
 	var resources = Object.keys(topic.activities);
@@ -323,7 +323,8 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					}
 					rec_score=rec_score/total_kcs;
 					
-					console.log("Rec score: "+rec_score);
+					//console.log(activity.id)
+					//console.log("Rec score: "+rec_score);
 	
 					var rec_explanation = "This example is recommended because it present concepts that are new for you in the context of this topic";
 
@@ -337,11 +338,12 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 			if(example_recommendations.length>0){
 				//Sort the array of prioritized example recommendations
 				example_recommendations.sort(compareActivities);
-				console.log("Array of prioritized example recommendations: ");
-				console.log(example_recommendations);
 
 				//We get only 2 examples from the candidate examples that cover 
 				example_recommendations = example_recommendations.slice(0,2);
+
+				console.log("Array of prioritized example recommendations: ");
+				console.log(example_recommendations);
 				
 			}			
 		}
@@ -442,7 +444,8 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					}
 					rec_score=rec_score/total_kcs;
 					
-					console.log("Rec score: "+rec_score);
+					//console.log(activity.id);
+					//console.log("Rec score: "+rec_score);
 
 					var rec_explanation = "This activity is recommended because:<ul style='padding-left:2em;margin-top:0;padding-top:0;margin-bottom:0;padding-bottom:0'>";
 
@@ -533,4 +536,106 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   	}
   	kc_levels[kc_id]["diff"]=kc_difficulty_score;
   }
+}
+
+
+function addRecommendationsToUI(){
+	console.log("Add recommendation to UI...");
+	console.log(top_recommended_activities);
+	d3.selectAll(".recommendationStar").remove();
+	d3.selectAll(".recommended_act").classed("recommended_act",false);
+    if(top_recommended_activities && top_recommended_activities.length > 0) {
+		
+		var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)
+		
+		if(topic_rec_activities.length > 0) {
+
+			d3.selectAll("g.grid-cell-outter").each( function(d, i){
+				var current_topic = data.topics[d.topicIdx]
+				var mg_activities = current_topic ? current_topic.activities:undefined;
+				var data_resource = data.resources[d.resIdx]
+				var data_resource_id = data_resource ? data_resource.id:undefined;
+				var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
+				var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
+				//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
+				if(mg_activity) {
+					var act_id = mg_activity.id
+					var act_name = d.actName;
+					var act_is_recommended = (act_id in rank_recommended_activities);
+					
+					if(act_is_recommended){
+
+						d3.select(this).classed("recommended_act", true);
+						d3.select(this).append("svg:image")
+						.attr('x', 8)
+						.attr('y', 2)
+						.attr('width', scaleRecommendationStar(rank_recommended_activities[act_id]))
+						.attr('height', scaleRecommendationStar(rank_recommended_activities[act_id]))
+						.attr("class","recommendationStar")
+						.attr("xlink:href", function(d){
+							return "./img/star.png";
+						})
+						.style("pointer-events","none");
+					};
+				}
+				
+			});
+		}
+	}
+}
+
+function generateProactiveRecommendations(method){
+	if(method=="km"){
+		console.log("Generate KM recommendations....");
+
+		var topic = getTopic();
+
+		if (topic==null) return;
+
+		recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[0].state.activities, data.learners[0].state.kcs, data.kcs, 0.5);
+	
+		top_recommended_activities = recommended_activities.slice(0,3);
+		rank_recommended_activities = {};
+	
+		console.log("Top recommended activities:");
+		console.log(top_recommended_activities);
+			
+		//Here we get the maximum rank of the items recommended per topic
+		for(var i=0;i<top_recommended_activities.length;i++){
+		  var rec_act_topic = top_recommended_activities[i]["topic"];
+		  var rec_act_name  = top_recommended_activities[i]["name"];
+		  var rec_act_id  = top_recommended_activities[i]["id"];
+		  if (!(rec_act_topic in map_topic_max_rank_rec_act)){
+			map_topic_max_rank_rec_act[rec_act_topic] = i;
+		  }
+		  rank_recommended_activities[rec_act_id] = i;
+		}
+	
+		//Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
+		if(recommended_activities.length>0){
+			//Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
+			for(var j=0;j<recommended_activities.length;j++){
+			  var rec_act_id  = recommended_activities[j]["id"];
+			  if (rec_act_id in rank_recommended_activities){
+				recommended_activities[j]["isRecommended"]="1";
+			  }else{
+				recommended_activities[j]["isRecommended"]="0";
+			  }
+			}
+			var millisecondsDate = (new Date).getTime();
+			$.ajax({
+			  type: "POST",
+			  data :JSON.stringify({"usr":state.curr.usr,
+			  "grp":state.curr.grp,
+			  "sid":state.curr.sid,
+			  "cid":state.curr.cid,
+			  "sid":state.curr.sid,
+			  "logRecId":millisecondsDate.toString(),
+			  "recMethod":"bn-KM",
+			  "recommendations":recommended_activities}),
+			  url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+			  contentType: "application/json"
+			});
+		}
+	  }
 }
