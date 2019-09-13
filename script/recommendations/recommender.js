@@ -179,6 +179,8 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 	// Calculate the weights for outcomes and prerequisite concepts using TF-IDF (boolean in this case as we do not have number of times that concept appears in an activity)
 	// starting from idf values
 	var idf_values = {};
+	var prerequisite_idfs = [];
+	var outcome_idfs = [];
 	var total_acts_prev_topics = topics_concepts.filter(function(d){return d.topicOrder<=topicOrder;}).map(function(d){return d.topicActs;}).reduce(function(a, b) { return a + b; });
 	for(var i=0;i<prerequisites.length;i++){
 		var prerequisite = prerequisites[i];
@@ -195,6 +197,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 		var num_acts_prerequisite = prerequisite_prev_appereances.map(function(d){return d.conceptActs}).reduce(function(a, b) { return a + b; });
 		var idf_concept =  Math.log(total_acts_prev_topics/num_acts_prerequisite);
 		idf_values[prerequisite_id] = idf_concept;
+		prerequisite_idfs.push({'conceptId': prerequisite_id, 'value': idf_concept});
 	}
 
 	for(var i=0;i<outcomes.length;i++){
@@ -204,11 +207,17 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 		var num_acts_outcome = outcome_prev_appereances.map(function(d){return d.conceptActs}).reduce(function(a, b) { return a + b; });
 		var idf_concept =  Math.log(total_acts_prev_topics/num_acts_outcome);
 		idf_values[outcome_id] = idf_concept;
+		outcome_idfs.push({'conceptId': outcome_id, 'value': idf_concept});
 	}
 
-	console.log("Idf values:");
-	console.log(idf_values);
-   
+	//Sort idf values for generating explanations for km recommendations
+	prerequisite_idfs.sort(function(a,b){return b.value-a.value;});
+	outcome_idfs.sort(function(a,b){return b.value-a.value;});
+
+	console.log("Prerequisite idf values:");
+	console.log(prerequisite_idfs);
+	console.log("Outcome idf values:");
+	console.log(outcome_idfs)
 	//}
 
 	// var proficiency_threshold = .66;
@@ -443,11 +452,99 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 						rec_score = rec_score + total_outcomes * outcomes_lack_mastery/weight_outcomes;
 					}
 					rec_score=rec_score/total_kcs;
+
+					var rec_explanation = "This activity is recommended because:<ul style='padding-left:2em;margin-top:0;padding-top:0;margin-bottom:0;padding-bottom:0'>";
 					
 					//console.log(activity.id);
 					//console.log("Rec score: "+rec_score);
 
-					var rec_explanation = "This activity is recommended because:<ul style='padding-left:2em;margin-top:0;padding-top:0;margin-bottom:0;padding-bottom:0'>";
+					var top_num_concepts = 3;
+					var top_prerequisite_concepts = prerequisite_idfs.slice(0,top_num_concepts);
+					var top_outcome_concepts = outcome_idfs.slice(0,top_num_concepts);
+
+					//Threshold and definitions for the explanations
+					var mastery_concepts = 0;
+					var mastery_threshold = .95;
+					var proficiency_concepts = 0;
+					var proficiency_threshold = .80;
+					var good_concepts = 0;
+					var good_threshold = .7;
+					var ok_concepts = 0;
+
+					var avg_k_prerequisite_concepts = 0;
+					for(var i=0;i<top_prerequisite_concepts.length;i++){
+						var k_concept = kc_levels[top_prerequisite_concepts[i].conceptId].k;
+						if(k_concept>=.95){
+							mastery_concepts++;
+						}else{
+							if(k_concept>=.8){
+								proficiency_concepts++;
+							}else{
+								if(k_concept>=.7){
+									good_concepts++;
+								}else{
+									ok_concepts++;
+								}
+							}
+						}
+						avg_k_prerequisite_concepts = avg_k_prerequisite_concepts + k_concept;
+					}
+
+					var prerequisite_explanation = "";
+					if(top_prerequisite_concepts && top_prerequisite_concepts.length>0){
+						avg_k_prerequisite_concepts = avg_k_prerequisite_concepts/top_prerequisite_concepts.length;
+						if (ok_concepts==top_num_concepts){
+							prerequisite_explanation+="<li>Altough it is low, your level of knowledge on the most important concepts to solve this activity is one of the highest among all the topic activities</li>";
+						}else{
+							if(mastery_concepts==top_num_concepts){
+								prerequisite_explanation+="<li>It looks like you master the most important concepts needed to solve this problem</li>";
+							}else{
+								if(proficiency_concepts==top_num_concepts){
+									prerequisite_explanation+="<li>It looks like you are proficient on the most important concepts needed to solve this problem</li>";
+								}else{
+									if(good_concepts==top_num_concepts){
+										prerequisite_explanation+="<li>It looks like you have a good understanding of the most important concepts needed to solve this problem</li>";
+									}else{
+										var median_k_concept = kc_levels[top_prerequisite_concepts[(top_num_concepts-1)/2].conceptId].k;
+										if(median_k_concept>=.95){
+											prerequisite_explanation+="<li>It looks like you master more than the half of most important concepts needed to solve this problem</li>";
+										}else{
+											if(median_k_concept>=.8){
+												prerequisite_explanation+="<li>It looks like you are proficient in more than the half of most important concepts needed to solve this problem</li>"
+											}else{
+												if(median_k_concept>=.7){
+													prerequisite_explanation+="<li>It looks like you have a good understanding in more than the half of most important concepts needed to solve this problem</li>";
+												}else{
+													if(avg_k_prerequisite_concepts>=.95){
+														prerequisite_explanation+="<li>It looks like in average, you master the most important concepts needed to solve this problem</li>";
+													}else{
+														if(avg_k_prerequisite_concepts>=.8){
+															prerequisite_explanation+="<li>It looks like in average, you are proficient in the most important concepts needed to solve this problem</li>";
+														}else{
+															if(avg_k_prerequisite_concepts>=.7){
+																prerequisite_explanation+="<li>It looks like in average, you have a good understanding of the most important concepts needed to solve this problem</li>";
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+						
+					rec_explanation = rec_explanation + prerequisite_explanation;
+
+					rec_explanation = rec_explanation + "</ul>";
+
+					// var avg_k_top_outcomes = 0;
+					// for(var i=0;i<top_outcome_concepts.length;i++){
+					// 	var 
+					// }
+
+					
 
 					//Commented by @Jordan from here
 					// if ((problematic_kcs+slip_kcs)>0){
