@@ -450,11 +450,10 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					}
 
 					avg_k_prerequisite_concepts = avg_k_prerequisite_concepts/total_weight_prerequisites;
-
 					if(top_prerequisite_concepts.length<top_num_concepts) top_num_concepts=top_prerequisite_concepts.length;
 
 					var prerequisite_explanation = "";
-					console.log(top_prerequisite_concepts);
+
 					if(top_prerequisite_concepts && top_prerequisite_concepts.length>0){
 						console.log("Average most important prerequisites:");
 						console.log(avg_k_prerequisite_concepts);
@@ -471,12 +470,45 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 								}
 							}
 						}
-
-						//Newly introduced concept for outcomes
 					}
-						
-					rec_explanation = rec_explanation + prerequisite_explanation;
+					var excellent_opportunity_threshold =.8;
+					var good_opportunity_threshold =.6;
+					var fair_opportunity_threshold = .4; 
 
+					var avg_k_outcome_concepts = 0;
+					var total_weight_outcomes = 0;
+					for(var i=0;i<top_outcome_concepts.length;i++){
+						var k_concept = 1- kc_levels[top_outcome_concepts[i].conceptId].k;
+						var weight_concept = Math.log(1*idf_values[top_outcome_concepts[i].conceptId]);
+						avg_k_outcome_concepts = avg_k_outcome_concepts + weight_concept*k_concept;
+						total_weight_outcomes = total_weight_outcomes + weight_concept;
+					}
+
+					avg_k_outcome_concepts = avg_k_outcome_concepts/total_weight_outcomes;
+					if(top_outcome_concepts.length<top_num_concepts) top_num_concepts=top_outcome_concepts.length;
+
+					var outcome_explanation = "";
+					console.log(top_outcome_concepts);
+					if(top_outcome_concepts && top_outcome_concepts.length>0){
+						console.log("Average learning opportunity of most important outcomes:");
+						console.log(avg_k_outcome_concepts);
+						if(avg_k_outcome_concepts>=excellent_opportunity_threshold){
+							outcome_explanation+="<li>You have an excellent opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
+						}else{
+							if(avg_k_outcome_concepts>=good_opportunity_threshold){
+								outcome_explanation+="<li>You have a good opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
+							}else{
+								if(avg_k_outcome_concepts>=fair_opportunity_threshold){
+									outcome_explanation+="<li>You have a fair opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
+								}else{
+									outcome_explanation+="<li>Altough it is low, the opportunity for increasing your knowledge on key concepts introduced in this topic is one of the highest within the topic.</li>";
+								}
+							}
+						}
+					}
+	
+					rec_explanation = rec_explanation + prerequisite_explanation;
+					rec_explanation = rec_explanation + outcome_explanation;
 					rec_explanation = rec_explanation + "</ul>";
 
 					// var avg_k_top_outcomes = 0;
