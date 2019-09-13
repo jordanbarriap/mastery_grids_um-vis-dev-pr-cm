@@ -218,20 +218,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 	console.log(prerequisite_idfs);
 	console.log("Outcome idf values:");
 	console.log(outcome_idfs)
-	//}
 
-	// var proficiency_threshold = .66;
-	// var filtered_kcs = kc_topic_weights.map(function(d){return d.id});
-	// var filtered_kc_levels = {};
-	// for (var i=0; i<filtered_kcs.length;i++){
-	// 	var kc_id = filtered_kcs[i];
-	// 	if (kc_levels.hasOwnProperty(kc_id)) {
-    //         filtered_kc_levels[kc_id] = kc_levels[kc_id];
-    //     }
-	// }
-  
-	// kc_levels = filtered_kc_levels;
-	//calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr);
 	var recommendations = [];
 	//var topics = data_topics_acts_kcs;
 	//var n_topics = topics.length;
@@ -307,7 +294,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 						if (kc_id in kc_levels){ //Check if we have an estimation of the knowledge on that specific concept
 							//if a concept is a prerequisite for the topic, it adds its knowledge value to the amount of mastered prereq knowledge
 							if (set_prerequisites.has(kc_id)){
-								var prerequisite_weight = 1*idf_values[kc_id];
+								var prerequisite_weight = Math.log(1*idf_values[kc_id]);
 								prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].k;
 								total_kcs = total_kcs + 1
 								weight_prerequisites = prerequisite_weight + weight_prerequisites
@@ -315,7 +302,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 							}else{
 								//if a concept is an outcome for the topic, it adds the amount of knowledge yet to be known for that concept
 								if(set_outcomes.has(kc_id)){
-									var outcome_weight = 1*idf_values[kc_id];
+									var outcome_weight = Math.log(1*idf_values[kc_id]);
 									outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].k);
 									total_kcs = total_kcs + 1
 									weight_outcomes = outcome_weight + weight_outcomes
@@ -382,10 +369,12 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					//Variables needed for estimating the amount of knowledge already learned associated with prerequisite concepts
 					var prerequisites_mastery = 0;
 					var weight_prerequisites = 0;
+					var ids_act_prerequisites = new Set();
 
 					//Variables needed for estimating the amount of knowledge yet to be learned associated with outcomeconcepts
 					var outcomes_lack_mastery = 0;
 					var weight_outcomes = 0;
+					var ids_act_outcomes = new Set();
 
 					for (var l=0;l<kcs.length;l++){
 						var kc_id = kcs[l];
@@ -393,7 +382,8 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 						if (kc_id in kc_levels){ //Check if we have an estimation of the knowledge on that specific concept
 							//if a concept is a prerequisite for the topic, it adds its knowledge value to the amount of mastered prereq knowledge
 							if (set_prerequisites.has(kc_id)){
-								var prerequisite_weight = 1*idf_values[kc_id];
+								var prerequisite_weight = Math.log(1*idf_values[kc_id]);
+								ids_act_prerequisites.add(kc_id);
 								prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].k;
 								total_kcs = total_kcs + 1
 								weight_prerequisites = prerequisite_weight + weight_prerequisites
@@ -401,57 +391,23 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 							}else{
 								//if a concept is an outcome for the topic, it adds the amount of knowledge yet to be known for that concept
 								if(set_outcomes.has(kc_id)){
-									var outcome_weight = 1*idf_values[kc_id];
+									var outcome_weight = Math.log(1*idf_values[kc_id]);
+									ids_act_outcomes.add(kc_id);
 									outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].k);
 									total_kcs = total_kcs + 1
 									weight_outcomes = outcome_weight + weight_outcomes
 									total_outcomes = total_outcomes + 1;
 								}
 							}
-							// var kc_diff = kc_levels[kc_id]["diff"];
-							// if(kc_diff>=0){
-							// 	total_kcs ++;
-							// 	var kc_weight = topic.concepts.filter(function(d){return d.id==kc_id;})[0].weight;
-							// 	rec_score = rec_score + (kc_weight*kc_diff);
-							// 	weights_sum = weights_sum + kc_weight;
-
-							// 	var kc_level = kc_levels[kc_id]["k"];
-							// 	if (kc_level>.5){
-							// 		condition_to_generate_recommendations = true;
-							// 	}
-							// 	var kc_lastksr= kc_levels[kc_id]["lastk-sr"];
-
-							// 	if(kc_lastksr!=-1 && kc_lastksr<=.5){
-							// 		if (kc_level<proficiency_threshold){
-							// 			problematic_kcs ++;
-							// 		}else{
-							// 			slip_kcs ++;
-							// 		}
-							// 	}
-							// 	if(kc_level>=proficiency_threshold){// && (kc_lastksr == -1 || kc_lastksr>.5)){
-							// 		helpful_kcs ++;
-							// 	}
-							// }
-						}	
+						}
 					}
-					//if (weights_sum>0){
-					//	rec_score = rec_score/weights_sum;//Normalizing rec score with total of the sum of weights (?)
-					//}
-					// console.log(activity);
-					// console.log("Prerequisites mastery: ")
-					// console.log(prerequisites_mastery);
-					// console.log("Prerequisites weights: "+weight_prerequisites);
-					// console.log("Outcomes mastery: ");
-					// console.log(outcomes_lack_mastery);
-					// console.log("Outcomes weights: "+weight_outcomes);
-					
-					if(weight_prerequisites>0){
+					if(total_prerequisites>0){
 						rec_score = rec_score + total_prerequisites * prerequisites_mastery/weight_prerequisites;
 					}
-					if(weight_outcomes>0){
+					if(total_outcomes>0){
 						rec_score = rec_score + total_outcomes * outcomes_lack_mastery/weight_outcomes;
 					}
-					rec_score=rec_score/total_kcs;
+					rec_score=rec_score/(total_prerequisites + total_outcomes);
 
 					var rec_explanation = "This activity is recommended because:<ul style='padding-left:2em;margin-top:0;padding-top:0;margin-bottom:0;padding-bottom:0'>";
 					
@@ -459,82 +415,64 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					//console.log("Rec score: "+rec_score);
 
 					var top_num_concepts = 3;
-					var top_prerequisite_concepts = prerequisite_idfs.slice(0,top_num_concepts);
-					var top_outcome_concepts = outcome_idfs.slice(0,top_num_concepts);
+					var top_prerequisite_concepts = prerequisite_idfs.filter(function(d){return ids_act_prerequisites.has(d.conceptId);}).slice(0,top_num_concepts);
+					var top_outcome_concepts = outcome_idfs.filter(function(d){return ids_act_outcomes.has(d.conceptId);}).slice(0,top_num_concepts);
 
 					//Threshold and definitions for the explanations
 					var mastery_concepts = 0;
 					var mastery_threshold = .95;
 					var proficiency_concepts = 0;
-					var proficiency_threshold = .80;
+					var proficiency_threshold = .75;
 					var good_concepts = 0;
-					var good_threshold = .7;
+					var good_threshold = .6;
 					var ok_concepts = 0;
 
 					var avg_k_prerequisite_concepts = 0;
+					var total_weight_prerequisites = 0;
 					for(var i=0;i<top_prerequisite_concepts.length;i++){
 						var k_concept = kc_levels[top_prerequisite_concepts[i].conceptId].k;
-						if(k_concept>=.95){
+						var weight_concept = Math.log(1*idf_values[top_prerequisite_concepts[i].conceptId]);
+						if(k_concept>=mastery_threshold){
 							mastery_concepts++;
 						}else{
-							if(k_concept>=.8){
+							if(k_concept>=proficiency_threshold){
 								proficiency_concepts++;
 							}else{
-								if(k_concept>=.7){
+								if(k_concept>=good_threshold){
 									good_concepts++;
 								}else{
 									ok_concepts++;
 								}
 							}
 						}
-						avg_k_prerequisite_concepts = avg_k_prerequisite_concepts + k_concept;
+						avg_k_prerequisite_concepts = avg_k_prerequisite_concepts + weight_concept*k_concept;
+						total_weight_prerequisites = total_weight_prerequisites + weight_concept;
 					}
+
+					avg_k_prerequisite_concepts = avg_k_prerequisite_concepts/total_weight_prerequisites;
 
 					if(top_prerequisite_concepts.length<top_num_concepts) top_num_concepts=top_prerequisite_concepts.length;
 
 					var prerequisite_explanation = "";
+					console.log(top_prerequisite_concepts);
 					if(top_prerequisite_concepts && top_prerequisite_concepts.length>0){
-						avg_k_prerequisite_concepts = avg_k_prerequisite_concepts/top_prerequisite_concepts.length;
-						if (ok_concepts==top_num_concepts){
-							prerequisite_explanation+="<li>Altough it is low, your level of knowledge on the most important concepts to solve this activity is one of the highest among all the topic activities</li>";
+						console.log("Average most important prerequisites:");
+						console.log(avg_k_prerequisite_concepts);
+						if(avg_k_prerequisite_concepts>=mastery_threshold){
+							prerequisite_explanation+="<li>It looks like in average you master the main prerequisite concepts.</li>";
 						}else{
-							if(mastery_concepts==top_num_concepts){
-								prerequisite_explanation+="<li>It looks like you master the most important concepts needed to solve this problem</li>";
+							if(avg_k_prerequisite_concepts>=proficiency_threshold){
+								prerequisite_explanation+="<li>It looks like in average you are proficient on the main prerequisite concepts.</li>";
 							}else{
-								if(proficiency_concepts==top_num_concepts){
-									prerequisite_explanation+="<li>It looks like you are proficient on the most important concepts needed to solve this problem</li>";
+								if(avg_k_prerequisite_concepts>=good_threshold){
+									prerequisite_explanation+="<li>It looks like in average you have a good understanding on the main prerequisite concepts.</li>";
 								}else{
-									if(good_concepts==top_num_concepts){
-										prerequisite_explanation+="<li>It looks like you have a good understanding of the most important concepts needed to solve this problem</li>";
-									}else{
-										var median_k_concept = kc_levels[top_prerequisite_concepts[(top_num_concepts-1)/2].conceptId].k;
-										if(median_k_concept>=.95){
-											prerequisite_explanation+="<li>It looks like you master more than the half of most important concepts needed to solve this problem</li>";
-										}else{
-											if(median_k_concept>=.8){
-												prerequisite_explanation+="<li>It looks like you are proficient in more than the half of most important concepts needed to solve this problem</li>"
-											}else{
-												if(median_k_concept>=.7){
-													prerequisite_explanation+="<li>It looks like you have a good understanding in more than the half of most important concepts needed to solve this problem</li>";
-												}else{
-													if(avg_k_prerequisite_concepts>=.95){
-														prerequisite_explanation+="<li>It looks like in average, you master the most important concepts needed to solve this problem</li>";
-													}else{
-														if(avg_k_prerequisite_concepts>=.8){
-															prerequisite_explanation+="<li>It looks like in average, you are proficient in the most important concepts needed to solve this problem</li>";
-														}else{
-															if(avg_k_prerequisite_concepts>=.7){
-																prerequisite_explanation+="<li>It looks like in average, you have a good understanding of the most important concepts needed to solve this problem</li>";
-															}
-														}
-													}
-												}
-											}
-										}
-									}
+									prerequisite_explanation+="<li>Altough it is low, your level of knowledge on the main prerequisite concepts is one of the highest within the topic.</li>";
 								}
 							}
 						}
+
+						//Newly introduced concept for outcomes
 					}
 						
 					rec_explanation = rec_explanation + prerequisite_explanation;
@@ -584,7 +522,6 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					//end of Jordan's comment
 				}	
 			}
-
 		}
 	}
 	//}
@@ -641,8 +578,11 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
 function addRecommendationsToUI(){
 	console.log("Add recommendation to UI...");
 	console.log(top_recommended_activities);
+
+	//Remove existing stars
 	d3.selectAll(".recommendationStar").remove();
 	d3.selectAll(".recommended_act").classed("recommended_act",false);
+
     if(top_recommended_activities && top_recommended_activities.length > 0) {
 		
 		var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)

@@ -2236,16 +2236,16 @@ function loadData_cb(res) {
 
 function addRecommendationStar() {
   d3.select(this).append("svg:image")
-                  .attr('x', 8)
-                  .attr('y', 2)
-                  .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-                  .attr('height', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
-                  .attr("max_rec_rank_act",map_topic_max_rank_rec_act[topic_name])
-                  .attr("class","rec_topic")
-                  .attr("xlink:href", function(d){
-                      return "./img/star.png";
-                })
-                  .style("pointer-events","none");
+      .attr('x', 8)
+      .attr('y', 2)
+      .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
+      .attr('height', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
+      .attr("max_rec_rank_act",map_topic_max_rank_rec_act[topic_name])
+      .attr("class","rec_topic")
+      .attr("xlink:href", function(d){
+          return "./img/star.png";
+    })
+      .style("pointer-events","none");
 }
 
 
@@ -4694,7 +4694,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         recTooltip.moveToFront();
       }
 	  
-  		if(data.configprops.agg_kc_student_modeling=="cumulate"){
+  		if(data.configprops.agg_proactiverec_method=="remedial" || data.configprops.agg_proactiverec_method=="km" ){//Changed by @Jordan before it was only data.configprops.agg_kc_student_modeling=="cumulate"
   		  if(d3.select(grpOutterNode).classed('recommended_act')) {
   			  let recommended_activity_arr = top_recommended_activities.filter(rec_act => rec_act.name == e.actName || rec_act.id == e.id);
   			  if(recommended_activity_arr.length > 0) {
