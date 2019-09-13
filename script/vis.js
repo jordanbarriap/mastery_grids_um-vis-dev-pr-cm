@@ -523,7 +523,7 @@ function actDone_cb(rsp) {
   }
   
   if(data.configprops.agg_kc_student_modeling=="bn"){
-    $.get( "http://pawscomp2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp, function(kcs_data) {
+    $.get( "http://adapt2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp+"&cid="+state.curr.cid+"&defaultModel=true", function(kcs_data) {
 
       data.kcs = data.kcs.filter(n => n);
       
@@ -1393,7 +1393,7 @@ function updateLearnerData(rsp){
 }
 
 function loadBnData(){
-  $.get( "http://pawscomp2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp, loadBnData_cb, "json" );
+  $.get( "http://adapt2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp+"&cid="+state.curr.cid+"&defaultModel=true", loadBnData_cb, "json" );
 }
 
 function loadBnData_cb(kcs_data){
