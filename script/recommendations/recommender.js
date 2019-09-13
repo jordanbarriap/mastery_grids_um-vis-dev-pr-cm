@@ -659,8 +659,17 @@ function addRecommendationsToUI(){
 					var act_id = mg_activity.id
 					var act_name = d.actName;
 					var act_is_recommended = (act_id in rank_recommended_activities);
-					
+					mg_activity['actIdx'] = d.actIdx
+					mg_activity['topicIdx'] = d.topicIdx
+					mg_activity['resIdx'] = d.resIdx
+
 					if(act_is_recommended){
+
+						//This is to fix the globally stored top_recommended_activities array. (To solve the problem of first topic openning)
+						let recommended_activity = top_recommended_activities.find(x => x.id === mg_activity.id)
+						recommended_activity['actIdx'] = d.actIdx
+						recommended_activity['topicIdx'] = d.topicIdx
+						recommended_activity['resIdx'] = d.resIdx
 
 						d3.select(this).classed("recommended_act", true);
 						d3.select(this).append("svg:image")
