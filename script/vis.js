@@ -1139,7 +1139,41 @@ function actLstShow(doMe, doVs, doGrp) {
 
   if(data.configprops.agg_proactiverec_enabled){
     addRecommendationsToUI();
-    $("img.info-icon").effect("bounce",{duration:2000});
+    var checkRecExpInfoExist = setInterval(function() {
+      if ($('img.info-icon').length) {
+        $("img.info-icon").effect("bounce",{duration:2000},function(){
+          //console.log("Animation finished");
+          if(state.args.uiRecExpOnDemand) {
+            if(!Cookies.get("tutorial-vis-rec-on-demand")){
+              Cookies.set('tutorial-vis-rec-on-demand', 'shown', { expires: 7});   
+              $('img#rec-info-img')
+                .first()
+                .mouseover()
+                .click()
+            }
+          }
+        });
+         clearInterval(checkRecExpInfoExist);
+      }
+   }, 100);
+    /*$("img.info-icon").effect("bounce",{duration:2000},function(){
+      console.log("Animation finished");
+      if(state.args.uiRecExpOnDemand) {
+        if(!Cookies.get("tutorial-vis-rec-on-demand")){
+          Cookies.set('tutorial-vis-rec-on-demand', 'shown', { expires: 7});   
+          
+          $('img#rec-info-img')
+            .first()
+            .mouseover()
+            .click()
+            
+          
+          /*$("#overlay").css("display","block");
+          $("#rec-tooltip-content").css("z-index","104");
+          $('li.recommendation').first().css("z-index", "104")*/
+    /*    }
+      }
+    });*/
   }
 
   //Show help if this is the first time they open the activity in their browser (with the new version)
@@ -1161,23 +1195,6 @@ function actLstShow(doMe, doVs, doGrp) {
   //$($$input("button", ui.vis.actLst.cont, "btn-act-lst-close", "small-btn", "close")).button().click(actLstHide);//wrongly wrote by @Jordan here
 
   //end of code added by @Jordan
-
-  if(state.args.uiRecExpOnDemand) {
-    if(!Cookies.get("tutorial-vis-rec-on-demand")){
-      Cookies.set('tutorial-vis-rec-on-demand', 'shown', { expires: 7});   
-      
-      $('img#rec-info-img')
-        .first()
-        .mouseover()
-        .click()
-        
-      
-      /*$("#overlay").css("display","block");
-      $("#rec-tooltip-content").css("z-index","104");
-      $('li.recommendation').first().css("z-index", "104")*/
-    }
-  }
-  
   
 }
 
@@ -3787,7 +3804,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 					.forEach(function(activity){
             var recommendationItem = document.createElement('li');
             var recommendationInfoImg = document.createElement('img')
-            console.log(activity);
             $(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
             if(state.args.uiRecExpOnDemand) {
               $(recommendationInfoImg)
