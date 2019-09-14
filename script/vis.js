@@ -3775,7 +3775,8 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
               $(recommendationInfoImg)
                 .attr('src', 'img/info.png')
                 .attr('alt', 'icon')
-                .width('20px')
+                .attr('class', 'info-icon')
+                .width('15px')
                 .attr('title', 'Why this activity?')
                 .data('activity', activity)
                 .click(function(e){ 
@@ -3806,10 +3807,12 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
                   
                 })
                 $(recommendationItem).append(recommendationInfoImg)
+                
+                
             }
-           
 						$(orderedList).append(recommendationItem);
-					})
+          })
+          $("img.info-icon").effect("bounce",{duration:2000});
 			} else {
 				var topicMastered = document.createElement('div');
 				$(topicMastered).html("There is no recommendation\nin this topic.").addClass('no_recommendation');
