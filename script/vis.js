@@ -3776,6 +3776,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
                 .attr('src', 'img/info.png')
                 .attr('alt', 'icon')
                 .width('20px')
+                .attr('title', 'Why this activity?')
                 .click(function(e){ 
                 
                     $('#rec-tooltip-content').show()
