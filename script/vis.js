@@ -1160,6 +1160,23 @@ function actLstShow(doMe, doVs, doGrp) {
   //$($$input("button", ui.vis.actLst.cont, "btn-act-lst-close", "small-btn", "close")).button().click(actLstHide);//wrongly wrote by @Jordan here
 
   //end of code added by @Jordan
+
+  if(state.args.uiRecExpOnDemand) {
+    if(!Cookies.get("tutorial-vis-rec-on-demand")){
+      Cookies.set('tutorial-vis-rec-on-demand', 'shown', { expires: 7});   
+      
+      $('img#rec-info-img')
+        .first()
+        .mouseover()
+        .click()
+        
+      
+      /*$("#overlay").css("display","block");
+      $("#rec-tooltip-content").css("z-index","104");
+      $('li.recommendation').first().css("z-index", "104")*/
+    }
+  }
+  
   
 }
 
@@ -3774,10 +3791,16 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
             if(state.args.uiRecExpOnDemand) {
               $(recommendationInfoImg)
                 .attr('src', 'img/info.png')
+                .attr('id', 'rec-info-img')
                 .attr('alt', 'icon')
                 .width('20px')
                 .attr('title', 'Why this activity?')
                 .data('activity', activity)
+                .mouseover(function() {
+                  setTimeout(function(){
+                    $('.ui-tooltip').hide()
+                  }, 3000);
+                })
                 .click(function(e){ 
                   $('#rec-tooltip-content').show()
 
@@ -3803,7 +3826,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
                     rec_exp_log,     
                     true
                   );
-                  
+
                 })
                 $(recommendationItem).append(recommendationInfoImg)
             }
