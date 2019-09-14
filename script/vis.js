@@ -3777,10 +3777,33 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
                 .attr('alt', 'icon')
                 .width('20px')
                 .attr('title', 'Why this activity?')
+                .data('activity', activity)
                 .click(function(e){ 
-                
-                    $('#rec-tooltip-content').show()
-                
+                  $('#rec-tooltip-content').show()
+
+                  var tooltip_activity = $(this).data('activity')
+
+                  var act_rec_info = recommended_activities.filter(function(d){return d["id"]==tooltip_activity.id})[0];
+                  
+
+                  var rec_exp_log =
+                    "action"           + CONST.log.sep02 + "recommended-activity-show-exp"                     + CONST.log.sep01 +
+                    "cell-topic-id"    + CONST.log.sep02 + getTopic().id                                       + CONST.log.sep01 +
+                    "cell-resource-id" + CONST.log.sep02 + data.resources[tooltip_activity.resIdx].id          + CONST.log.sep01 +
+                    "cell-activity-id" + CONST.log.sep02 + tooltip_activity.id                                 + CONST.log.sep01;
+                  
+
+                  if (act_rec_info!==undefined){
+                    var rec_score = act_rec_info["rec_score"];
+                    rec_exp_log += "rec_score"   + CONST.log.sep02 + rec_score
+                  }
+                  
+
+                  log(
+                    rec_exp_log,     
+                    true
+                  );
+                  
                 })
                 $(recommendationItem).append(recommendationInfoImg)
             }
