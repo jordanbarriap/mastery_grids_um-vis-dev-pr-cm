@@ -3773,8 +3773,9 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
             $(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
             if(state.args.uiRecExpOnDemand) {
               $(recommendationInfoImg)
-                .attr('src', 'img/help.png')
+                .attr('src', 'img/info.png')
                 .attr('alt', 'icon')
+                .width('20px')
                 .click(function(e){ 
                 
                     $('#rec-tooltip-content').show()
