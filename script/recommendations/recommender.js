@@ -466,7 +466,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 								if(avg_k_prerequisite_concepts>=good_threshold){
 									prerequisite_explanation+="<li>It looks like in average you have a <span class='level3-exp-text'>good</span> understanding on the main <span class='important-text'>prerequisite concepts</span>.</li>";
 								}else{
-									prerequisite_explanation+="<li>Altough it is low, your level of knowledge on the main <span class='important-text'>prerequisite concepts</span> is one of the highest within the topic.</li>";
+									prerequisite_explanation+="<li>Altough it is low, your knowledge level on the main <span class='important-text'>prerequisite concepts</span> is one of the highest within the topic.</li>";
 								}
 							}
 						}
