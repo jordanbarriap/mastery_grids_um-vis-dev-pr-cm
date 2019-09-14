@@ -458,13 +458,13 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 						console.log("Average most important prerequisites:");
 						console.log(avg_k_prerequisite_concepts);
 						if(avg_k_prerequisite_concepts>=mastery_threshold){
-							prerequisite_explanation+="<li>It looks like in average you master the main prerequisite concepts.</li>";
+							prerequisite_explanation+="<li>It looks like in average you <span style='border-radius:5px;background-color:#219A19;color:white;padding:2px;'>master</div> the main prerequisite concepts.</li>";
 						}else{
 							if(avg_k_prerequisite_concepts>=proficiency_threshold){
-								prerequisite_explanation+="<li>It looks like in average you are <span style='border-radius:5px,background-color:green'>proficient</span> on the main prerequisite concepts.</li>";
+								prerequisite_explanation+="<li>It looks like in average you are <span style='border-radius:5px;background-color:#5DB956;color:white;padding:2px;'>proficient</span> on the main prerequisite concepts.</li>";
 							}else{
 								if(avg_k_prerequisite_concepts>=good_threshold){
-									prerequisite_explanation+="<li>It looks like in average you have a <span style='border-radius:5px,background-color:green'>good</span> understanding on the main prerequisite concepts.</li>";
+									prerequisite_explanation+="<li>It looks like in average you have a <span style='border-radius:5px;background-color:#A0C49D;color:black;padding:2px;'>good</span> understanding on the main prerequisite concepts.</li>";
 								}else{
 									prerequisite_explanation+="<li>Altough it is low, your level of knowledge on the main prerequisite concepts is one of the highest within the topic.</li>";
 								}
@@ -493,13 +493,13 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 						console.log("Average learning opportunity of most important outcomes:");
 						console.log(avg_k_outcome_concepts);
 						if(avg_k_outcome_concepts>=excellent_opportunity_threshold){
-							outcome_explanation+="<li>You have an excellent opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
+							outcome_explanation+="<li>You have an <span style='border-radius:5px;background-color:#219A19;color:white;padding:2px;'>excellent</span> opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
 						}else{
 							if(avg_k_outcome_concepts>=good_opportunity_threshold){
-								outcome_explanation+="<li>You have a good opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
+								outcome_explanation+="<li>You have a <span style='border-radius:5px;background-color:#5DB956;color:white;padding:2px;'>good</span> opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
 							}else{
 								if(avg_k_outcome_concepts>=fair_opportunity_threshold){
-									outcome_explanation+="<li>You have a fair opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
+									outcome_explanation+="<li>You have a <span style='border-radius:5px;background-color:#A0C49D;color:black;padding:2px;'>fair<span> opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
 								}else{
 									outcome_explanation+="<li>Altough it is low, the opportunity for increasing your knowledge on key concepts introduced in this topic is one of the highest within the topic.</li>";
 								}
