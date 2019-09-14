@@ -461,10 +461,10 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 							prerequisite_explanation+="<li>It looks like in average you master the main prerequisite concepts.</li>";
 						}else{
 							if(avg_k_prerequisite_concepts>=proficiency_threshold){
-								prerequisite_explanation+="<li>It looks like in average you are proficient on the main prerequisite concepts.</li>";
+								prerequisite_explanation+="<li>It looks like in average you are <span style='border-radius:5px,background-color:green'>proficient</span> on the main prerequisite concepts.</li>";
 							}else{
 								if(avg_k_prerequisite_concepts>=good_threshold){
-									prerequisite_explanation+="<li>It looks like in average you have a good understanding on the main prerequisite concepts.</li>";
+									prerequisite_explanation+="<li>It looks like in average you have a <span style='border-radius:5px,background-color:green'>good</span> understanding on the main prerequisite concepts.</li>";
 								}else{
 									prerequisite_explanation+="<li>Altough it is low, your level of knowledge on the main prerequisite concepts is one of the highest within the topic.</li>";
 								}
@@ -674,10 +674,12 @@ function addRecommendationsToUI(){
 								if(rank_rec===2){
 									map_rank_to_seq = 0.3;
 								}else{
-									map_rank_to_seq=0.0;
+									map_rank_to_seq= 0.0;
 								}
 							}
 						}
+
+						console.log(map_rank_to_seq);
 						
 						d3.select(this)
 							.append("svg:polygon")
