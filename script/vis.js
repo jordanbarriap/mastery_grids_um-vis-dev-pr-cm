@@ -2237,21 +2237,20 @@ function loadData_cb(res) {
 function addRecommendationStar() {
   var rank_rec = map_topic_max_rank_rec_act[topic_name];
   var map_rank_to_seq = 0;
-  if (rank_rec>0){
-    if(rank_rec==0){
-      map_rank_to_seq = 1;
+  if(rank_rec=="0"){
+    map_rank_to_seq = 1;
+  }else{
+    if(rank_rec=="1"){
+      map_rank_to_seq=.7;
     }else{
-      if(rank_rec==1){
-        map_rank_to_seq=.7;
+      if(rank_rec=="2"){
+        map_rank_to_seq=.3;
       }else{
-        if(map_rank_to_seq==2){
-          map_rank_to_seq=.3;
-        }else{
-          map_rank_to_seq=0;
-        }
+        map_rank_to_seq=0;
       }
     }
   }
+
   d3.select(this)/*.append("svg:image")
       .attr('x', 8)
       .attr('y', 2)
