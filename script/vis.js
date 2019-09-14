@@ -1139,6 +1139,7 @@ function actLstShow(doMe, doVs, doGrp) {
 
   if(data.configprops.agg_proactiverec_enabled){
     addRecommendationsToUI();
+    $("img.info-icon").effect("bounce",{duration:2000});
   }
 
   //Show help if this is the first time they open the activity in their browser (with the new version)
@@ -3812,7 +3813,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
             }
 						$(orderedList).append(recommendationItem);
           })
-          $("img.info-icon").effect("bounce",{duration:2000});
 			} else {
 				var topicMastered = document.createElement('div');
 				$(topicMastered).html("There is no recommendation\nin this topic.").addClass('no_recommendation');
