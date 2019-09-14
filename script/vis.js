@@ -1139,6 +1139,7 @@ function actLstShow(doMe, doVs, doGrp) {
 
   if(data.configprops.agg_proactiverec_enabled){
     addRecommendationsToUI();
+    $("img.info-icon").effect("bounce",{duration:2000});
   }
 
   //Show help if this is the first time they open the activity in their browser (with the new version)
@@ -3793,7 +3794,8 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
                 .attr('src', 'img/info.png')
                 .attr('id', 'rec-info-img')
                 .attr('alt', 'icon')
-                .width('20px')
+                .attr('class', 'info-icon')
+                .width('15px')
                 .attr('title', 'Why this activity?')
                 .data('activity', activity)
                 .mouseover(function() {
@@ -3829,10 +3831,11 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 
                 })
                 $(recommendationItem).append(recommendationInfoImg)
+                
+                
             }
-           
 						$(orderedList).append(recommendationItem);
-					})
+          })
 			} else {
 				var topicMastered = document.createElement('div');
 				$(topicMastered).html("There is no recommendation\nin this topic.").addClass('no_recommendation');
