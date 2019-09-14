@@ -2600,6 +2600,8 @@ function stateArgsSet02() {
   
   state.args.uiIncenCheck			= (qs["ui-incen-check"]  === "1" ? true : false);
 
+  state.args.uiRecExpOnDemand = (qs["ui-rec-exp-on-demand"]  === "1" ? true : false);
+
   //added by @Jordan
   state.args.kcMap = "";
   state.args.kcMapMode = 0;
@@ -2641,7 +2643,8 @@ function stateArgsSet02() {
       state.args.uiGridTimelineTitle    = "";
       state.args.uiGridActLstMode       = (data.vis.ui.params.group.uiGridActLstMode != undefined ? data.vis.ui.params.group.uiGridActLstMode : state.args.uiGridActLstMode);
       state.args.uiShowHelp             = (data.vis.ui.params.group.uiShowHelp != undefined ? data.vis.ui.params.group.uiShowHelp : state.args.uiShowHelp);
-	    state.args.uiIncenCheck			= (data.vis.ui.params.group.uiIncenCheck != undefined ? data.vis.ui.params.group.uiIncenCheck : state.args.uiIncenCheck);
+      state.args.uiIncenCheck			      = (data.vis.ui.params.group.uiIncenCheck != undefined ? data.vis.ui.params.group.uiIncenCheck : state.args.uiIncenCheck);
+      state.args.uiRecExpOnDemand       = (data.vis.ui.params.group.uiRecExpOnDemand != undefined ? data.vis.ui.params.group.uiRecExpOnDemand : state.args.uiRecExpOnDemand);
 
       //added by @Jordan
       state.args.kcMap                  = (data.vis.ui.params.group.kcMap != undefined ? data.vis.ui.params.group.kcMap : state.args.kcMap);
@@ -2681,7 +2684,8 @@ function stateArgsSet02() {
       state.args.uiGridActLstMode       = (data.vis.ui.params.user.uiGridActLstMode != undefined ? data.vis.ui.params.user.uiGridActLstMode : state.args.uiGridActLstMode);
       state.args.uiShowHelp             = (data.vis.ui.params.user.uiShowHelp != undefined ? data.vis.ui.params.user.uiShowHelp : state.args.uiShowHelp);    
 	    state.args.uiIncenCheck			= (data.vis.ui.params.user.uiIncenCheck != undefined ? data.vis.ui.params.user.uiIncenCheck : state.args.uiIncenCheck);
-  
+      state.args.uiRecExpOnDemand       = (data.vis.ui.params.user.uiRecExpOnDemand != undefined ? data.vis.ui.params.user.uiRecExpOnDemand : state.args.uiRecExpOnDemand);
+
       //added by @Jordan
       state.args.kcMap                  = (data.vis.ui.params.user.kcMap != undefined ? data.vis.ui.params.user.kcMap : state.args.kcMap);
       state.args.kcMapMode              = (data.vis.ui.params.user.kcMapMode != undefined ? data.vis.ui.params.user.kcMapMode : state.args.kcMapMode);
@@ -3763,8 +3767,19 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 			if(topic_rec_activities.length > 0) {
 				topic_rec_activities//.sort((a,b) => b.rec_score - a.rec_score)
 					.forEach(function(activity){
-						var recommendationItem = document.createElement('li');
-						$(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
+            var recommendationItem = document.createElement('li');
+            var recommendationInfoImg = document.createElement('img')
+            $(recommendationInfoImg)
+              .attr('src', 'img/help.png')
+              .attr('alt', 'icon')
+              .click(function(e){ 
+                if(state.args.uiRecExpOnDemand) {
+                  $('#rec-tooltip-content').show()
+                }
+              })
+
+            $(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
+            $(recommendationItem).append(recommendationInfoImg)
 						$(orderedList).append(recommendationItem);
 					})
 			} else {
@@ -4444,10 +4459,13 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         on("click", function (e) { ehVisGridBoxClick(e, d3.select(this)); });
     
      $('.recommendation').click(function(event) {
-      var rec_data = $(this).data('activity');
-      var square = getSquareOfGivenActivityData(rec_data);
+      if($(event.target).is('img') == false) {
+        var rec_data = $(this).data('activity');
+        var square = getSquareOfGivenActivityData(rec_data);
         
-      ehVisGridBoxClick(rec_data, d3.select(square));
+        ehVisGridBoxClick(rec_data, d3.select(square));
+      }
+      
     }).hover(function(e) {
       var rec_data = $(this).data('activity');
       var square = getSquareOfGivenActivityData(rec_data);
@@ -4478,30 +4496,33 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           }(mini.svg)
         ).
         on("click", function (e) { ehVisGridBoxClick(e, d3.select(this)); });
-    }
-  
-  $('.recommendation').click(function(event) {
-        var rec_data = $(this).data('activity');
-        var square = getSquareOfGivenActivityData(rec_data);
-        
-        ehVisGridBoxClick(rec_data, d3.select(square));
-    }).hover( function (gridData, miniSvg, miniSeries) {
-            return function (e) {
-        var rec_data = $(this).data('activity');
-        var square = getSquareOfGivenActivityData(rec_data);
 
-        ehVisGridBoxMouseOver(rec_data, d3.select(square), gridData, miniSvg, miniSeries);
-            };
-          }(gridData, mini.svg, mini.series)
-      , function (miniSvg) {
-            return function (e) {
-        var rec_data = $(this).data('activity');
-        var square = getSquareOfGivenActivityData(rec_data);
-        
-        ehVisGridBoxMouseOut(rec_data, d3.select(square), miniSvg);
-            };
-          }(mini.svg));
+        $('.recommendation').click(function(event) {
+          if($(event.target).is('img') == false) {
     
+              var rec_data = $(this).data('activity');
+              var square = getSquareOfGivenActivityData(rec_data);
+              
+              ehVisGridBoxClick(rec_data, d3.select(square));
+          }
+        }).hover( function (gridData, miniSvg, miniSeries) {
+                return function (e) {
+            var rec_data = $(this).data('activity');
+            var square = getSquareOfGivenActivityData(rec_data);
+    
+            ehVisGridBoxMouseOver(rec_data, d3.select(square), gridData, miniSvg, miniSeries);
+                };
+              }(gridData, mini.svg, mini.series)
+          , function (miniSvg) {
+                return function (e) {
+            var rec_data = $(this).data('activity');
+            var square = getSquareOfGivenActivityData(rec_data);
+            
+            ehVisGridBoxMouseOut(rec_data, d3.select(square), miniSvg);
+                };
+              }(mini.svg));
+    }
+      
   }
   if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial"){
     d3.selectAll("g.grid-cell-outter").each( function(d){
@@ -4710,7 +4731,13 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
           }
         }
 
+        
+
         $('#kcs_act_info').prepend(explanationTxt)
+
+        if(state.args.uiRecExpOnDemand) {
+          $('#rec-tooltip-content').hide()
+        }
 
         /*recTooltip.transition()    
           .duration(200)    
@@ -4731,6 +4758,10 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
             explanationTxt += "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
             
             $('#kcs_act_info').prepend(explanationTxt)
+
+            if(state.args.uiRecExpOnDemand) {
+              $('#rec-tooltip-content').hide()
+            }
 
   				  /*recTooltip.transition()    
   					  .duration(200)    
