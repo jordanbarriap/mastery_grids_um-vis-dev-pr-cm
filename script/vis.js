@@ -3769,17 +3769,20 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 					.forEach(function(activity){
             var recommendationItem = document.createElement('li');
             var recommendationInfoImg = document.createElement('img')
-            $(recommendationInfoImg)
-              .attr('src', 'img/help.png')
-              .attr('alt', 'icon')
-              .click(function(e){ 
-                if(state.args.uiRecExpOnDemand) {
-                  $('#rec-tooltip-content').show()
-                }
-              })
-
+            
             $(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
-            $(recommendationItem).append(recommendationInfoImg)
+            if(state.args.uiRecExpOnDemand) {
+              $(recommendationInfoImg)
+                .attr('src', 'img/help.png')
+                .attr('alt', 'icon')
+                .click(function(e){ 
+                
+                    $('#rec-tooltip-content').show()
+                
+                })
+                $(recommendationItem).append(recommendationInfoImg)
+            }
+           
 						$(orderedList).append(recommendationItem);
 					})
 			} else {
