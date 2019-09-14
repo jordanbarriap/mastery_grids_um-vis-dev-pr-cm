@@ -660,8 +660,6 @@ function addRecommendationsToUI(){
 						// })
 						// .style("pointer-events","none");
 						var rank_rec = rank_recommended_activities[act_id];
-						console.log(typeof rank_rec);
-						console.log(rank_rec);
 
 ;						var map_rank_to_seq = -1;
 
@@ -678,8 +676,6 @@ function addRecommendationsToUI(){
 								}
 							}
 						}
-
-						console.log(map_rank_to_seq);
 						
 						d3.select(this)
 							.append("svg:polygon")
