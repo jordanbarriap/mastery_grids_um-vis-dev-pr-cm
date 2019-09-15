@@ -1310,18 +1310,48 @@ function actOpen(resId, actIdx) {
   var is_quizjet_url = act.url.indexOf("quizjet") !== -1;
   if(data.context.group.id.startsWith("IS0017Fall2019") && is_quizjet_url){
     act.url = act.url.replace("/quizjet/","/quizjet_codetrace/");
-    //act.url = act.url + "&trace=true";
 
+    //Changes by Zak Risha for table trace params
     userKnowledge = {kcs: []};
+
+    //getSafe function in case bad prop
+    function getSafe(fn, defaultVal=false) {
+      try {
+          return fn();
+      } catch (e) {
+          return defaultVal;
+      }
+    }
+
+    //get kcs for uk param
     act.kcs.forEach(function(id){
-      userKnowledge.kcs.push(data.learners[0].state.kcs[id]);
+      var payload = getSafe(function(){
+        return data.learners[0].state.kcs[id]
+      });
+      if(payload) userKnowledge.kcs.push(payload);
     });
-  
+
+    //Average kcs
     userKnowledge.kcSum = userKnowledge.kcs.reduce(function(accumulator, kc) {
       return accumulator + kc.k;
     }, 0) / userKnowledge.kcs.length;
 
-    var popup = data.vis.ui.params.user.ttPopup ? "model" : "false"
+    //Set popup param based on ent_param
+    var popup;
+    switch (data.vis.ui.params.user.ttPopup) {
+      case true:
+        popup = "model";
+        break;
+      case false:
+        popup = "false";
+        break;
+      case "always":
+        popup = "always";
+        break;
+      default:
+        popup = "false";
+        break;
+    }
 
     act.url = act.url + "&trace=true&popup=" + popup + "&uk=" + userKnowledge.kcSum;
   }
