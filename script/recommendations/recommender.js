@@ -721,7 +721,8 @@ function addRecommendationsToUI(){
 							var colorIndex = Math.round(data.vis.color.value2color(d.val)*10);
 							var color = colorbrewer.Oranges[9][8-Math.min(colorIndex,8)];
 							return "fill: " + color + ";"; 
-							});
+							})
+							.style("pointer-events","none");
 					};
 				}
 				
