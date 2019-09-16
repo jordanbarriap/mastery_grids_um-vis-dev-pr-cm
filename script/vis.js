@@ -184,6 +184,8 @@ var data = null;  // the data requested from the server
 var kcs_success_rates = []; //kcs success rate
 var kcs_lastk_success_rates = []; //kcs last k attempts success rate
 var kcs_estimates = []; // kcs estimation requested from @Roya's developed service (bn_general) 
+var item_kc_estimates = {};//data structure used for storing student model coming from bn_general (added by @Jordan)
+
 var map_kcs_id_info = []; // helps to get the info from the kc name (added by @Jordan)
 var topics_concepts = [];//maps concepts and the topic that they first appear in (added by @Jordan)
 var map_concept_id_topic = {}; //maps id with topic in which appear first (added by @Jordan)
@@ -518,83 +520,19 @@ function actDone_cb(rsp) {
     
     //Draw bipartite graph
     redrawBipartite();
-    console.log("Finished draw bipartite");
-
   }
   
   if(data.configprops.agg_kc_student_modeling=="bn"){
     $.get( "http://adapt2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp+"&cid="+state.curr.cid+"&defaultModel=true", function(kcs_data) {
-
-      data.kcs = data.kcs.filter(n => n);
       
+     console.log("Updates data after user's attempt on an activity (using bn_general)");
         //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
-      var item_kc_estimates = kcs_data["item-kc-estimates"]
-      for (var i=0;i<item_kc_estimates.length;i++){
-        var kc_name = item_kc_estimates[i]["name"];
-        kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
-        var kc_obj = data.kcs.find(kc => {
-          return kc.n === kc_name
-        });
-        if(kc_obj){
-          map_kcs_id_info[kc_obj.id] = kc_obj;
-          data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
-        }
-      }
-
-      if(ui.vis.actLst.cont.style.display != 'none' && data.configprops.agg_proactiverec_method=="km"){
-        console.log("Generate KM recommendations after getting updates on the data...");
-
-        var topic     = getTopic();
-
-        recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[0].state.activities, data.learners[0].state.kcs, data.kcs, 0.5);
-
-        top_recommended_activities = recommended_activities.slice(0,3);
-
-        console.log("Top recommended activities:");
-        console.log(top_recommended_activities);
-            
-        //Here we get the maximum rank of the items recommended per topic
-        for(var i=0;i<top_recommended_activities.length;i++){
-          var rec_act_topic = top_recommended_activities[i]["topic"];
-          var rec_act_name  = top_recommended_activities[i]["name"];
-          var rec_act_id  = top_recommended_activities[i]["id"];
-          if (!(rec_act_topic in map_topic_max_rank_rec_act)){
-            map_topic_max_rank_rec_act[rec_act_topic] = i;
-          }
-          rank_recommended_activities[rec_act_id] = i;
-        }
-
-        //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
-        if(recommended_activities.length>0){
-            //Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
-            for(var j=0;j<recommended_activities.length;j++){
-              var rec_act_id  = recommended_activities[j]["id"];
-              if (rec_act_id in rank_recommended_activities){
-                recommended_activities[j]["isRecommended"]="1";
-              }else{
-                recommended_activities[j]["isRecommended"]="0";
-              }
-            }
-            var millisecondsDate = (new Date).getTime();
-            $.ajax({
-              type: "POST",
-              data :JSON.stringify({"usr":state.curr.usr,
-              "grp":state.curr.grp,
-              "sid":state.curr.sid,
-              "cid":state.curr.cid,
-              "sid":state.curr.sid,
-              "logRecId":millisecondsDate.toString(),
-              "recMethod":"bn-KM",
-              "recommendations":recommended_activities}),
-              url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
-              contentType: "application/json"
-            });
-        }
-      }
+      item_kc_estimates = kcs_data["item-kc-estimates"]
+      updateLearnerDataWithOtherEstimates(item_kc_estimates);
 
       //Draw bipartite graph
       redrawBipartite();
-      console.log("Finished draw bipartite");
+      console.log("Finished draw bipartite graph");
     });
   }
   
@@ -1430,10 +1368,20 @@ function updateLearnerData(rsp){
     visAugmentData_addAvgTopic ([me]);
     visAugmentData_addAvgRes   ([me]);
     
-    console.log("Alternative student modeling (bn) updates...");
     // if(data.configprops.agg_kc_student_modeling=="bn"){
     //   loadBnData();
     // }
+
+    //Update knowledge level information for the learner in case the student modeling method used is bn (from bn_general)
+    if(data.configprops.agg_kc_student_modeling=="bn"){
+      console.log("Update data.learners[0].state.kcs with data from bn_general (loaded previously)")
+      updateLearnerDataWithOtherEstimates(item_kc_estimates);
+
+      /*if(data.configprops.agg_proactiverec_enabled){
+        generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
+        addRecommendationsToUI();
+      }*/
+    }
 
     if(data.configprops.agg_kc_student_modeling=="cumulate"){
       for (var i=0;i<data.kcs.length;i++){
@@ -1462,21 +1410,25 @@ function loadBnData(){
 }
 
 function loadBnData_cb(kcs_data){
-  data.kcs = data.kcs.filter(n => n);
+  console.log("Loading bn data...");
         
   //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
-  var item_kc_estimates = kcs_data["item-kc-estimates"]
-    for (var i=0;i<item_kc_estimates.length;i++){
-      var kc_name = item_kc_estimates[i]["name"];
-      kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
-      var kc_obj = data.kcs.find(kc => {
-        return kc.n === kc_name
-      });
-      if(kc_obj){
-        map_kcs_id_info[kc_obj.id] = kc_obj;
-        data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
-      }
-    }
+    // var item_kc_estimates = kcs_data["item-kc-estimates"]
+    // for (var i=0;i<item_kc_estimates.length;i++){
+    //   var kc_name = item_kc_estimates[i]["name"];
+    //   kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
+    //   var kc_obj = data.kcs.find(kc => {
+    //     return kc.n === kc_name
+    //   });
+    //   if(kc_obj){
+    //     map_kcs_id_info[kc_obj.id] = kc_obj;
+    //     data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
+    //   }
+    // }
+
+    item_kc_estimates = kcs_data["item-kc-estimates"]
+
+    updateLearnerDataWithOtherEstimates(item_kc_estimates);
 
     if(data.configprops.agg_proactiverec_enabled){
       generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
@@ -1502,6 +1454,21 @@ function loadBnData_cb(kcs_data){
     }
 }
 
+function updateLearnerDataWithOtherEstimates(item_kc_estimates){
+    data.kcs = data.kcs.filter(n => n);
+    for (var i=0;i<item_kc_estimates.length;i++){
+      var kc_name = item_kc_estimates[i]["name"];
+      kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
+      var kc_obj = data.kcs.find(kc => {
+        return kc.n === kc_name
+      });
+      if(kc_obj){
+        map_kcs_id_info[kc_obj.id] = kc_obj;
+        data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
+      }
+    }
+}
+
 // ----^----
 function actUpdGrids_cb(fnCb) {
   var cellIdxSel = state.vis.grid.cellIdxSel;  // hold (a)
@@ -1524,6 +1491,7 @@ function actUpdGrids_cb(fnCb) {
     style("stroke", "black");
   
   if (fnCb) fnCb();
+  
 }
 
 
@@ -3754,7 +3722,6 @@ function visDoVaryCellW() {
  * Generates a grid.
  */
 function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXLabels, sqHFixed, cornerRadius, topicMaxW, xLblAngle, extraPaddingB, isInteractive, miniVis, miniSettings, resNames, doShowResNames, doShowTimeline, doReserveTimelineSpace, doUpdActLstTopicCellX, helpId) {
-  console.log(cont);
   var tbl = $$tbl(cont, null, "grid", 3, 2);
   if (doUpdActLstTopicCellX) ui.vis.actLst.topicCellX = [];
   
@@ -3857,7 +3824,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
                   var act_rec_info = recommended_activities.filter(function(d){return d["id"]==tooltip_activity.id})[0];
 
                   var rank_rec_activity = rank_recommended_activities[activity.id];
-                  
 
                   var rec_exp_log =
                     "action"           + CONST.log.sep02 + "recommended-activity-show-exp"                     + CONST.log.sep01 +
@@ -4771,25 +4737,28 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
       percent = percent/actId_kcs[actId].length;//percentage is the weighted avg of the number of kcs according to their category (see UMAP'18 paper for equation)- added by @Jordan
     }
     
-    percent = kcs_estimates[actId];
+    if(data.configprops.agg_kc_student_modeling=="bn"){
+      //This is the percent coming from bn (probability of solving a challenge or coding problem)
+      percent = kcs_estimates[actId];
 
-    //Estimates probability of understanding the example correctly given the avg of the knowledge in underlying concepts
-    if(percent == undefined){
-      var estimate = -1;
-      if (actId in actId_kcs){
-        estimate = 0;
-        for(var i=0; i < actId_kcs[actId].length; i++){
-          var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
-          var kc_level = kcs_estimates[kc_info.n];
-          //console.log(kc_info.n);
-          //console.log(kc_level);
-          estimate = estimate + kc_level;
+      //Estimates probability of understanding the example correctly given the avg of the knowledge in underlying concepts
+      if(percent == undefined){
+        var estimate = -1;
+        if (actId in actId_kcs){
+          estimate = 0;
+          for(var i=0; i < actId_kcs[actId].length; i++){
+            var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
+            var kc_level = kcs_estimates[kc_info.n];
+            //console.log(kc_info.n);
+            //console.log(kc_level);
+            estimate = estimate + kc_level;
+          }
+          estimate = estimate/actId_kcs[actId].length;
+          percent = estimate;
         }
-        estimate = estimate/actId_kcs[actId].length;
-        percent = estimate;
-      }
-    }  
-
+      }  
+    }
+  
     var resource = grpOutter.attr("data-var-id");
 
     //Added by @Jordan for rec_exp
@@ -4880,7 +4849,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
 		  }
     }
 
-    console.log("The value of the percent for the gauge is: "+percent);
+    //console.log("The value of the percent for the gauge is: "+percent);
     if(resource=="Challenges"){
       d3.select("#label-prob-act").text("Probability of solving this challenge: "+(Math.round(percent*1000) / 10)+"%").call(wrap,120);
     }
@@ -4941,7 +4910,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
     //var difficulty = percent;
     var probability = percent;
 
-    if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_kc_student_modeling=="cumulate"){
+    if(data.configprops.agg_proactiverec_enabled && (data.configprops.agg_kc_student_modeling=="cumulate" || data.configprops.agg_kc_student_modeling=="bn")){
       var current_topic = data.topics[topicIdx];
       var mg_activities = current_topic ? current_topic.activities:undefined;
       var data_resource = data.resources[resIdx];
@@ -4957,6 +4926,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         if(act_is_recommended){
           rank_recommended = rank_recommended_activities[act_id];
         }
+
+        var act_rec_info = recommended_activities.filter(function(d){return d["id"]==act_id})[0];
         
         var act_mouseover_log =
           "action"           + CONST.log.sep02 + "grid-activity-cell-mouseover" + CONST.log.sep01 +
@@ -4966,21 +4937,29 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
           "cell-resource-id" + CONST.log.sep02 + res.id                      + CONST.log.sep01 +
           "cell-activity-id" + CONST.log.sep02 + actId                       + CONST.log.sep01 + 
           "rank_recommend"   + CONST.log.sep02 + rank_recommended            + CONST.log.sep01 +
+          "recExp"           + CONST.log.sep02 + state.args.recExp           + CONST.log.sep01 +
           "kcsNotKnown"      + CONST.log.sep02 + kcsNotKnown                 + CONST.log.sep01 +
           "kcsLearning"      + CONST.log.sep02 + kcsLearning                 + CONST.log.sep01 +
           "kcsKnown"         + CONST.log.sep02 + kcsKnown                    + CONST.log.sep01 +
           //"difficulty"       + CONST.log.sep02 + act_difficulty                  + CONST.log.sep01 +
           //"probability"       + CONST.log.sep02 + probability                  + CONST.log.sep01 +
-          //log_medians_per_res + 
           //"median_prob"       + CONST.log.sep02 + median_prob                 + CONST.log.sep01 +
           //"activeVis"        + CONST.log.sep02 + uiCMVisId                   + CONST.log.sep01 +
           "comparisonMode"   + CONST.log.sep02 + state.args.uiTBarModeGrpChk     ;
 
-        var act_rec_info = recommended_activities.filter(function(d){return d["id"]==act_id})[0];
         if (act_rec_info!==undefined){
           var rec_score = act_rec_info["rec_score"];
           act_mouseover_log = act_mouseover_log + CONST.log.sep01 +
           "rec_score"   + CONST.log.sep02 + rec_score;
+          var explanation_text = act_rec_info["explanation"];
+          if(state.args.recExp && act_rec_info["isRecommended"]=="1" && explanation_text){
+            explanation_text = explanation_text.replace(",", " ");
+            explanation_text = explanation_text.replace(/<[^>]*>?/gm, '');
+            act_mouseover_log = act_mouseover_log + CONST.log.sep01 +
+            "isRec"   + CONST.log.sep02 + act_rec_info["isRecommended"] + CONST.log.sep01 +
+            "exp"   + CONST.log.sep02 + explanation_text;
+            console.log(act_mouseover_log);
+          }
         }
 
         //Logs the activity mouseover in ent_tracking (aggregate db)
