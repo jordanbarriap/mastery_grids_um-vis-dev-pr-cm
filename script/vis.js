@@ -4287,7 +4287,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           return tooltip; 
       });
 	  
-	if(state.args.uiIncenCheck){
+	if(state.args.uiIncenCheck && isInteractive){
       g.append("svg:image")
         .attr("class","credit-img")
         .filter(function(d) {return d3.select(this).node().parentNode.parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
