@@ -1246,7 +1246,8 @@ function actOpen(resId, actIdx) {
 
   //Replace old version of quizjet with the new version of quizjet which includes Table Tracing
   var is_quizjet_url = act.url.indexOf("quizjet") !== -1;
-  if(data.context.group.id.startsWith("IS0017Fall2019") && is_quizjet_url){
+
+  if(data.context.group.id.match(/^(IS0017Fall2019|WentworthFall2019)/) && is_quizjet_url){
     act.url = act.url.replace("/quizjet/","/quizjet_codetrace/");
 
     //Changes by Zak Risha for table trace params
