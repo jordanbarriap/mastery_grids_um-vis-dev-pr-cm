@@ -1276,7 +1276,8 @@ function actOpen(resId, actIdx) {
 
     //Set popup param based on ent_param
     var popup;
-    switch (data.vis.ui.params.user.ttPopup) {
+    var param = data.vis.ui.params.user.ttPopup ? data.vis.ui.params.user.ttPopup : data.vis.ui.params.group.ttPopup;
+    switch (param) {
       case true:
         popup = "model";
         break;
