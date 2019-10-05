@@ -82,7 +82,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, kc_levels, kc_top
 					rec_score = rec_score/weights_sum;//Normalizing rec score with total of the sum of weights (?)
 				}
 
-				var rec_explanation = "This activity is recommended because:<ul style='padding-left:2em;margin-top:0;padding-top:0;margin-bottom:0;padding-bottom:0'>";
+				var rec_explanation = "This activity is recommended because:<ul>";
 
 				if ((problematic_kcs+slip_kcs)>0){
 					rec_explanation = rec_explanation + "<li style='padding-left:0'>It allows you to practice <b>"+(problematic_kcs + slip_kcs)+"</b> concepts which <span style='color:red; font-weight: bold;'>might have caused problems</span> in the past.</li>"
@@ -264,8 +264,8 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					return non_attempted_concepts.indexOf(n) !== -1;
 				});
 
-				console.log("Overlap non-attempted outcome concepts");
-				console.log(overlap_non_attempted_outcomes_kcs);
+				//console.log("Overlap non-attempted outcome concepts");
+				//console.log(overlap_non_attempted_outcomes_kcs);
 				
 				var rec_score = 0;
 	
@@ -321,8 +321,8 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					
 					//console.log(activity.id)
 					//console.log("Rec score: "+rec_score);
-	
-					var rec_explanation = "This example is recommended because it presents concept(s) that are new to you.";
+					console.log()
+					var rec_explanation = "This example is recommended because it presents <span class='important-text'>concept(s) that are new</span> to you (e.g. <i>"+kc_topic_weights.filter(function(d){return d.id==overlap_non_attempted_outcomes_kcs[0];})[0].dn+"</i>).";
 
 					ranked_activity = Object.assign({}, activity);
 					ranked_activity["rec_score"] = rec_score;
@@ -409,7 +409,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					}
 					rec_score=rec_score/(total_prerequisites + total_outcomes);
 
-					var rec_explanation = "This activity is recommended because:<ul style='padding-left:2em;margin-top:0;padding-top:0;margin-bottom:0;padding-bottom:0'>";
+					var rec_explanation = "This activity is recommended because:<ul>";
 					
 					//console.log(activity.id);
 					//console.log("Rec score: "+rec_score);
@@ -455,18 +455,18 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					var prerequisite_explanation = "";
 
 					if(top_prerequisite_concepts && top_prerequisite_concepts.length>0){
-						console.log("Average most important prerequisites:");
-						console.log(avg_k_prerequisite_concepts);
+						//console.log("Average most important prerequisites:");
+						//console.log(avg_k_prerequisite_concepts);
 						if(avg_k_prerequisite_concepts>=mastery_threshold){
-							prerequisite_explanation+="<li>It looks like in average you <span style='border-radius:5px;background-color:#219A19;color:white;padding:2px;'>master</span> the main prerequisite concepts.</li>";
+							prerequisite_explanation+="<li>It looks like on average you <span class='level1-exp-text'>master</span> the main <span class='important-text'>prerequisite concepts</span>.</li>";
 						}else{
 							if(avg_k_prerequisite_concepts>=proficiency_threshold){
-								prerequisite_explanation+="<li>It looks like in average you are <span style='border-radius:5px;background-color:#5DB956;color:white;padding:2px;'>proficient</span> on the main prerequisite concepts.</li>";
+								prerequisite_explanation+="<li>It looks like on average you are <span class='level2-exp-text'>proficient</span> in the main <span class='important-text'>prerequisite concepts</span>.</li>";
 							}else{
 								if(avg_k_prerequisite_concepts>=good_threshold){
-									prerequisite_explanation+="<li>It looks like in average you have a <span style='border-radius:5px;background-color:#A0C49D;color:black;padding:2px;'>good</span> understanding on the main prerequisite concepts.</li>";
+									prerequisite_explanation+="<li>It looks like on average you have a <span class='level3-exp-text'>good</span> understanding in the main <span class='important-text'>prerequisite concepts</span>.</li>";
 								}else{
-									prerequisite_explanation+="<li>Altough it is low, your level of knowledge on the main prerequisite concepts is one of the highest within the topic.</li>";
+									prerequisite_explanation+="<li>Although it is low, your knowledge level on the main <span class='important-text'>prerequisite concepts</span> is one of the highest within the topic.</li>";
 								}
 							}
 						}
@@ -488,20 +488,20 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					if(top_outcome_concepts.length<top_num_concepts) top_num_concepts=top_outcome_concepts.length;
 
 					var outcome_explanation = "";
-					console.log(top_outcome_concepts);
+					
 					if(top_outcome_concepts && top_outcome_concepts.length>0){
-						console.log("Average learning opportunity of most important outcomes:");
-						console.log(avg_k_outcome_concepts);
+						//console.log("Average learning opportunity of most important outcomes:");
+						//console.log(avg_k_outcome_concepts);
 						if(avg_k_outcome_concepts>=excellent_opportunity_threshold){
-							outcome_explanation+="<li>You have an <span style='border-radius:5px;background-color:#219A19;color:white;padding:2px;'>excellent</span> opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
+							outcome_explanation+="<li>You have an <span class='level1-exp-text'>excellent</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
 						}else{
 							if(avg_k_outcome_concepts>=good_opportunity_threshold){
-								outcome_explanation+="<li>You have a <span style='border-radius:5px;background-color:#5DB956;color:white;padding:2px;'>good</span> opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
+								outcome_explanation+="<li>You have a <span class='level2-exp-text'>good</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
 							}else{
 								if(avg_k_outcome_concepts>=fair_opportunity_threshold){
-									outcome_explanation+="<li>You have a <span style='border-radius:5px;background-color:#A0C49D;color:black;padding:2px;'>fair</span> opportunity for increasing your knowledge on key concepts introduced in this topic.</li>";
+									outcome_explanation+="<li>You have a <span class='level3-exp-text'>fair</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
 								}else{
-									outcome_explanation+="<li>Altough it is low, the opportunity for increasing your knowledge on key concepts introduced in this topic is one of the highest within the topic.</li>";
+									outcome_explanation+="<li>Although it is low, the opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic is one of the highest within the topic.</li>";
 								}
 							}
 						}
@@ -721,7 +721,8 @@ function addRecommendationsToUI(){
 							var colorIndex = Math.round(data.vis.color.value2color(d.val)*10);
 							var color = colorbrewer.Oranges[9][8-Math.min(colorIndex,8)];
 							return "fill: " + color + ";"; 
-							});
+							})
+							.style("pointer-events","none");
 					};
 				}
 				

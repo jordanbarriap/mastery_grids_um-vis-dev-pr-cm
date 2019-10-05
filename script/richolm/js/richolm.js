@@ -3330,7 +3330,6 @@ function createFakeLinks(){
 
 //added by Haoran Zhao
 function inituiCMVis(settings,uiCMVisIdOut){
-  console.log(settings);
   uiCMVisId=uiCMVisIdOut;
   gridSetting = settings;
 
@@ -4555,8 +4554,8 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
       percent = percent/actId_kcs[actId].length;//percentage is the weighted avg of the number of kcs according to their category (see UMAP'18 paper for equation)- added by @Jordan
     }
     
-    percent = kcs_estimates[actId];
-    console.log("Percent: "+percent);
+    if(data.configprops.agg_kc_student_modeling=="bn"){
+      percent = kcs_estimates[actId];
     
     //Estimates probability of understanding the example correctly given the avg of the knowledge in underlying concepts
     if(percent == undefined){
@@ -4574,6 +4573,7 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
         percent = estimate;
       }
     }  
+    }
 
     var tid=lastNodeMouseOver;
 
