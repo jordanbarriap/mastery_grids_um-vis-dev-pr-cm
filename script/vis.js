@@ -2239,8 +2239,9 @@ function loadData_cb(res) {
               var topic_name = d3.select(this).attr("topic");
             
               var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
+
               if(topic_has_recommended_acts){
-                addRecommendationStar()
+                addRecommendationStarToTopic(d3.select(this),topic_name)
               };
           });
 
@@ -2268,24 +2269,33 @@ function loadData_cb(res) {
   //end of code added by @Jordan
 }
 
-function addRecommendationStar() {
+function addRecommendationStarToTopic(g_cell_topic, topic_name) {
   var rank_rec = map_topic_max_rank_rec_act[topic_name];
-  var map_rank_to_seq = 0;
-  if(rank_rec=="0"){
-    map_rank_to_seq = 1;
-  }else{
-    if(rank_rec=="1"){
-      map_rank_to_seq=.7;
-    }else{
-      if(rank_rec=="2"){
-        map_rank_to_seq=.3;
-      }else{
-        map_rank_to_seq=0;
-      }
-    }
-  }
 
-  d3.select(this)/*.append("svg:image")
+  // function for adding two numbers.
+  const add = (a, b) =>
+  a + b
+  // use reduce to sum the total number of recommended activities
+  var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
+
+  var map_rank_to_seq = 0;
+  map_rank_to_seq = 1-(rank_rec/total_rec_activities);
+
+  // if(rank_rec=="0"){
+  //   map_rank_to_seq = 1;
+  // }else{
+  //   if(rank_rec=="1"){
+  //     map_rank_to_seq=.7;
+  //   }else{
+  //     if(rank_rec=="2"){
+  //       map_rank_to_seq=.3;
+  //     }else{
+  //       map_rank_to_seq=0;
+  //     }
+  //   }
+  // }
+
+  g_cell_topic/*.append("svg:image")
       .attr('x', 8)
       .attr('y', 2)
       .attr('width', scaleRecommendationStar(map_topic_max_rank_rec_act[topic_name]))
@@ -2300,7 +2310,7 @@ function addRecommendationStar() {
         .attr("id", "star_1")
         .attr("visibility", "visible")
         //.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
-        .attr("points", function (d) { d.seq = map_rank_to_seq; return ((d.actIdx === -1 || d.seq === 0) ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+        .attr("points", function (d) { d.seq = map_rank_to_seq; return ((d.seq === 0) ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
         .attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
         //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
         .attr("stroke", "white")
@@ -3801,6 +3811,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 				topic_rec_activities//.sort((a,b) => b.rec_score - a.rec_score)
 					.forEach(function(activity){
             var recommendationItem = document.createElement('li');
+            recommendationItem.setAttribute("value",rank_recommended_activities[activity.id]+1);
             var recommendationInfoImg = document.createElement('img')
             $(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
             if(state.args.uiRecExpOnDemand) {
@@ -4597,10 +4608,10 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial"){
     d3.selectAll("g.grid-cell-outter").each( function(d){
       var topic_name = d3.select(this).attr("topic");
-     
+      console.log(d3.select(this));
       var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
       if(topic_has_recommended_acts){
-          addRecommendationStar()
+          addRecommendationStarToTopic(d3.select(this),topic_name)
         };
     });
   }

@@ -663,26 +663,38 @@ function addRecommendationsToUI(){
 
 ;						var map_rank_to_seq = -1;
 
-						if(rank_rec===0){
-							map_rank_to_seq = 1;
-						}else{
-							if(rank_rec===1){
-								map_rank_to_seq = 0.7;
+						//TODO write here what happen if the proactive method is km
+						if(data.configprops.agg_proactiverec_method=="km"){
+							if(rank_rec===0){
+								map_rank_to_seq = 1;
 							}else{
-								if(rank_rec===2){
-									map_rank_to_seq = 0.3;
+								if(rank_rec===1){
+									map_rank_to_seq = 0.7;
 								}else{
-									map_rank_to_seq= 0.0;
+									if(rank_rec===2){
+										map_rank_to_seq = 0.3;
+									}else{
+										map_rank_to_seq= 0.0;
+									}
 								}
 							}
 						}
+						//TODO write here what happen if the proactive method is remedial
+						if(data.configprops.agg_proactiverec_method=="remedial"){
+							// function for adding two numbers.
+							const add = (a, b) => a + b
+							// use reduce to sum the total number of recommended activities
+							var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
+							map_rank_to_seq = 1-(rank_rec/total_rec_activities);
+						}
+						
 						
 						d3.select(this)
 							.append("svg:polygon")
 							//.attr("id", "star_1")
 							.attr("visibility", "visible")
 							//.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
-							.attr("points", function (d) { d.seq = map_rank_to_seq; console.log(d.seq); return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+							.attr("points", function (d) { d.seq = map_rank_to_seq; return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
 							.attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
 							//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
 							.attr("stroke", "white")
@@ -696,16 +708,22 @@ function addRecommendationsToUI(){
 							attr("x", 15).
 							attr("y", 15).
 							style("text-anchor", "start").
-							text(function (d) { 
-								if(d.seq === 1) {
-									return " 1";
-								} else if (d.seq === 0.7) {
-									return " 2";
-								} else if (d.seq === 0.3){
-									return " 3";
-								} else{
-									return "";
+							text(function (d) {
+								if(data.configprops.agg_proactiverec_method=="km"){
+									if(d.seq === 1) {
+										return " 1";
+									} else if (d.seq === 0.7) {
+										return " 2";
+									} else if (d.seq === 0.3){
+										return " 3";
+									} else{
+										return "";
+									}
 								}
+								if(data.configprops.agg_proactiverec_method=="remedial"){
+									return rank_rec+1;
+								}
+								
 							
 							/*if(d.seq === 1) {
 								return "+6";
