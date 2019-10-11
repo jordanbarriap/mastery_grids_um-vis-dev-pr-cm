@@ -4602,10 +4602,10 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
         console.log("Needle will move to: "+percent);
         if(state.args.difficultyMsg || state.args.impactMsg){
           if(state.args.difficultyMsg){
-            needle.moveTo(1-percent);
+            needle.moveTo(percent);
           }
           if(state.args.impactMsg){
-            needle.moveTo(percent);
+            needle.moveTo(1-percent);
           }
         }else{
           needle.moveTo(percent);
