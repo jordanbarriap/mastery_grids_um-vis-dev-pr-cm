@@ -803,6 +803,11 @@ function helpDialogHide(){
  * 'state.vis.topicIdx' should be set before this function is invoked.
  */
 function actLstShow(doMe, doVs, doGrp) {
+
+  if(state.args.uiTopicTimeMapFile && checkIfTopicUnlocked(state.vis.topicIdx) == false) {
+    actLstHide()
+    return;
+  }
   
   state.vis.lastCellSel.doMe = doMe;
   state.vis.lastCellSel.doVs = doVs;
@@ -2646,6 +2651,8 @@ function stateArgsSet02() {
 
   state.args.uiRecExpOnDemand = (qs["ui-rec-exp-on-demand"]  === "1" ? true : false);
 
+  state.args.uiTopicTimeMapFile = (qs["ui-topic-time-map-file"]  !== undefined ? qs["ui-topic-time-map-file"] : undefined);
+
   //added by @Jordan
   state.args.kcMap = "";
   state.args.kcMapMode = 0;
@@ -2689,6 +2696,7 @@ function stateArgsSet02() {
       state.args.uiShowHelp             = (data.vis.ui.params.group.uiShowHelp != undefined ? data.vis.ui.params.group.uiShowHelp : state.args.uiShowHelp);
       state.args.uiIncenCheck			      = (data.vis.ui.params.group.uiIncenCheck != undefined ? data.vis.ui.params.group.uiIncenCheck : state.args.uiIncenCheck);
       state.args.uiRecExpOnDemand       = (data.vis.ui.params.group.uiRecExpOnDemand != undefined ? data.vis.ui.params.group.uiRecExpOnDemand : state.args.uiRecExpOnDemand);
+      state.args.uiTopicTimeMapFile     = (data.vis.ui.params.group.uiTopicTimeMapFile != undefined ? data.vis.ui.params.group.uiTopicTimeMapFile : state.args.uiTopicTimeMapFile);
 
       //added by @Jordan
       state.args.kcMap                  = (data.vis.ui.params.group.kcMap != undefined ? data.vis.ui.params.group.kcMap : state.args.kcMap);
@@ -2729,6 +2737,8 @@ function stateArgsSet02() {
       state.args.uiShowHelp             = (data.vis.ui.params.user.uiShowHelp != undefined ? data.vis.ui.params.user.uiShowHelp : state.args.uiShowHelp);    
 	    state.args.uiIncenCheck			= (data.vis.ui.params.user.uiIncenCheck != undefined ? data.vis.ui.params.user.uiIncenCheck : state.args.uiIncenCheck);
       state.args.uiRecExpOnDemand       = (data.vis.ui.params.user.uiRecExpOnDemand != undefined ? data.vis.ui.params.user.uiRecExpOnDemand : state.args.uiRecExpOnDemand);
+      state.args.uiTopicTimeMapFile     = (data.vis.ui.params.user.uiTopicTimeMapFile != undefined ? data.vis.ui.params.user.uiTopicTimeMapFile : state.args.uiTopicTimeMapFile);
+
 
       //added by @Jordan
       state.args.kcMap                  = (data.vis.ui.params.user.kcMap != undefined ? data.vis.ui.params.user.kcMap : state.args.kcMap);
@@ -4321,7 +4331,34 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         				  return;
 			           }
             }});
-    }
+  } 
+  
+  if(state.args.uiTopicTimeMapFile && isInteractive){
+    $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=201910271059", function(json) {
+      for (var i=0; i < json.topicTime.length ; i++) {
+        data.topics[json.topicTime[i].topicOrder].unlockTime = json.topicTime[i].releaseDate
+      }
+
+      console.log(json)
+      g.append("svg:image")
+      .attr("class","lock-img")
+      .filter(function(d) {return d3.select(this).node().parentNode.parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
+        .attr('x', sqW / 2 + 6)
+        .attr('y', - sqW / 2 + 8)
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr("xlink:href", function(d){
+            if(d.topicIdx > 0) {
+              if(!checkIfTopicUnlocked(d.topicIdx))
+                  return "./img/lock2.png"; 
+              else 
+                  return;
+            }
+            return;
+            
+        });
+    });
+  }
   
   // Grid cells -- Sequencing:
   if (s.doShowSeq) {
@@ -4618,6 +4655,12 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   
   
   return svg;
+}
+
+function checkIfTopicUnlocked(topicId) {
+  var topicUnlockTime = new Date(data.topics[topicId].unlockTime)
+  var currentDate = new Date()
+  return currentDate >= topicUnlockTime
 }
 
 /**
