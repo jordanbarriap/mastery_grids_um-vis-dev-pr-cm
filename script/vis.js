@@ -3826,12 +3826,12 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
             $(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
             if(state.args.uiRecExpOnDemand) {
               $(recommendationInfoImg)
-                .attr('src', 'img/info.png')
+                .attr('src', 'img/why.png')
                 .attr('id', 'rec-info-img')
                 .attr('alt', 'icon')
                 .attr('class', 'info-icon')
-                .width('20px')
-                .attr('title', 'Why this activity?')
+                .width('30px')
+                .attr('title', 'Why this activity recommended?')
                 .data('activity', activity)
                 .mouseover(function() {
                   setTimeout(function(){
