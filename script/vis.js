@@ -4334,7 +4334,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   } 
   
   if(state.args.uiTopicTimeMapFile && isInteractive){
-    $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=201910271059", function(json) {
+    $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=201910271040", function(json) {
       for (var i=0; i < json.topicTime.length ; i++) {
         data.topics[json.topicTime[i].topicOrder].unlockTime = json.topicTime[i].releaseDate
       }
@@ -6099,7 +6099,7 @@ function generateHelp(origin){
 		
 		helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>My Progress Grid</h3><p>This row represents your progress in the topics of the course. Each topic is a cell. Gray means 0% of progress and darker color means more progress.</p>";
         helpText += "<table border=0 cellpadding=0 cellspacing=0>";
-				
+
 		if(data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial"){
 			helpText += "<tr>" +
                 "<td style='padding:2px 5px 2px 0px;'>0%</td>" +
@@ -6145,7 +6145,12 @@ function generateHelp(origin){
       }
 			
 			height += 150;
-		}
+    }
+    
+    if(state.args.uiTopicTimeMapFile) {
+      helpText += "<h3>Topic Opening</h3><img src='./img/lock2.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that the topic is not available for now but will be opened by your instructor at a later time. </p>"
+      height += 50;
+    }
 		
 		ui.vis.helpDlg.style.height = height + "px";
         //"#edf8e9","#c7e9c0","#a1d99b","#74c476","#31a354","#006d2c"
