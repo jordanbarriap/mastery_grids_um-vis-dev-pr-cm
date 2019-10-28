@@ -1146,6 +1146,7 @@ function actLstShow(doMe, doVs, doGrp) {
 function actLstHide() {
   if (uiCMVisId=="bipartite"){
     topicNodeMouseOut(data.topics.filter(function(d){return d.order == state.vis.topicIdx;})[0]);  //Code added by @Jordan
+    $("div#chart").css("display","initial");
   }  
 
   state.vis.grid.cellIdxSel = -1;
@@ -1462,6 +1463,7 @@ function loadBnData_cb(kcs_data){
 
 function updateLearnerDataWithOtherEstimates(item_kc_estimates){
     data.kcs = data.kcs.filter(n => n);
+    var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
     for (var i=0;i<item_kc_estimates.length;i++){
       var kc_name = item_kc_estimates[i]["name"];
       kcs_estimates[kc_name] = item_kc_estimates[i]["p"];
@@ -1470,7 +1472,7 @@ function updateLearnerDataWithOtherEstimates(item_kc_estimates){
       });
       if(kc_obj){
         map_kcs_id_info[kc_obj.id] = kc_obj;
-        data.learners[0].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
+        data.learners[usr_index].state.kcs[kc_obj.id].k = item_kc_estimates[i]["p"];//Replace the value of k from data.learners[0].state.kcs with the values that come from bn_general
       }
     }
 }
@@ -2253,6 +2255,11 @@ function loadData_cb(res) {
         }
       }
 
+      //Update progress check info
+      if(state.args.uiMinProgressCheck){
+        updateMinOverallProgressCheckInfo();
+      }
+      
  
 	  
 	   //Show help if this is the first time they open the activity in their browser (with the new version)
@@ -2327,7 +2334,7 @@ function addRecommendationStarToTopic(g_cell_topic, topic_name) {
 
 // ------------------------------------------------------------------------------------------------------
 function loadDataOthers() {
-  
+
   actLstHide();
   
   var btn = $("#btn-others-load");
@@ -2349,22 +2356,53 @@ function loadDataOthers_cb(res) {
   state.args.dataReqOtherLearners = true;
   
   data.learners = res.learners;  // ... = res
+
   visAugmentData_addAvgTopic (data.learners);
   visAugmentData_addAvgRes   (data.learners);
 
+  //Update knowledge level information for the learner in case the student modeling method used is bn (from bn_general)
+  if(data.configprops.agg_kc_student_modeling=="bn"){
+    console.log("Update data.learners[0].state.kcs with data from bn_general (loaded previously)")
+    updateLearnerDataWithOtherEstimates(item_kc_estimates);
+
+    /*if(data.configprops.agg_proactiverec_enabled){
+      generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
+      addRecommendationsToUI();
+    }*/
+  }
+
+  if(data.configprops.agg_kc_student_modeling=="cumulate"){
+    for (var i=0;i<data.kcs.length;i++){
+      var kc_name = data.kcs[i].n;
+      var kc_id = data.kcs[i].id;
+      kcs_estimates[kc_name] = data.learners[0].state.kcs[kc_id].k;
+      kcs_success_rates[kc_name] = data.learners[0].state.kcs[kc_id].sr;
+      kcs_lastk_success_rates[kc_name] = data.learners[0].state.kcs[kc_id]["lastk-sr"];
+      
+      var kc_obj = data.kcs.find(kc => {
+        return kc.n === kc_name
+      });
+      if(kc_obj){
+        map_kcs_id_info[kc_obj.id] = kc_obj;
+      }
+    }
+  }
+  
+  visDo(false, false, true);
+
   //Added by @Jordan
-  if(state.args.kcMap && state.args.kcMap.includes("bipartite")){
+  if(state.args.kcMap && state.args.kcMap.indexOf("bipartite") >= 0){
+    //redrawBipartite();
     var kcMap = "bipartite";
     uiCMVisId = kcMap;
     inituiCMVis(CONST.vis.gridAbs,uiCMVisId);
   }
   //end of code added by @Jordan
   
-  visDo(false, false, true);
-  
   var btn = $("#btn-others-load");
   btn.prop("disabled", false);
   btn.attr("value", "Update other learners");
+
 }
 
 function loadSequencedActs(data){
@@ -2697,6 +2735,7 @@ function stateArgsSet02() {
       state.args.uiIncenCheck			      = (data.vis.ui.params.group.uiIncenCheck != undefined ? data.vis.ui.params.group.uiIncenCheck : state.args.uiIncenCheck);
       state.args.uiRecExpOnDemand       = (data.vis.ui.params.group.uiRecExpOnDemand != undefined ? data.vis.ui.params.group.uiRecExpOnDemand : state.args.uiRecExpOnDemand);
       state.args.uiTopicTimeMapFile     = (data.vis.ui.params.group.uiTopicTimeMapFile != undefined ? data.vis.ui.params.group.uiTopicTimeMapFile : state.args.uiTopicTimeMapFile);
+      state.args.uiMinProgressCheck    = (data.vis.ui.params.group.uiMinProgressCheck != undefined ? data.vis.ui.params.group.uiMinProgressCheck : state.rgs.uiMinProgressCheck);
 
       //added by @Jordan
       state.args.kcMap                  = (data.vis.ui.params.group.kcMap != undefined ? data.vis.ui.params.group.kcMap : state.args.kcMap);
@@ -2738,7 +2777,7 @@ function stateArgsSet02() {
 	    state.args.uiIncenCheck			= (data.vis.ui.params.user.uiIncenCheck != undefined ? data.vis.ui.params.user.uiIncenCheck : state.args.uiIncenCheck);
       state.args.uiRecExpOnDemand       = (data.vis.ui.params.user.uiRecExpOnDemand != undefined ? data.vis.ui.params.user.uiRecExpOnDemand : state.args.uiRecExpOnDemand);
       state.args.uiTopicTimeMapFile     = (data.vis.ui.params.user.uiTopicTimeMapFile != undefined ? data.vis.ui.params.user.uiTopicTimeMapFile : state.args.uiTopicTimeMapFile);
-
+      state.args.uiMinProgressCheck     = (data.vis.ui.params.user.uiMinProgressCheck != undefined ? data.vis.ui.params.user.uiMinProgressCheck : state.args.uiMinProgressCheck);
 
       //added by @Jordan
       state.args.kcMap                  = (data.vis.ui.params.user.kcMap != undefined ? data.vis.ui.params.user.kcMap : state.args.kcMap);
@@ -4012,6 +4051,14 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
     attr("class", "grid");
 
   var rowOffsetGrid = 0//added by @Jordan
+
+  if(state.args.uiMinProgressCheck){
+    if($("#min-progress-check").length==0){
+      var html_progress_check = "<div id='min-progress-check'>Summary progress:</div>";
+      $(html_progress_check).prependTo("#grids");
+    }
+    updateMinOverallProgressCheckInfo();
+  }
   
   if(state.args.uiIncenCheck){
       var credit_achievement = []
@@ -4332,31 +4379,32 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 			           }
             }});
   } 
-  
+
   if(state.args.uiTopicTimeMapFile && isInteractive){
+
     $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=201910271040", function(json) {
       for (var i=0; i < json.topicTime.length ; i++) {
         data.topics[json.topicTime[i].topicOrder].unlockTime = json.topicTime[i].releaseDate
       }
-
-      console.log(json)
-      g.append("svg:image")
-      .attr("class","lock-img")
-      .filter(function(d) {return d3.select(this).node().parentNode.parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
-        .attr('x', sqW / 2 + 6)
-        .attr('y', - sqW / 2 + 8)
-        .attr('width', 12)
-        .attr('height', 12)
-        .attr("xlink:href", function(d){
-            if(d.topicIdx > 0) {
-              if(!checkIfTopicUnlocked(d.topicIdx))
-                  return "./img/lock2.png"; 
-              else 
-                  return;
-            }
-            return;
-            
-        });
+      if(d3.selectAll(".lock-img").empty()){
+        d3.selectAll(".grid-cell-inner").append("svg:image")
+        .attr("class","lock-img")
+        .filter(function(d) {return d3.select(this).node().parentNode.parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
+          .attr('x', sqW / 2 + 6)
+          .attr('y', - sqW / 2 + 8)
+          .attr('width', 12)
+          .attr('height', 12)
+          .attr("xlink:href", function(d){
+              if(d.topicIdx > 0) {
+                if(!checkIfTopicUnlocked(d.topicIdx))
+                    return "./img/lock2.png"; 
+                else 
+                    return;
+              }
+              return;
+              
+          });
+      }
     });
   }
   
@@ -6354,5 +6402,29 @@ function median(values){
     return values[half];
   else
     return (values[half - 1] + values[half]) / 2.0;
+}
+
+function calculateOverallProgressPerActType(data_per_topic,act_type){
+  var avg_progress = data_per_topic["AVG"]["values"];
+  var avg_progress_act_type = 0;
+  var avg_progress_act_type = avg_progress[act_type]["p"];
+  return avg_progress_act_type;
+}
+
+function updateMinOverallProgressCheckInfo(){
+  var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+  var progress_data=data.learners[usr_index].state.topics;
+  var act_ids = Object.keys(state.args.uiMinProgressCheck);
+  var minOverallProgressInfoHTML = $("#min-progress-check");
+  minOverallProgressInfoHTML.empty()
+  var progress_html = "<b>Progress summary:</b> ";
+  for(var i=0;i<act_ids.length;i++){
+    var act_type=act_ids[i];
+    var minRequiredProgress = state.args.uiMinProgressCheck[act_type];
+    var currentProgress = calculateOverallProgressPerActType(progress_data,act_type);
+    progress_html = progress_html + "   <span style='color:green;'>" + act_type + ":</span> "+Math.round(currentProgress*100)+"% (min. " +Math.round(minRequiredProgress*100)+ "%) &nbsp; &nbsp;"; 
+  }
+  progress_html = progress_html + "</br>";
+  minOverallProgressInfoHTML.html(progress_html);
 }
 

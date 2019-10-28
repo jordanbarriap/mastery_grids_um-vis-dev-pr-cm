@@ -324,3 +324,5 @@ img.info-icon{position:relative;display:block;float:right;}
 .level3-exp-text{border-radius:5px;background-color:#5cae62;color:white;padding:2px;}
 .important-text{color:rgb(241, 105, 19);font-weight: bold}
 #rec-tooltip-content > ul{padding-left:2em;margin-top:0;padding-top:0;margin-bottom:0;padding-bottom:0;}
+
+#min-progress-check{font-size: 13px;margin-left:4px;}

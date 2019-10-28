@@ -8,6 +8,7 @@ var non_recommended_topics = ["Table Creation", "Table Deletion and Alteration",
  * knowledge level infered for kcs
  */
 function generateRemedialRecommendations(data_topics_acts_kcs, kc_levels, kc_topic_weights, weight_kcs, weight_sr){
+	console.log(kc_levels);
 	var proficiency_threshold = .66;
 	var filtered_kcs = kc_topic_weights.map(function(d){return d.id});
 	var filtered_kc_levels = {};
@@ -757,7 +758,8 @@ function generateProactiveRecommendations(method){
 
 		if (topic==null) return;
 
-		recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[0].state.activities, data.learners[0].state.kcs, data.kcs, 0.5);
+		var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+		recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[usr_index].state.activities, data.learners[usr_index].state.kcs, data.kcs, 0.5);
 	
 		top_recommended_activities = recommended_activities.slice(0,3);
 		rank_recommended_activities = {};

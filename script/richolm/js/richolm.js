@@ -3422,7 +3422,8 @@ function getOrderMap(){
 
     //Delete elements which we do not have kc estimates from bn_general service - added by @Jordan
     for (var i=0;i<kcs.length;i++){
-      if (!(kcs[i].n in kcs_estimates)){
+      
+      if (!kcs[i] || (kcs[i] && !(kcs[i].n in kcs_estimates))){
         delete kcs[i];
       }
     }
@@ -4557,7 +4558,7 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
     if(data.configprops.agg_kc_student_modeling=="bn"){
       percent = kcs_estimates[actId];
     
-    //Estimates probability of understanding the example correctly given the avg of the knowledge in underlying concepts
+    //Estimates probability of understanding the example correctly given the avg of the knowledge in underlying
     if(percent == undefined){
       var estimate = -1;
       if (actId in actId_kcs){
