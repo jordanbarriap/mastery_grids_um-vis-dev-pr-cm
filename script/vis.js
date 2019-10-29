@@ -4391,9 +4391,10 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         data.topics[json.topicTime[i].topicOrder].unlockTime = json.topicTime[i].releaseDate
       }
       if(d3.selectAll(".lock-img").empty()){
-        d3.selectAll(".grid-cell-inner").append("svg:image")
+        d3.selectAll(".grid-cell-inner")
+        .filter(function(d) {return (d3.select(this).select("rect").attr("width")==d3.select(this).select("rect").attr("height")) && d3.select(this).node().parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
+        .append("svg:image")
         .attr("class","lock-img")
-        .filter(function(d) {return d3.select(this).node().parentNode.parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
           .attr('x', sqW / 2 + 6)
           .attr('y', - sqW / 2 + 8)
           .attr('width', 12)
