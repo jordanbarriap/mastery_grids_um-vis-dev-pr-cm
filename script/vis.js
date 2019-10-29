@@ -446,10 +446,11 @@ function actDone_cb(rsp) {
 	if(data.configprops.agg_kc_student_modeling=="cumulate"){
 	  for (var i=0;i<data.kcs.length;i++){
 		var kc_name = data.kcs[i].n;
-		var kc_id = data.kcs[i].id;
-		kcs_estimates[kc_name] = data.learners[0].state.kcs[kc_id].k;
-		kcs_success_rates[kc_name] = data.learners[0].state.kcs[kc_id].sr;
-		kcs_lastk_success_rates[kc_name] = data.learners[0].state.kcs[kc_id]["lastk-sr"];
+    var kc_id = data.kcs[i].id;
+    var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+		kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
+		kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+		kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
 	   
 		var kc_obj = data.kcs.find(kc => {
 		  return kc.n === kc_name
@@ -466,8 +467,8 @@ function actDone_cb(rsp) {
 	  	recommended_activities = [];
 		  map_topic_max_rank_rec_act = {};
 		  rank_recommended_activities = {};
-
-		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[0].state.kcs, data.kcs, 0.5, 0.5);
+      var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state.kcs, data.kcs, 0.5, 0.5);
 		  var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
 		  if (top_rec_list_first_index<0){
 			top_rec_list_first_index=0;
@@ -1274,7 +1275,8 @@ function actOpen(resId, actIdx) {
     //get kcs for uk param
     act.kcs.forEach(function(id){
       var payload = getSafe(function(){
-        return data.learners[0].state.kcs[id]
+        var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+        return data.learners[usr_index].state.kcs[id]
       });
       if(payload) userKnowledge.kcs.push(payload);
     });
@@ -1385,7 +1387,7 @@ function updateLearnerData(rsp){
 
     //Update knowledge level information for the learner in case the student modeling method used is bn (from bn_general)
     if(data.configprops.agg_kc_student_modeling=="bn"){
-      console.log("Update data.learners[0].state.kcs with data from bn_general (loaded previously)")
+      console.log("Update data.learners[usr_index].state.kcs with data from bn_general (loaded previously)")
       updateLearnerDataWithOtherEstimates(item_kc_estimates);
 
       /*if(data.configprops.agg_proactiverec_enabled){
@@ -1398,9 +1400,10 @@ function updateLearnerData(rsp){
       for (var i=0;i<data.kcs.length;i++){
         var kc_name = data.kcs[i].n;
         var kc_id = data.kcs[i].id;
-        kcs_estimates[kc_name] = data.learners[0].state.kcs[kc_id].k;
-        kcs_success_rates[kc_name] = data.learners[0].state.kcs[kc_id].sr;
-        kcs_lastk_success_rates[kc_name] = data.learners[0].state.kcs[kc_id]["lastk-sr"];
+        var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+        kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
+        kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+        kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
         
         var kc_obj = data.kcs.find(kc => {
           return kc.n === kc_name
@@ -2169,9 +2172,10 @@ function loadData_cb(res) {
       for (var i=0;i<data.kcs.length;i++){
         var kc_name = data.kcs[i].n;
         var kc_id = data.kcs[i].id;
-        kcs_estimates[kc_name] = data.learners[0].state.kcs[kc_id].k;
-        kcs_success_rates[kc_name] = data.learners[0].state.kcs[kc_id].sr;
-        kcs_lastk_success_rates[kc_name] = data.learners[0].state.kcs[kc_id]["lastk-sr"];
+        var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+        kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
+        kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+        kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
         
         var kc_obj = data.kcs.find(kc => {
           return kc.n === kc_name
@@ -2195,7 +2199,8 @@ function loadData_cb(res) {
         
         //Generate recommendations based on problematic concepts (added by @Jordan)
         if(data.configprops.agg_proactiverec_method=="remedial"){
-          recommended_activities = generateRemedialRecommendations(data.topics, data.learners[0].state.kcs, data.kcs, 0.5, 0.5);
+          var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+          recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state.kcs, data.kcs, 0.5, 0.5);
 
           var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
           if (top_rec_list_first_index<0){
@@ -2366,7 +2371,7 @@ function loadDataOthers_cb(res) {
 
   //Update knowledge level information for the learner in case the student modeling method used is bn (from bn_general)
   if(data.configprops.agg_kc_student_modeling=="bn"){
-    console.log("Update data.learners[0].state.kcs with data from bn_general (loaded previously)")
+    console.log("Update data.learners[usr_index].state.kcs with data from bn_general (loaded previously)")
     updateLearnerDataWithOtherEstimates(item_kc_estimates);
 
     /*if(data.configprops.agg_proactiverec_enabled){
@@ -2379,9 +2384,10 @@ function loadDataOthers_cb(res) {
     for (var i=0;i<data.kcs.length;i++){
       var kc_name = data.kcs[i].n;
       var kc_id = data.kcs[i].id;
-      kcs_estimates[kc_name] = data.learners[0].state.kcs[kc_id].k;
-      kcs_success_rates[kc_name] = data.learners[0].state.kcs[kc_id].sr;
-      kcs_lastk_success_rates[kc_name] = data.learners[0].state.kcs[kc_id]["lastk-sr"];
+      var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+      kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
+      kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+      kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
       
       var kc_obj = data.kcs.find(kc => {
         return kc.n === kc_name
@@ -2695,6 +2701,8 @@ function stateArgsSet02() {
 
   state.args.uiTopicTimeMapFile = (qs["ui-topic-time-map-file"]  !== undefined ? qs["ui-topic-time-map-file"] : undefined);
 
+  state.args.uiMinProgressCheck = (qs["ui-min-progress-vis-check"]  !== undefined ? qs["ui-min-progress-check"] : undefined);
+  
   //added by @Jordan
   state.args.kcMap = "";
   state.args.kcMapMode = 0;
@@ -2739,7 +2747,7 @@ function stateArgsSet02() {
       state.args.uiIncenCheck			      = (data.vis.ui.params.group.uiIncenCheck != undefined ? data.vis.ui.params.group.uiIncenCheck : state.args.uiIncenCheck);
       state.args.uiRecExpOnDemand       = (data.vis.ui.params.group.uiRecExpOnDemand != undefined ? data.vis.ui.params.group.uiRecExpOnDemand : state.args.uiRecExpOnDemand);
       state.args.uiTopicTimeMapFile     = (data.vis.ui.params.group.uiTopicTimeMapFile != undefined ? data.vis.ui.params.group.uiTopicTimeMapFile : state.args.uiTopicTimeMapFile);
-      state.args.uiMinProgressCheck    = (data.vis.ui.params.group.uiMinProgressCheck != undefined ? data.vis.ui.params.group.uiMinProgressCheck : state.rgs.uiMinProgressCheck);
+      state.args.uiMinProgressCheck    = (data.vis.ui.params.group.uiMinProgressCheck != undefined ? data.vis.ui.params.group.uiMinProgressCheck : state.args.uiMinProgressCheck);
 
       //added by @Jordan
       state.args.kcMap                  = (data.vis.ui.params.group.kcMap != undefined ? data.vis.ui.params.group.kcMap : state.args.kcMap);
