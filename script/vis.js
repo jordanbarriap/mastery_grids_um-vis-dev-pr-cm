@@ -1144,6 +1144,10 @@ function actLstShow(doMe, doVs, doGrp) {
 
 // ------------------------------------------------------------------------------------------------------
 function actLstHide() {
+  if($('#act-lst').is(':visible') == false) { // Nothing to hide
+    return;
+  }
+
   if (uiCMVisId=="bipartite"){
     topicNodeMouseOut(data.topics.filter(function(d){return d.order == state.vis.topicIdx;})[0]);  //Code added by @Jordan
     $("div#chart").css("display","initial");

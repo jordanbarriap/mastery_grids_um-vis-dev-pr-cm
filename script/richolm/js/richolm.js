@@ -2638,7 +2638,7 @@ function initBipartite(){
             .attr("width", "100%");//added by jbarriapineda
     
      var bipartite = $("svg#conceptVisSvg");
-     if (actLstShow) bipartite.appendTo("div#div-kcmap");
+     if ($('#act-lst').is(':visible')) bipartite.appendTo("div#div-kcmap");
 
           /*var  fakeNode = svg.selectAll("g.fakeNode");
           fakeNode = fakeNode.data(groups);
