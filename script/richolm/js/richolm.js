@@ -2899,7 +2899,7 @@ function initBipartite(){
               var barSizeUser = bipartiteBarScale(d.uk);
               //if(d[barSizeUser]==0||d[barSizeUser]==-1)return "#EEEEEE";//commented by jbarriapineda
               if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){//TODO change to use the type of parameterized recommendation approach (remedial)
-                if(d["lastk-sr"]==-1) return d["uk"]==0?"#EEEEEE": "#999999"; 
+                if(d["lastk-sr"]<=0) return d["uk"]==0?"#EEEEEE": "#999999"; 
                 //eturn "#19195d";
                 return barColorScaleSuccessRate(d["lastk-sr"]);
               }
@@ -2996,7 +2996,7 @@ function initBipartite(){
               .attr('height', 10)
               .attr("xlink:href", function(d){
                 if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
-                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>=0){
+                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>0){
                     return  "./img/warning-icon2.png";
                   }else{
                      "./img/white.png";
@@ -3006,7 +3006,7 @@ function initBipartite(){
               })
               .attr("class", function(d){
                 if(data.configprops.agg_proactiverec_enabled &&  data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
-                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>=0){
+                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>0){
                      return "warning";
                   }else{
                      return "no-warning";

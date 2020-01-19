@@ -468,27 +468,27 @@ function actDone_cb(rsp) {
 		  map_topic_max_rank_rec_act = {};
 		  rank_recommended_activities = {};
       var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state.kcs, data.kcs, 0.5, 0.5);
+		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
 		  var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
 		  if (top_rec_list_first_index<0){
-			top_rec_list_first_index=0;
+			  top_rec_list_first_index=0;
 		  }
 		  var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
 		  if(top_rec_list_last_index > recommended_activities.length-1){
-			top_rec_list_last_index = recommended_activities.length-1;
+			  top_rec_list_last_index = recommended_activities.length-1;
 		  }
 		  top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
 		  
 		  
 		  //Here we get the maximum rank of the items recommended per topic
 		  for(var i=0;i<top_recommended_activities.length;i++){
-			var rec_act_topic = top_recommended_activities[i]["topic"];
-			var rec_act_name  = top_recommended_activities[i]["name"];
-			var rec_act_id  = top_recommended_activities[i]["id"];
-			if (!(rec_act_topic in map_topic_max_rank_rec_act)){
-			  map_topic_max_rank_rec_act[rec_act_topic] = i;
-			}
-			rank_recommended_activities[rec_act_id] = i;
+        var rec_act_topic = top_recommended_activities[i]["topic"];
+        var rec_act_name  = top_recommended_activities[i]["name"];
+        var rec_act_id  = top_recommended_activities[i]["id"];
+        if (!(rec_act_topic in map_topic_max_rank_rec_act)){
+          map_topic_max_rank_rec_act[rec_act_topic] = i;
+        }
+        rank_recommended_activities[rec_act_id] = i;
 		  }
 
 		  //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
@@ -2200,19 +2200,22 @@ function loadData_cb(res) {
         //Generate recommendations based on problematic concepts (added by @Jordan)
         if(data.configprops.agg_proactiverec_method=="remedial"){
           var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-          recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state.kcs, data.kcs, 0.5, 0.5);
+          recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
 
-          var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
-          if (top_rec_list_first_index<0){
-            top_rec_list_first_index=0;
+          if(recommended_activities.length > max_rec_n) {
+            var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
+            if (top_rec_list_first_index<0){
+              top_rec_list_first_index=0;
+            }
+            var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
+            if(top_rec_list_last_index > recommended_activities.length){
+              top_rec_list_last_index = recommended_activities.length;
+            }
+            top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+          } else {
+            top_recommended_activities = recommended_activities
           }
-          var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
-          if(top_rec_list_last_index > recommended_activities.length-1){
-            top_rec_list_last_index = recommended_activities.length-1;
-          }
-          top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
-          
-          
+        
           //Here we get the maximum rank of the items recommended per topic
           for(var i=0;i<top_recommended_activities.length;i++){
             var rec_act_topic = top_recommended_activities[i]["topic"];
@@ -2331,7 +2334,10 @@ function addRecommendationStarToTopic(g_cell_topic, topic_name) {
         .attr("id", "star_1")
         .attr("visibility", "visible")
         //.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
-        .attr("points", function (d) { d.seq = map_rank_to_seq; return ((d.seq === 0) ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+        .attr("points", function (d) { 
+          d.seq = map_rank_to_seq; 
+          return ((d.seq === 0) ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); 
+        })
         .attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
         //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
         .attr("stroke", "white")
@@ -4433,6 +4439,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         .attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
         //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
         .attr("stroke", "white")
+        .attr("class","rec_activity_star")
         .style("shape-rendering", "geometricPrecision")
       
       g
