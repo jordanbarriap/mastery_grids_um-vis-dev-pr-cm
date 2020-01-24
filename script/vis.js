@@ -1257,6 +1257,7 @@ function actOpen(resId, actIdx) {
 
   //Replace old version of quizjet with the new version of quizjet which includes Table Tracing
   var is_quizjet_url = act.url.indexOf("quizjet") !== -1;
+  var traceParams;
   if(is_quizjet_url){
     //Changes by Zak Risha for table trace params
     userKnowledge = {kcs: []};
@@ -1302,7 +1303,7 @@ function actOpen(resId, actIdx) {
         break;
     }
 
-    act.url = act.url + "&trace=true&popup=" + popup + "&uk=" + userKnowledge.kcSum;
+    traceParams = "&trace=true&popup=" + popup + "&uk=" + userKnowledge.kcSum;
   }
   
   ui.vis.act.title.innerHTML = "Topic: <b>" + topic.name + "</b> &nbsp; &bull; &nbsp; Activity: <b>" + act.name + "</b>";
@@ -1322,6 +1323,9 @@ function actOpen(resId, actIdx) {
   //@@@Jordan@@@
   
   ui.vis.act.frame.src = act.url + "&grp=" + state.curr.grp + "&usr=" + state.curr.usr + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid;
+
+  if(is_quizjet_url && traceParams)
+    ui.vis.act.frame.src += traceParams;
   ui.vis.act.otherTxt.innerHTML = helpLink;
   
 
