@@ -363,54 +363,52 @@ function actDone_cb(rsp) {
   
     // (2.2) At least one activity has been recommended:
     if (rsp.recommendation && rsp.recommendation.length > 0) {
-      
-    var frameWidth = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-    var recListWidth = (15*frameWidth)/100;
-      
-    ui.vis.act.frame.style.width = (frameWidth - recListWidth) + "px";
-    ui.vis.act.table.style.width = (frameWidth - recListWidth) + "px";
-    
-    $(ui.vis.act.recLst).width(recListWidth);
-    
-    $show(ui.vis.act.recLst);
-    
-    $clsAdd(ui.vis.act.recLst.children[0], "sel");
-    ui.vis.act.recLstSel = ui.vis.act.recLst.children[0];
-    
-    for (var i=0, ni=rsp.recommendation.length; i < ni; i++) {
-      var rec = rsp.recommendation[i];
-      
-      var topic = null;
-      for (var j=0, nj=data.topics.length; j < nj; j++) { if (data.topics[j].id === rec.topicId) topic = function (j) { return data.topics[j]; }(j); }
-      if (topic === null) continue;
-      
-      var act = null;
-      for (var j=0, nj=topic.activities[rec.resourceId].length; j < nj; j++) { if (topic.activities[rec.resourceId][j].id === rec.activityId) act = function (j) { return topic.activities[rec.resourceId][j]; }(j); }
-      if (act === null) continue;
-      
-      var div = $$("div", ui.vis.act.recLst);
-      $$("span", div, null, "grid-cell", "&nbsp;&nbsp;&nbsp;&nbsp;").style.backgroundColor = scaleMe(getMe().state.activities[rec.topicId][rec.resourceId][rec.activityId].values[getRepLvl().id]);
-      $$("span", div, null, null, "2." + (i+1) + ". " + act.name);
-      div.onclick = function (i) {
-      return function (e) {
+        var frameWidth = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        var recListWidth = (15*frameWidth)/100;
+          
+        ui.vis.act.frame.style.width = (frameWidth - recListWidth) + "px";
+        ui.vis.act.table.style.width = (frameWidth - recListWidth) + "px";
         
-        if (ui.vis.act.recLstSel !== null) $clsRem(ui.vis.act.recLstSel, "sel");
+        $(ui.vis.act.recLst).width(recListWidth);
         
-        var div = $evtTgt(e);
-        if (div.nodeName.toLowerCase() !== "div") div = div.parentNode;  // in case a nested span element has been clicked
-        $clsAdd(div, "sel");
-        ui.vis.act.recLstSel = div;
+        $show(ui.vis.act.recLst);
         
-        actLoadRec(i);
-      };
-      }(i);
-    }
+        $clsAdd(ui.vis.act.recLst.children[0], "sel");
+        ui.vis.act.recLstSel = ui.vis.act.recLst.children[0];
+        
+        for (var i=0, ni=rsp.recommendation.length; i < ni; i++) {
+          var rec = rsp.recommendation[i];
+          
+          var topic = null;
+          for (var j=0, nj=data.topics.length; j < nj; j++) { if (data.topics[j].id === rec.topicId) topic = function (j) { return data.topics[j]; }(j); }
+          if (topic === null) continue;
+          
+          var act = null;
+          for (var j=0, nj=topic.activities[rec.resourceId].length; j < nj; j++) { if (topic.activities[rec.resourceId][j].id === rec.activityId) act = function (j) { return topic.activities[rec.resourceId][j]; }(j); }
+          if (act === null) continue;
+          
+          var div = $$("div", ui.vis.act.recLst);
+          $$("span", div, null, "grid-cell", "&nbsp;&nbsp;&nbsp;&nbsp;").style.backgroundColor = scaleMe(getMe().state.activities[rec.topicId][rec.resourceId][rec.activityId].values[getRepLvl().id]);
+          $$("span", div, null, null, "2." + (i+1) + ". " + act.name);
+          div.onclick = function (i) {
+              return function (e) {
+                if (ui.vis.act.recLstSel !== null) $clsRem(ui.vis.act.recLstSel, "sel");
+                
+                var div = $evtTgt(e);
+                if (div.nodeName.toLowerCase() !== "div") div = div.parentNode;  // in case a nested span element has been clicked
+                $clsAdd(div, "sel");
+                ui.vis.act.recLstSel = div;
+                
+                actLoadRec(i);
+              };
+          }(i);
+        }
     }
     
     // (2.3) Nothing has been recommended:
     else {
-    $hide(ui.vis.act.recLst);
-    $hide(ui.vis.act.fbRecCont);
+      $hide(ui.vis.act.recLst);
+      $hide(ui.vis.act.fbRecCont);
     }
   } else { //Update the progress
      for (var i=0, ni=state.vis.act.rsp.rec.length; i < ni; i++) {
@@ -443,22 +441,22 @@ function actDone_cb(rsp) {
   
   
 
-	if(data.configprops.agg_kc_student_modeling=="cumulate"){
-	  for (var i=0;i<data.kcs.length;i++){
-		var kc_name = data.kcs[i].n;
-    var kc_id = data.kcs[i].id;
-    var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-		kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
-		kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
-		kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
-	   
-		var kc_obj = data.kcs.find(kc => {
-		  return kc.n === kc_name
-		});
-		if(kc_obj){
-		  map_kcs_id_info[kc_obj.id] = kc_obj;
-		}
-	}
+	if(data.configprops.agg_kc_student_modeling=="cumulate") {
+    for (var i=0;i<data.kcs.length;i++){
+      var kc_name = data.kcs[i].n;
+      var kc_id = data.kcs[i].id;
+      var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+      kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
+      kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+      kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
+      
+      var kc_obj = data.kcs.find(kc => {
+        return kc.n === kc_name
+      });
+      if(kc_obj){
+        map_kcs_id_info[kc_obj.id] = kc_obj;
+      }
+    }
 	  
 	  
 	  //@Jordan
@@ -526,7 +524,7 @@ function actDone_cb(rsp) {
   if(data.configprops.agg_kc_student_modeling=="bn"){
     $.get( "http://adapt2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp+"&cid="+state.curr.cid+"&defaultModel=true", function(kcs_data) {
       
-     console.log("Updates data after user's attempt on an activity (using bn_general)");
+      console.log("Updates data after user's attempt on an activity (using bn_general)");
         //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
       item_kc_estimates = kcs_data["item-kc-estimates"]
       updateLearnerDataWithOtherEstimates(item_kc_estimates);
@@ -965,8 +963,10 @@ function actLstShow(doMe, doVs, doGrp) {
     //$('#act-lst').css('width',width);
 
     //end of code added by @Jordan
-  
-    pawswebsocket.ensureSocketIsOpen();
+    if(data.configprops.agg_reactiverec_enabled) {
+      pawswebsocket.ensureSocketIsOpen();
+    }
+    
   }
 
   //Code added by @Jordan
@@ -1705,10 +1705,7 @@ function init() {
     false
   );
   
-  pawswebsocket.openWebSocket(state.curr, websocketCallback);
-  
   loadData();
-
 }
 
 function websocketCallback(message) {
@@ -1977,6 +1974,9 @@ function loadData_cb(res) {
   // (1) Process the data:
   data = res;
   
+  if(data.configprops.agg_reactiverec_enabled) {
+	  pawswebsocket.openWebSocket(state.curr, websocketCallback);
+  }
   //@Kamil moved here because I need to have kcResouceIds parameters to filter kcs which we do not want to show
   // (2) Process arguments (fuse those passed through the query string and those passed in the server's response (the latter take precedence):
   stateArgsSet02();
