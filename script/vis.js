@@ -964,7 +964,7 @@ function actLstShow(doMe, doVs, doGrp) {
 
     //end of code added by @Jordan
     if(data.configprops.agg_reactiverec_enabled) {
-      pawswebsocket.ensureSocketIsOpen();
+      pawswebsocket.ensureSocketIsOpen(state.curr, websocketCallback);
     }
     
   }
@@ -1974,9 +1974,6 @@ function loadData_cb(res) {
   // (1) Process the data:
   data = res;
   
-  if(data.configprops.agg_reactiverec_enabled) {
-	  pawswebsocket.openWebSocket(state.curr, websocketCallback);
-  }
   //@Kamil moved here because I need to have kcResouceIds parameters to filter kcs which we do not want to show
   // (2) Process arguments (fuse those passed through the query string and those passed in the server's response (the latter take precedence):
   stateArgsSet02();
