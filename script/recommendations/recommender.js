@@ -1,7 +1,7 @@
 //Topics which have activities that should not be recommended
 var non_recommended_topics = ["Table Creation", "Table Deletion and Alteration", "Key Constraints", "Tuple Insertion", "Tuple Deletion", "Tuple Update", "General Constraints", "Derived Relations and Views"];
 var proficiency_threshold = .66;
-var topic_progress_limit = .3
+var topic_progress_limit = .1
 var last_success_rate_limit = .5
 var knowledge_level_limit = .5
 
