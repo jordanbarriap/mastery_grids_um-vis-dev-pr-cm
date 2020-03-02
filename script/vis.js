@@ -4083,6 +4083,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
       var topic_names = Object.keys(me_data);
 
       var assessment_res_ids = [];
+      var completed_assessments = []
 
       var full_points = 2;//default for AALTO SQL
       if (state.curr.grp.startsWith("IS0017Fall2019")){ //TODO: make this parameterized !!!
@@ -4091,7 +4092,10 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 
       if(state.curr.grp.startsWith("IS0017Fall2019")){//TODO: Change this for a parameter with the id of the resource
         assessment_res_ids = ["qz"];
-      }else{
+      } else if(state.curr.grp.startsWith("AALTOSQL20")) {
+        assessment_res_ids = ["Query Practice", "Query Writing"];
+      }
+      else{
         assessment_res_ids - ["Problems"];
       }
       
@@ -4100,33 +4104,42 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           var topic_data = me_data[topic_name];
           var points = 0;
           for (var j=0; j<assessment_res_ids.length;j++){
-            var completed_assessments = 0;
+            completed_assessments[j] = 0;
             var res_id = assessment_res_ids[j];
-			var available_assessments = Object.keys(topic_data[res_id]);
-			
-			if(available_assessments.length > 0) {
-				for (var k=0;k<available_assessments.length;k++){
-				  var act_name = Object.keys(topic_data[res_id])[k]
-				  var act_progress = topic_data[res_id][act_name]["values"]["p"];
-				  if(act_progress==1){
-					completed_assessments = completed_assessments + 1;
-				  }
-				}
-				
-				points += completed_assessments;
-			} else {
-				points = -1;
-			}}
-		  
-		  if(points >= full_points) {
-			  credit_achievement[i] = 1;
-		  } else if (points == full_points/2) {
-			   credit_achievement[i] = .5;
-		  } else if(points == 0){
-			  credit_achievement[i] = 0;
-		  } else {
-			  credit_achievement[i] = -1;
-		  }
+            var available_assessments = Object.keys(topic_data[res_id]);
+            
+            if(available_assessments.length > 0) {
+              for (var k=0;k<available_assessments.length;k++){
+                var act_name = Object.keys(topic_data[res_id])[k]
+                var act_progress = topic_data[res_id][act_name]["values"]["p"];
+                if(act_progress==1){
+                  completed_assessments[j] = completed_assessments[j] + 1;
+                }
+              }
+
+              if(state.curr.grp.startsWith("AALTOSQL20")) {
+                if(topic_name == 'Set Operations') {
+                  points = completed_assessments[j]
+                } else {
+                  points += completed_assessments[j] >=1?1:0;
+                }
+              } else {
+                points += completed_assessments[j];
+              }
+            } else {
+              points = -1;
+            }
+          }
+        
+          if(points >= full_points) {
+            credit_achievement[i] = 1;
+          } else if (points == full_points/2) {
+            credit_achievement[i] = .5;
+          } else if(points == 0){
+            credit_achievement[i] = 0;
+          } else {
+            credit_achievement[i] = -1;
+          }
       }
     }
 
@@ -6207,16 +6220,22 @@ function generateHelp(origin){
 		if(state.args.uiIncenCheck) {
       if (state.curr.grp.startsWith("IS0017Fall2019")){
         helpText += "<h3>Points per Topic</h3><img src='./img/half_credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 quiz.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
-      }else{
+        height += 150;
+      } else if(state.curr.grp.startsWith("AALTOSQL20")) {
+        helpText += "<h3>Points per Topic</h3><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems (1 from Query Practice and 1 from Query Writing).</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.(1 from Query Practice or 1 from Query Writing)</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
+        height += 170;
+      }
+      else{
         helpText += "<h3>Points per Topic</h3><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems.</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
+        height += 150;
       }
 			
-			height += 150;
+			
     }
     
     if(state.args.uiTopicTimeMapFile) {
       helpText += "<h3>Topic Opening</h3><img src='./img/lock2.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that the topic is not available for now but will be opened by your instructor at a later time. </p>"
-      height += 50;
+      height += 70;
     }
 		
 		ui.vis.helpDlg.style.height = height + "px";
