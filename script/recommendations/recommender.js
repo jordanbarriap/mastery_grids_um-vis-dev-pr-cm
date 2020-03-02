@@ -113,7 +113,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						}
 						if (helpful_kcs>0){
 							rec_explanation = rec_explanation + "<li>You have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>"+helpful_kcs+"</b> concepts out of <b>"+total_kcs+"</b> necessary to succesfully ";//attempt this activity.</li>"
-							var is_sqlknot = activity["url"].indexOf("sqlknot")>=0 ;
+							var is_sqlknot = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0;
 							var is_example = (activity["url"].indexOf("webex")>=0 || activity["url"].indexOf("sql_ae"));
 							if(is_sqlknot){
 								rec_explanation = rec_explanation + " solve this problem.</li>";
