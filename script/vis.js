@@ -196,6 +196,7 @@ var top_recommended_activities = [];
 var max_rec_n = 5;//Number of recommended activities that will be shown at each time (added by @Jordan)
 var map_topic_max_rank_rec_act = {};
 var rank_recommended_activities = {}; //stores the rank of the recommended activities (0 - top ranked act...), if act_name is not on the keys the activity is not recommended
+var max_remedial_recommendations_per_topic = 3;
 var recTooltip;
 var scaleRecommendationStar =  
       d3.scale.linear().
@@ -467,15 +468,55 @@ function actDone_cb(rsp) {
 		  rank_recommended_activities = {};
       var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
 		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
-		  var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
-		  if (top_rec_list_first_index<0){
-			  top_rec_list_first_index=0;
-		  }
-		  var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
-		  if(top_rec_list_last_index > recommended_activities.length-1){
-			  top_rec_list_last_index = recommended_activities.length-1;
-		  }
-		  top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+		  // var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
+		  // if (top_rec_list_first_index<0){
+			 //  top_rec_list_first_index=0;
+		  // }
+		  // var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
+		  // if(top_rec_list_last_index > recommended_activities.length-1){
+			 //  top_rec_list_last_index = recommended_activities.length-1;
+		  // }
+		  // top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+
+      //Keep at most max_remedial_recommendations_per_topic per potential recommmendations per topic
+      var recommended_activities_temp = []
+      var recommendations_per_topic = {}
+      for(var i=0;i<recommended_activities.length;i++){
+          var act_topic = recommended_activities[i].topic;
+          if(!(act_topic in recommendations_per_topic)){
+            recommendations_per_topic[act_topic] = 1;
+          }else{
+            recommendations_per_topic[act_topic] = recommendations_per_topic[act_topic] + 1;
+          }
+          if(recommendations_per_topic[act_topic]<=max_remedial_recommendations_per_topic){
+            recommended_activities_temp.push(recommended_activities[i]);
+          }
+      }
+
+      recommended_activities = recommended_activities_temp;
+
+      if(recommended_activities.length > max_rec_n) {
+
+          /*var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
+          if (top_rec_list_first_index<0){
+            top_rec_list_first_index=0;
+          }
+          var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
+          if(top_rec_list_last_index > recommended_activities.length){
+            top_rec_list_last_index = recommended_activities.length;
+          }*/
+          var top_rec_list_first_index = 0;
+          var top_rec_list_last_index = max_rec_n;
+
+          top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+
+          recommendations_per_topic = count(top_recommended_activities, function (act) {
+              return act.topic;
+          });
+
+      } else {
+        top_recommended_activities = recommended_activities
+      }
 		  
 		  
 		  //Here we get the maximum rank of the items recommended per topic
@@ -1213,32 +1254,31 @@ function actOpen(resId, actIdx) {
   //added by @Jordan for rec_exp
   last.act = JSON.parse(JSON.stringify(state.vis.act))
   //end of code added by @Jordan for rec_exp
- 
-  
+
   // TODO
   if(res.dim){
-      /*if(res.dim.w) ui.vis.act.frame.style.width = res.dim.w + "px";
-      if(res.dim.h) ui.vis.act.frame.style.height = res.dim.h + "px";
+    /*if(res.dim.w) ui.vis.act.frame.style.width = res.dim.w + "px";
+    if(res.dim.h) ui.vis.act.frame.style.height = res.dim.h + "px";
 
-      ui.vis.act.table.style.width = (res.dim.w) + "px";
-      ui.vis.act.table.style.height = (res.dim.h) + "px";*/
-      
-      //ui.vis.act.frameRec.style.width = "930px";
-      //ui.vis.act.frameRec.style.width = "930px";
+    ui.vis.act.table.style.width = (res.dim.w) + "px";
+    ui.vis.act.table.style.height = (res.dim.h) + "px";*/
+    
+    //ui.vis.act.frameRec.style.width = "930px";
+    //ui.vis.act.frameRec.style.width = "930px";
 
-      //@@@JORDAN
-      //Adaptive frame size
-      var display_width = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-      var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    //@@@JORDAN
+    //Adaptive frame size
+    var display_width = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
-      
+    
     ui.vis.act.frame.style.width = display_width + "px";
-      ui.vis.act.frame.style.height = display_height + "px";
+    ui.vis.act.frame.style.height = display_height + "px";
 
-      ui.vis.act.table.style.width = display_width + "px";
-      ui.vis.act.table.style.height = display_height + "px";
-      
-      //@@@JORDAN
+    ui.vis.act.table.style.width = display_width + "px";
+    ui.vis.act.table.style.height = display_height + "px";
+    
+    //@@@JORDAN
   }else{
       ui.vis.act.frame.style.width = CONST.vis.actWindow.w;
       ui.vis.act.frame.style.height = CONST.vis.actWindow.h;
@@ -1246,6 +1286,7 @@ function actOpen(resId, actIdx) {
       ui.vis.act.table.style.width  = (CONST.vis.actWindow.w) + "px";
       ui.vis.act.table.style.height = (CONST.vis.actWindow.h) + "px";
   }
+ 
   // show the link for help
   var helpLink = "";
   if(resId === 'ae'){
@@ -1321,7 +1362,23 @@ function actOpen(resId, actIdx) {
   //  });
  // }
   //@@@Jordan@@@
-  
+
+  /**
+   * The size of the act.frame is dynamically set after loading completed. 
+   * Old content (WebEx) loaded as white-space after Chrome browser update (March 2020)
+   * The problem is workaround fixed with setting the width dynamically after iframe load completed
+  */
+  $(ui.vis.act.frame).load(function(){
+    var display_width = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    ui.vis.act.frame.style.width = (display_width + 1) + "px";
+    ui.vis.act.frame.style.height = (display_height + 1) + "px";
+
+    ui.vis.act.table.style.width = (display_width + 1) + "px";
+    ui.vis.act.table.style.height = (display_height + 1) + "px";
+  })
+
   ui.vis.act.frame.src = act.url + "&grp=" + state.curr.grp + "&usr=" + state.curr.usr + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid;
 
   if(is_quizjet_url && traceParams)
@@ -1967,8 +2024,6 @@ function loadData() {
     : $call("GET", "/um-vis-dev/data.js", null, loadData_cb, true, false)
   );
 }
-
-
 // ----^----
 function loadData_cb(res) {
   // (1) Process the data:
@@ -1978,6 +2033,28 @@ function loadData_cb(res) {
   // (2) Process arguments (fuse those passed through the query string and those passed in the server's response (the latter take precedence):
   stateArgsSet02();
 
+  loadStaticData()
+}
+
+function loadStaticData() {
+  if(state.args.uiTopicTimeMapFile){
+    $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=201910271040", function(json) {
+      for (var i=0; i < json.topicTime.length ; i++) {
+      	var topic_order = json.topicTime[i].topicOrder - 1;
+      	var releaseDate = new Date(json.topicTime[i].releaseDate)
+      	
+        data.topics[topic_order].unlockTime = releaseDate
+        data.topics[topic_order].locked = new Date() < releaseDate
+      }
+
+      processData()
+    });
+  } else {
+    processData()
+  }
+}
+
+function processData() {
   //Added by @Jordan
   
   var data_topics = data["topics"];
@@ -2201,16 +2278,42 @@ function loadData_cb(res) {
           var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
           recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
 
+          //Keep at most max_remedial_recommendations_per_topic per potential recommmendations per topic
+          var recommended_activities_temp = []
+          var recommendations_per_topic = {}
+          for(var i=0;i<recommended_activities.length;i++){
+              var act_topic = recommended_activities[i].topic;
+              if(!(act_topic in recommendations_per_topic)){
+                recommendations_per_topic[act_topic] = 1;
+              }else{
+                recommendations_per_topic[act_topic] = recommendations_per_topic[act_topic] + 1;
+              }
+              if(recommendations_per_topic[act_topic]<=max_remedial_recommendations_per_topic){
+                recommended_activities_temp.push(recommended_activities[i]);
+              }
+          }
+
+          recommended_activities = recommended_activities_temp;
+
           if(recommended_activities.length > max_rec_n) {
-            var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
-            if (top_rec_list_first_index<0){
-              top_rec_list_first_index=0;
-            }
-            var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
-            if(top_rec_list_last_index > recommended_activities.length){
-              top_rec_list_last_index = recommended_activities.length;
-            }
-            top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+
+              /*var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
+              if (top_rec_list_first_index<0){
+                top_rec_list_first_index=0;
+              }
+              var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
+              if(top_rec_list_last_index > recommended_activities.length){
+                top_rec_list_last_index = recommended_activities.length;
+              }*/
+              var top_rec_list_first_index = 0;
+              var top_rec_list_last_index = max_rec_n;
+
+              top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+
+              recommendations_per_topic = count(top_recommended_activities, function (act) {
+                  return act.topic;
+              });
+   
           } else {
             top_recommended_activities = recommended_activities
           }
@@ -2270,7 +2373,11 @@ function loadData_cb(res) {
       if(state.args.uiMinProgressCheck){
         updateMinOverallProgressCheckInfo();
       }
-      
+
+      //@Jordan hide concepts that are first appearing on locked topics
+      d3.selectAll(".nodename").attr("display",function(d){return (state.args.uiTopicTimeMapFile && !checkIfTopicUnlockedByName(d.t))?"none":"block";});
+      d3.selectAll(".bar").attr("display",function(d){return (state.args.uiTopicTimeMapFile && !checkIfTopicUnlockedByName(d.t))?"none":"block";});
+ 
  
 	  
 	   //Show help if this is the first time they open the activity in their browser (with the new version)
@@ -2299,8 +2406,10 @@ function addRecommendationStarToTopic(g_cell_topic, topic_name) {
   const add = (a, b) =>
   a + b
   // use reduce to sum the total number of recommended activities
-  var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
+  //var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
 
+  var total_rec_activities = top_recommended_activities.length;
+  
   var map_rank_to_seq = 0;
   map_rank_to_seq = 1-(rank_rec/total_rec_activities);
 
@@ -3434,7 +3543,8 @@ function visGenGridDataAllRes(gridData, gridName, learner01, learner02, seriesNa
         valMe    : learner01.state.topics[t.id].values[r.id][getRepLvl().id],
         valGrp   : (learner02 === null ? -1 : learner02.state.topics[t.id].values[r.id][getRepLvl().id]),
         isInt    : (learner01.id === data.context.learnerId && r.id !== "AVG"),
-        isVis    : true
+        isVis    : true,
+        isLocked : t.locked
       });
     }
     gridData.series.push(s);
@@ -3490,7 +3600,8 @@ function visGenGridDataOneRes(gridData, gridName, learner01, learner02, seriesNa
       valMe    : learner01.state.topics[t.id].values[r.id][getRepLvl().id],
       valGrp   : -1,
       isInt    : (r.id !== "AVG"),
-      isVis    : true
+      isVis    : true,
+      isLocked : t.locked
     });
   }
   
@@ -3511,7 +3622,8 @@ function visGenGridDataOneRes(gridData, gridName, learner01, learner02, seriesNa
         valMe    : learner01.state.topics[t.id].values[r.id][getRepLvl().id],
         valGrp   : (learner02 === null ? -1 : learner02.state.topics[t.id].values[r.id][getRepLvl().id]),
         isInt    : false,
-        isVis    : true
+        isVis    : true,
+        isLocked : t.locked
       });
     }
     
@@ -3533,7 +3645,8 @@ function visGenGridDataOneRes(gridData, gridName, learner01, learner02, seriesNa
         valMe    : -1,
         valGrp   : learner02.state.topics[t.id].values[r.id][getRepLvl().id],
         isInt    : false,
-        isVis    : true
+        isVis    : true,
+        isLocked : t.locked
       });
     }
     
@@ -3584,7 +3697,8 @@ function visGenGridDataAllRes_act(gridData, gridName, learner01, learner02, seri
         valMe    : learner01.state.topics[topic.id].values[res.id][getRepLvl().id],
         valeGrp  : (learner02 === null || !learner01.state.topics ? -1 : learner02.state.topics[topic.id].values[res.id][getRepLvl().id]),
         isInt    : true,
-        isVis    : true
+        isVis    : true,
+        isLocked : false
       });
     }
     
@@ -3606,7 +3720,8 @@ function visGenGridDataAllRes_act(gridData, gridName, learner01, learner02, seri
           valMe    : learner01.state.activities[topic.id][res.id][a.id].values[getRepLvl().id],
           valGrp   : (learner02 === null || !learner01.state.activities ? -1 : learner02.state.activities[topic.id][res.id][a.id].values[getRepLvl().id]),
           isInt    : true,
-          isVis    : true
+          isVis    : true,
+          isLocked : false
         });
         colCnt++;
       }
@@ -3614,7 +3729,7 @@ function visGenGridDataAllRes_act(gridData, gridName, learner01, learner02, seri
     
     // Add empty data points to make all series equal length:
     for (var j = colCnt; j < colCntMax; j++) {
-      s.data.push({ resIdx: i, topicIdx: state.vis.topicIdx, actIdx: -1, seq: 0, val: 0, isInt: false, isVis: false });
+      s.data.push({ resIdx: i, topicIdx: state.vis.topicIdx, actIdx: -1, seq: 0, val: 0, isInt: false, isVis: false, isLocked:false });
     }
     
     gridData.series.push(s);
@@ -3661,7 +3776,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
       valMe    : learner01.state.topics[topic.id].values[res.id][getRepLvl().id],
       valGrp   : -1,
       isInt    : true,
-      isVis    : true
+      isVis    : true,
+      isLocked : false
     });
   }
   
@@ -3681,7 +3797,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
         valMe    : learner01.state.activities[topic.id][res.id][a.id].values[getRepLvl().id],
         valeGrp  : -1,
         isInt    : true,
-        isVis    : true
+        isVis    : true,
+        isLocked : false
       });
       colCnt++;
     }
@@ -3704,7 +3821,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
         valMe    : learner01.state.topics[topic.id].values[res.id][getRepLvl().id],
         valGrp   : -1,
         isInt    : true,
-        isVis    : true
+        isVis    : true,
+        isLocked : false
       });
     }
     
@@ -3723,7 +3841,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
           valMe    : learner01.state.activities[topic.id][res.id][a.id].values[getRepLvl().id],
           valGrp   : (learner02 === null || !learner01.state.activities ? 0 : learner02.state.activities[topic.id][res.id][a.id].values[getRepLvl().id]),
           isInt    : false,
-          isVis    : true
+          isVis    : true,
+          isLocked : false
         });
         colCnt++;
       }
@@ -3747,7 +3866,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
         valMe    : -1,
         valGrp   : learner02.state.topics[topic.id].values[res.id][getRepLvl().id],
         isInt    : true,
-        isVis    : true
+        isVis    : true,
+        isLocked : false
       });
     }
     
@@ -3766,7 +3886,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
           valMe    : -1,
           valGrp   : learner02.state.activities[topic.id][res.id][a.id].values[getRepLvl().id],
           isInt    : false,
-          isVis    : true
+          isVis    : true,
+          isLocked : false
         });
         colCnt++;
       }
@@ -4086,11 +4207,11 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
       var completed_assessments = []
 
       var full_points = 2;//default for AALTO SQL
-      if (state.curr.grp.startsWith("IS0017Fall2019")){ //TODO: make this parameterized !!!
+      if (state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")){ //TODO: make this parameterized !!!
         full_points = 1;
       }
 
-      if(state.curr.grp.startsWith("IS0017Fall2019")){//TODO: Change this for a parameter with the id of the resource
+      if(state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")){//TODO: Change this for a parameter with the id of the resource
         assessment_res_ids = ["qz"];
       } else if(state.curr.grp.startsWith("AALTOSQL20")) {
         assessment_res_ids = ["Query Practice", "Query Writing"];
@@ -4397,7 +4518,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           .attr("xlink:href", function(d){
         			let topic_credit = credit_achievement[d.topicIdx-1]
                     if(topic_credit==1){
-                      if(state.curr.grp.startsWith("IS0017Fall2019")) return "./img/half_credit.png"; //icon specific for IS0017 Fall 2019 (do not use blue as it is the color for group progress)
+                      if(state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")) return "./img/half_credit.png"; //icon specific for IS0017 Fall 2019 (do not use blue as it is the color for group progress)
                       return "./img/credit.png";
                     }else{
                       if(topic_credit==.5){
@@ -4411,32 +4532,26 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   } 
 
   if(state.args.uiTopicTimeMapFile && isInteractive){
-
-    $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=201910271040", function(json) {
-      for (var i=0; i < json.topicTime.length ; i++) {
-        data.topics[json.topicTime[i].topicOrder].unlockTime = json.topicTime[i].releaseDate
-      }
-      if(d3.selectAll(".lock-img").empty()){
-        d3.selectAll(".grid-cell-inner")
-        .filter(function(d) {return (d3.select(this).select("rect").attr("width")==d3.select(this).select("rect").attr("height")) && d3.select(this).node().parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
-        .append("svg:image")
-        .attr("class","lock-img")
-          .attr('x', sqW / 2 + 6)
-          .attr('y', - sqW / 2 + 8)
-          .attr('width', 12)
-          .attr('height', 12)
-          .attr("xlink:href", function(d){
-              if(d.topicIdx > 0) {
-                if(!checkIfTopicUnlocked(d.topicIdx))
-                    return "./img/lock2.png"; 
-                else 
-                    return;
-              }
-              return;
-              
-          });
-      }
-    });
+    if(d3.selectAll(".lock-img").empty()){
+      d3.selectAll(".grid-cell-inner")
+      .filter(function(d) {return (d3.select(this).select("rect").attr("width")==d3.select(this).select("rect").attr("height")) && d3.select(this).node().parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
+      .append("svg:image")
+      .attr("class","lock-img")
+        .attr('x', sqW / 2 + 6)
+        .attr('y', - sqW / 2 + 8)
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr("xlink:href", function(d){
+            if(d.topicIdx > 0) {
+              if(d.isLocked)
+                  return "./img/lock2.png"; 
+              else 
+                  return;
+            }
+            return;
+            
+        });
+    }
   }
   
   // Grid cells -- Sequencing:
@@ -4725,7 +4840,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial"){
     d3.selectAll("g.grid-cell-outter").each( function(d){
       var topic_name = d3.select(this).attr("topic");
-      console.log(d3.select(this));
       var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
       if(topic_has_recommended_acts){
           addRecommendationStarToTopic(d3.select(this),topic_name)
@@ -4738,9 +4852,16 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 }
 
 function checkIfTopicUnlocked(topicId) {
-  var topicUnlockTime = new Date(data.topics[topicId].unlockTime)
-  var currentDate = new Date()
-  return currentDate >= topicUnlockTime
+  return !data.topics[topicId].locked
+}
+
+function checkIfTopicUnlockedByName(topicName) {
+  var topicUnlocked = true;
+  var topic = data.topics.filter(function(d){return d.id==topicName;})[0]
+  if(topic && topic.locked){
+    topicUnlocked=false;
+  }
+  return topicUnlocked;
 }
 
 /**
@@ -4814,7 +4935,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
       usrState += data.reportLevels[i].id + "=" + getMe().state.topics[topic.id].values[res.id][data.reportLevels[i].id]  + (i < data.reportLevels.length-1 ? "|" : "");
       grpState += data.reportLevels[i].id + "=" + getGrp().state.topics[topic.id].values[res.id][data.reportLevels[i].id] + (i < data.reportLevels.length-1 ? "|" : "");
   }
-  
 
   if (gridName=="act_me" || gridName=="act_mevsgrp" || gridName=="act_grp"){
 
@@ -5063,6 +5183,52 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         }
 
         var act_rec_info = recommended_activities.filter(function(d){return d["id"]==act_id})[0];
+
+        //Count rec and non rec activities at every moment
+        var recDone = 0;
+        var noRecDone = 0;
+        var recNoDone = 0;
+        var noRecNoDone = 0;
+
+        var usrProgressTopic = getMe().state.activities[topic.id];
+        var resourcesIds = Object.keys(usrProgressTopic);
+        for(var i=0;i<resourcesIds.length;i++){
+          var resource = resourcesIds[i];
+          var resActs = usrProgressTopic[resource];
+          var actIds = Object.keys(resActs);
+
+          for(var j=0;j<actIds.length;j++){
+            var actId = actIds[j];
+            var actProgress = resActs[actId].values.p;
+            var recInfo = recommended_activities.filter(function(d){return d["id"]==actId})[0];
+            if(recInfo){
+              var isRec = recInfo["isRecommended"];
+              if(isRec=="1"){
+                //nRecActs +=1;
+                if(actProgress==1){
+                  recDone +=1;
+                }else{
+                  recNoDone += 1;
+                }
+              }else{
+                //nNonRecActs +=1;
+                if(actProgress==1){
+                  noRecDone +=1;
+                }else{
+                  noRecNoDone +=1;
+                }
+              }
+            }else{
+               if(actProgress==1){
+                  noRecDone +=1;
+                }else{
+                  noRecNoDone +=1;
+                }
+            }
+          }
+        }
+
+        //console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
         
         var act_mouseover_log =
           "action"           + CONST.log.sep02 + "grid-activity-cell-mouseover" + CONST.log.sep01 +
@@ -5076,6 +5242,10 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
           "kcsNotKnown"      + CONST.log.sep02 + kcsNotKnown                 + CONST.log.sep01 +
           "kcsLearning"      + CONST.log.sep02 + kcsLearning                 + CONST.log.sep01 +
           "kcsKnown"         + CONST.log.sep02 + kcsKnown                    + CONST.log.sep01 +
+          "nRecDone"         + CONST.log.sep02 + recDone                     + CONST.log.sep01 +
+          "nRecNoDone"      + CONST.log.sep02 + recNoDone                    + CONST.log.sep01 +
+          "nNoRecDone"         + CONST.log.sep02 + noRecDone                 + CONST.log.sep01 +
+          "nNoRecNoDone"      + CONST.log.sep02 + noRecNoDone                + CONST.log.sep01 +
           //"difficulty"       + CONST.log.sep02 + act_difficulty                  + CONST.log.sep01 +
           //"probability"       + CONST.log.sep02 + probability                  + CONST.log.sep01 +
           //"median_prob"       + CONST.log.sep02 + median_prob                 + CONST.log.sep01 +
@@ -5093,7 +5263,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
             act_mouseover_log = act_mouseover_log + CONST.log.sep01 +
             "isRec"   + CONST.log.sep02 + act_rec_info["isRecommended"] + CONST.log.sep01 +
             "exp"   + CONST.log.sep02 + explanation_text;
-            console.log(act_mouseover_log);
           }
         }
 
@@ -5134,7 +5303,9 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
      var actLstShown=true;
      if(ui.vis.actLst.cont.style.display == 'none'){
        if(topic.order!=0){
-          topicNodeMouseOver(topic.id);
+          if(!topic.locked){
+            topicNodeMouseOver(topic.id);
+          }
        }
        actLstShown=false;
      }
@@ -5609,7 +5780,13 @@ function ehVisGridBoxClick(e, grpOutter) {
     else {
       if (actIdx === -1) return;  // the average activity cell has been clicked
       
-      
+      usrState +="|";
+      grpState += "|";
+
+      for (var i = 0; i < data.reportLevels.length; i++){
+          usrState += data.reportLevels[i].id + "AVG=" + getMe().state.topics[topic.id].overall[data.reportLevels[i].id]  + (i < data.reportLevels.length-1 ? "|" : "");
+          grpState += data.reportLevels[i].id + "AVG=" + getGrp().state.topics[topic.id].values.AVG[data.reportLevels[i].id] + (i < data.reportLevels.length-1 ? "|" : "");
+      }
       
       usrState += CONST.log.sep01 + "usrActState" + CONST.log.sep02;
       grpState += CONST.log.sep01 + "grpActState" + CONST.log.sep02;
@@ -5731,6 +5908,52 @@ function ehVisGridBoxClick(e, grpOutter) {
       //   true
       // );
 
+      //Count rec and non rec activities at every moment
+      var recDone = 0;
+      var noRecDone = 0;
+      var recNoDone = 0;
+      var noRecNoDone = 0;
+
+      var usrProgressTopic = getMe().state.activities[topic.id];
+      var resourcesIds = Object.keys(usrProgressTopic);
+      for(var i=0;i<resourcesIds.length;i++){
+        var resource = resourcesIds[i];
+        var resActs = usrProgressTopic[resource];
+        var actIds = Object.keys(resActs);
+
+        for(var j=0;j<actIds.length;j++){
+          var actId = actIds[j];
+          var actProgress = resActs[actId].values.p;
+          var recInfo = recommended_activities.filter(function(d){return d["id"]==actId})[0];
+          if(recInfo){
+            var isRec = recInfo["isRecommended"];
+            if(isRec=="1"){
+              //nRecActs +=1;
+              if(actProgress==1){
+                recDone +=1;
+              }else{
+                recNoDone += 1;
+              }
+            }else{
+              //nNonRecActs +=1;
+              if(actProgress==1){
+                noRecDone +=1;
+              }else{
+                noRecNoDone +=1;
+              }
+            }
+          }else{
+             if(actProgress==1){
+                noRecDone +=1;
+              }else{
+                noRecNoDone +=1;
+              }
+          }
+        }
+      }
+
+      console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
+
       if(data.configprops.agg_kc_student_modeling=="cumulate"){
         var current_topic = data.topics[topicIdx];
         var mg_activities = current_topic ? current_topic.activities:undefined;
@@ -5747,6 +5970,8 @@ function ehVisGridBoxClick(e, grpOutter) {
           if(act_is_recommended){
             rank_recommended = rank_recommended_activities[act_id];
           }
+
+          console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
           
           var act_click_log=
             "action"           + CONST.log.sep02 + "grid-activity-cell-select" + CONST.log.sep01 +
@@ -5761,6 +5986,10 @@ function ehVisGridBoxClick(e, grpOutter) {
             "kcsNotKnown"      + CONST.log.sep02 + kcsNotKnown                 + CONST.log.sep01 +
             "kcsLearning"      + CONST.log.sep02 + kcsLearning                 + CONST.log.sep01 +
             "kcsKnown"         + CONST.log.sep02 + kcsKnown                    + CONST.log.sep01 +
+            "nRecDone"         + CONST.log.sep02 + recDone                     + CONST.log.sep01 +
+            "nRecNoDone"      + CONST.log.sep02 + recNoDone                    + CONST.log.sep01 +
+            "nNoRecDone"         + CONST.log.sep02 + noRecDone                 + CONST.log.sep01 +
+            "nNoRecNoDone"      + CONST.log.sep02 + noRecNoDone                + CONST.log.sep01 +
             //"difficulty"       + CONST.log.sep02 + difficulty                  + CONST.log.sep01 +
             "probability"       + CONST.log.sep02 + probability                  + CONST.log.sep01 +
             //"activeVis"        + CONST.log.sep02 + uiCMVisId                   + CONST.log.sep01 +
@@ -5812,6 +6041,10 @@ function ehVisGridBoxClick(e, grpOutter) {
           "kcsNotKnown"      + CONST.log.sep02 + kcsNotKnown                 + CONST.log.sep01 +
           "kcsLearning"      + CONST.log.sep02 + kcsLearning                 + CONST.log.sep01 +
           "kcsKnown"         + CONST.log.sep02 + kcsKnown                    + CONST.log.sep01 +
+          "nRecDone"         + CONST.log.sep02 + recDone                     + CONST.log.sep01 +
+          "nRecNoDone"      + CONST.log.sep02 + recNoDone                    + CONST.log.sep01 +
+          "nNoRecDone"         + CONST.log.sep02 + noRecDone                 + CONST.log.sep01 +
+          "nNoRecNoDone"      + CONST.log.sep02 + noRecNoDone                + CONST.log.sep01 +
           //"difficulty"       + CONST.log.sep02 + difficulty                  + CONST.log.sep01 +
           "probability"       + CONST.log.sep02 + probability                  + CONST.log.sep01 +
           //"activeVis"        + CONST.log.sep02 + uiCMVisId                   + CONST.log.sep01 +
@@ -6218,7 +6451,7 @@ function generateHelp(origin){
 		}
 		
 		if(state.args.uiIncenCheck) {
-      if (state.curr.grp.startsWith("IS0017Fall2019")){
+      if (state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")){
         helpText += "<h3>Points per Topic</h3><img src='./img/half_credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 quiz.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
         height += 150;
       } else if(state.curr.grp.startsWith("AALTOSQL20")) {
@@ -6465,4 +6698,13 @@ function updateMinOverallProgressCheckInfo(){
   progress_html = progress_html + "</br>";
   minOverallProgressInfoHTML.html(progress_html);
 }
+
+count = function (ary, classifier) {
+    classifier = classifier || String;
+    return ary.reduce(function (counter, item) {
+        var p = classifier(item);
+        counter[p] = counter.hasOwnProperty(p) ? counter[p] + 1 : 1;
+        return counter;
+    }, {})
+};
 
