@@ -196,6 +196,7 @@ var top_recommended_activities = [];
 var max_rec_n = 5;//Number of recommended activities that will be shown at each time (added by @Jordan)
 var map_topic_max_rank_rec_act = {};
 var rank_recommended_activities = {}; //stores the rank of the recommended activities (0 - top ranked act...), if act_name is not on the keys the activity is not recommended
+var max_remedial_recommendations_per_topic = 3;
 var recTooltip;
 var scaleRecommendationStar =  
       d3.scale.linear().
@@ -205,6 +206,9 @@ var scaleRecommendationStar =
 //Added by @Jordan for calculating importance of a concept for an activity in the context of a specific topic
 var concept_weights = {};
 
+var set_prerequisites;
+var set_outcomes;
+
 // ------------------------------------------------------------------------------------------------------
 /**
  * This is the object which should cummulate functions which can be called from other Web apps and Web
@@ -212,8 +216,13 @@ var concept_weights = {};
  */
 var vis = {
   actDone: function (res) {
-    var uri = CONST.uriServer + "GetContentLevels?usr=" + state.curr.usr + "&grp=" + state.curr.grp + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid + "&mod=user&sid=" + state.curr.sid + "&lastActivityId=" + state.vis.act.act.id + "&res=" + res + "&updatesm=true";
-    $call("GET", uri, null, actDone_cb, true, false);
+    if(data.configprops.agg_kc_student_modeling=="cumulate"){
+      var uri = CONST.uriServer + "GetContentLevels?usr=" + state.curr.usr + "&grp=" + state.curr.grp + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid + "&mod=user&sid=" + state.curr.sid + "&lastActivityId=" + state.vis.act.act.id + "&res=" + res + "&updatesm=false";
+      $call("GET", uri, null, actDone_cb, true, false);
+    }else{
+      var uri = CONST.uriServer + "GetContentLevels?usr=" + state.curr.usr + "&grp=" + state.curr.grp + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid + "&mod=user&sid=" + state.curr.sid + "&lastActivityId=" + state.vis.act.act.id + "&res=" + res + "&updatesm=true";
+      $call("GET", uri, null, actDone_cb, true, false);
+    }  
   },
   
   actUpdState: function (isImmediate) {
@@ -363,54 +372,52 @@ function actDone_cb(rsp) {
   
     // (2.2) At least one activity has been recommended:
     if (rsp.recommendation && rsp.recommendation.length > 0) {
-      
-    var frameWidth = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-    var recListWidth = (15*frameWidth)/100;
-      
-    ui.vis.act.frame.style.width = (frameWidth - recListWidth) + "px";
-    ui.vis.act.table.style.width = (frameWidth - recListWidth) + "px";
-    
-    $(ui.vis.act.recLst).width(recListWidth);
-    
-    $show(ui.vis.act.recLst);
-    
-    $clsAdd(ui.vis.act.recLst.children[0], "sel");
-    ui.vis.act.recLstSel = ui.vis.act.recLst.children[0];
-    
-    for (var i=0, ni=rsp.recommendation.length; i < ni; i++) {
-      var rec = rsp.recommendation[i];
-      
-      var topic = null;
-      for (var j=0, nj=data.topics.length; j < nj; j++) { if (data.topics[j].id === rec.topicId) topic = function (j) { return data.topics[j]; }(j); }
-      if (topic === null) continue;
-      
-      var act = null;
-      for (var j=0, nj=topic.activities[rec.resourceId].length; j < nj; j++) { if (topic.activities[rec.resourceId][j].id === rec.activityId) act = function (j) { return topic.activities[rec.resourceId][j]; }(j); }
-      if (act === null) continue;
-      
-      var div = $$("div", ui.vis.act.recLst);
-      $$("span", div, null, "grid-cell", "&nbsp;&nbsp;&nbsp;&nbsp;").style.backgroundColor = scaleMe(getMe().state.activities[rec.topicId][rec.resourceId][rec.activityId].values[getRepLvl().id]);
-      $$("span", div, null, null, "2." + (i+1) + ". " + act.name);
-      div.onclick = function (i) {
-      return function (e) {
+        var frameWidth = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        var recListWidth = (15*frameWidth)/100;
+          
+        ui.vis.act.frame.style.width = (frameWidth - recListWidth) + "px";
+        ui.vis.act.table.style.width = (frameWidth - recListWidth) + "px";
         
-        if (ui.vis.act.recLstSel !== null) $clsRem(ui.vis.act.recLstSel, "sel");
+        $(ui.vis.act.recLst).width(recListWidth);
         
-        var div = $evtTgt(e);
-        if (div.nodeName.toLowerCase() !== "div") div = div.parentNode;  // in case a nested span element has been clicked
-        $clsAdd(div, "sel");
-        ui.vis.act.recLstSel = div;
+        $show(ui.vis.act.recLst);
         
-        actLoadRec(i);
-      };
-      }(i);
-    }
+        $clsAdd(ui.vis.act.recLst.children[0], "sel");
+        ui.vis.act.recLstSel = ui.vis.act.recLst.children[0];
+        
+        for (var i=0, ni=rsp.recommendation.length; i < ni; i++) {
+          var rec = rsp.recommendation[i];
+          
+          var topic = null;
+          for (var j=0, nj=data.topics.length; j < nj; j++) { if (data.topics[j].id === rec.topicId) topic = function (j) { return data.topics[j]; }(j); }
+          if (topic === null) continue;
+          
+          var act = null;
+          for (var j=0, nj=topic.activities[rec.resourceId].length; j < nj; j++) { if (topic.activities[rec.resourceId][j].id === rec.activityId) act = function (j) { return topic.activities[rec.resourceId][j]; }(j); }
+          if (act === null) continue;
+          
+          var div = $$("div", ui.vis.act.recLst);
+          $$("span", div, null, "grid-cell", "&nbsp;&nbsp;&nbsp;&nbsp;").style.backgroundColor = scaleMe(getMe().state.activities[rec.topicId][rec.resourceId][rec.activityId].values[getRepLvl().id]);
+          $$("span", div, null, null, "2." + (i+1) + ". " + act.name);
+          div.onclick = function (i) {
+              return function (e) {
+                if (ui.vis.act.recLstSel !== null) $clsRem(ui.vis.act.recLstSel, "sel");
+                
+                var div = $evtTgt(e);
+                if (div.nodeName.toLowerCase() !== "div") div = div.parentNode;  // in case a nested span element has been clicked
+                $clsAdd(div, "sel");
+                ui.vis.act.recLstSel = div;
+                
+                actLoadRec(i);
+              };
+          }(i);
+        }
     }
     
     // (2.3) Nothing has been recommended:
     else {
-    $hide(ui.vis.act.recLst);
-    $hide(ui.vis.act.fbRecCont);
+      $hide(ui.vis.act.recLst);
+      $hide(ui.vis.act.fbRecCont);
     }
   } else { //Update the progress
      for (var i=0, ni=state.vis.act.rsp.rec.length; i < ni; i++) {
@@ -440,93 +447,157 @@ function actDone_cb(rsp) {
   
   // (5) Other:
   vis.loadingHide();
+
+  if(data.configprops.agg_kc_student_modeling=="bn"){
+      //console.log("Update data.learners[usr_index].state.kcs with data from bn_general (loaded previously)")
+      //updateLearnerDataWithOtherEstimates(item_kc_estimates);
+
+
+      $.get( "http://adapt2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp+"&cid="+state.curr.cid+"&defaultModel=true", function(kcs_data) {
+        
+        console.log("Updating learner's data (using bn_general)...");
+          //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
+        item_kc_estimates = kcs_data["item-kc-estimates"]
+        updateLearnerDataWithOtherEstimates(item_kc_estimates);
+
+        console.log("Redrawing the OLM (BN)...");
+        redrawBipartite();
+
+        if(data.configprops.agg_proactiverec_enabled){
+          generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
+          addRecommendationsToUI();
+        }
+      });
+    }
   
   
 
-	if(data.configprops.agg_kc_student_modeling=="cumulate"){
-	  for (var i=0;i<data.kcs.length;i++){
-		var kc_name = data.kcs[i].n;
-    var kc_id = data.kcs[i].id;
-    var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-		kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
-		kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
-		kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
-	   
-		var kc_obj = data.kcs.find(kc => {
-		  return kc.n === kc_name
-		});
-		if(kc_obj){
-		  map_kcs_id_info[kc_obj.id] = kc_obj;
-		}
-	}
+	if(data.configprops.agg_kc_student_modeling=="cumulate") {
+    for (var i=0;i<data.kcs.length;i++){
+      var kc_name = data.kcs[i].n;
+      var kc_id = data.kcs[i].id;
+      var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+      kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
+      kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+      kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
+      
+      var kc_obj = data.kcs.find(kc => {
+        return kc.n === kc_name
+      });
+      if(kc_obj){
+        map_kcs_id_info[kc_obj.id] = kc_obj;
+      }
+    }
 	  
 	  
 	  //@Jordan
 	  //Generate recommendations based on problematic concepts (added by @Jordan)
 	  if (data.configprops.agg_proactiverec_enabled){
-	  	recommended_activities = [];
-		  map_topic_max_rank_rec_act = {};
-		  rank_recommended_activities = {};
-      var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state.kcs, data.kcs, 0.5, 0.5);
-		  var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
-		  if (top_rec_list_first_index<0){
-			top_rec_list_first_index=0;
-		  }
-		  var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
-		  if(top_rec_list_last_index > recommended_activities.length-1){
-			top_rec_list_last_index = recommended_activities.length-1;
-		  }
-		  top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
-		  
-		  
-		  //Here we get the maximum rank of the items recommended per topic
-		  for(var i=0;i<top_recommended_activities.length;i++){
-			var rec_act_topic = top_recommended_activities[i]["topic"];
-			var rec_act_name  = top_recommended_activities[i]["name"];
-			var rec_act_id  = top_recommended_activities[i]["id"];
-			if (!(rec_act_topic in map_topic_max_rank_rec_act)){
-			  map_topic_max_rank_rec_act[rec_act_topic] = i;
-			}
-			rank_recommended_activities[rec_act_id] = i;
-		  }
+      if(data.configprops.agg_proactiverec_method=="remedial"){
+  	  	recommended_activities = [];
+  		  map_topic_max_rank_rec_act = {};
+  		  rank_recommended_activities = {};
+        var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+  		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+  		  // var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
+  		  // if (top_rec_list_first_index<0){
+  			 //  top_rec_list_first_index=0;
+  		  // }
+  		  // var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
+  		  // if(top_rec_list_last_index > recommended_activities.length-1){
+  			 //  top_rec_list_last_index = recommended_activities.length-1;
+  		  // }
+  		  // top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
 
-		  //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
-		  if(recommended_activities.length>0){
-			  //Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
-			  for(var j=0;j<recommended_activities.length;j++){
-				var rec_act_id  = recommended_activities[j]["id"];
-				if (rec_act_id in rank_recommended_activities){
-				  recommended_activities[j]["isRecommended"]="1";
-				}else{
-				  recommended_activities[j]["isRecommended"]="0";
-				}
-			  }
-			  var millisecondsDate = (new Date).getTime();
-			  $.ajax({
-				type: "POST",
-				data :JSON.stringify({"usr":state.curr.usr,
-				 "grp":state.curr.grp,
-				 "sid":state.curr.sid,
-				 "cid":state.curr.cid,
-				 "sid":state.curr.sid,
-				 "logRecId":millisecondsDate.toString(),
-				 "recMethod":"remedialCUMULATE",
-				 "recommendations":recommended_activities}),
-				url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
-				contentType: "application/json"
-			  });
-		  }
+        //Keep at most max_remedial_recommendations_per_topic per potential recommmendations per topic
+        var recommended_activities_temp = []
+        var recommendations_per_topic = {}
+        for(var i=0;i<recommended_activities.length;i++){
+            var act_topic = recommended_activities[i].topic;
+            if(!(act_topic in recommendations_per_topic)){
+              recommendations_per_topic[act_topic] = 1;
+            }else{
+              recommendations_per_topic[act_topic] = recommendations_per_topic[act_topic] + 1;
+            }
+            if(recommendations_per_topic[act_topic]<=max_remedial_recommendations_per_topic){
+              recommended_activities_temp.push(recommended_activities[i]);
+            }
+        }
+
+        recommended_activities = recommended_activities_temp;
+
+        if(recommended_activities.length > max_rec_n) {
+
+            /*var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
+            if (top_rec_list_first_index<0){
+              top_rec_list_first_index=0;
+            }
+            var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
+            if(top_rec_list_last_index > recommended_activities.length){
+              top_rec_list_last_index = recommended_activities.length;
+            }*/
+            var top_rec_list_first_index = 0;
+            var top_rec_list_last_index = max_rec_n;
+
+            top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+
+            recommendations_per_topic = count(top_recommended_activities, function (act) {
+                return act.topic;
+            });
+
+        } else {
+          top_recommended_activities = recommended_activities
+        }
+  		  
+  		  
+  		  //Here we get the maximum rank of the items recommended per topic
+  		  for(var i=0;i<top_recommended_activities.length;i++){
+          var rec_act_topic = top_recommended_activities[i]["topic"];
+          var rec_act_name  = top_recommended_activities[i]["name"];
+          var rec_act_id  = top_recommended_activities[i]["id"];
+          if (!(rec_act_topic in map_topic_max_rank_rec_act)){
+            map_topic_max_rank_rec_act[rec_act_topic] = i;
+          }
+          rank_recommended_activities[rec_act_id] = i;
+  		  }
+
+  		  //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
+  		  if(recommended_activities.length>0){
+  			  //Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
+  			  for(var j=0;j<recommended_activities.length;j++){
+  				var rec_act_id  = recommended_activities[j]["id"];
+  				if (rec_act_id in rank_recommended_activities){
+  				  recommended_activities[j]["isRecommended"]="1";
+  				}else{
+  				  recommended_activities[j]["isRecommended"]="0";
+  				}
+  			  }
+  			  var millisecondsDate = (new Date).getTime();
+  			  $.ajax({
+  				type: "POST",
+  				data :JSON.stringify({"usr":state.curr.usr,
+  				 "grp":state.curr.grp,
+  				 "sid":state.curr.sid,
+  				 "cid":state.curr.cid,
+  				 "sid":state.curr.sid,
+  				 "logRecId":millisecondsDate.toString(),
+  				 "recMethod":"remedialCUMULATE",
+  				 "recommendations":recommended_activities}),
+  				url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+  				contentType: "application/json"
+  			  });
+  		  }
+      }
     }
     
     //Draw bipartite graph
-    redrawBipartite();
+    //redrawBipartite();
   }
   
-  if(data.configprops.agg_kc_student_modeling=="bn"){
+  /*if(data.configprops.agg_kc_student_modeling=="bn"){
     $.get( "http://adapt2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp+"&cid="+state.curr.cid+"&defaultModel=true", function(kcs_data) {
       
-     console.log("Updates data after user's attempt on an activity (using bn_general)");
+      console.log("Updates data after user's attempt on an activity (using bn_general)");
         //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
       item_kc_estimates = kcs_data["item-kc-estimates"]
       updateLearnerDataWithOtherEstimates(item_kc_estimates);
@@ -535,7 +606,7 @@ function actDone_cb(rsp) {
       redrawBipartite();
       console.log("Finished draw bipartite graph");
     });
-  }
+  }*/
   
 }
 
@@ -841,6 +912,7 @@ function actLstShow(doMe, doVs, doGrp) {
   
   if(data.configprops.agg_proactiverec_enabled){
     generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
+    addRecommendationsToUI();
   }
 
   $($$input("button", ui.vis.actLst.cont, "btn-act-lst-close", "small-btn", "close")).button().click(actLstHide);
@@ -965,8 +1037,10 @@ function actLstShow(doMe, doVs, doGrp) {
     //$('#act-lst').css('width',width);
 
     //end of code added by @Jordan
-  
-    pawswebsocket.ensureSocketIsOpen();
+    if(data.configprops.agg_reactiverec_enabled) {
+      pawswebsocket.ensureSocketIsOpen(state.curr, websocketCallback);
+    }
+    
   }
 
   //Code added by @Jordan
@@ -998,10 +1072,25 @@ function actLstShow(doMe, doVs, doGrp) {
     $("svg#conceptVisSvg").appendTo("div#div-kcmap");
   } 
   if (uiCMVisId=="bipartite"){
+
+    //if student opened the actlst and the kcmap was shown in the general topic view, it needs to be shown
+    if(state.args.controlKcmap){
+      if(state.args.showKcmap){
+        $("#act-lst").append('<div class="div-detail-kcmap active" id="actlst-div-detail-kcmap"><p id="actlst-text-div-detail-kcmap" style="text-align: center">Hide detailed estimations of your knowledge in Java concepts &#9650<p></div>');
+      }else{
+        $("#act-lst").append('<div class="div-detail-kcmap inactive" id="actlst-div-detail-kcmap"><p id="actlst-text-div-detail-kcmap" style="text-align: center">Show detailed estimations of your knowledge in Java concepts &#9660<p></div>');
+      }
+      
+      $("#actlst-div-detail-kcmap").click(clickShowKcmapActLst);
+    }
+
     var svgCM=d3.select("div#act-lst")//.append("svg")
       .append("div")
       .attr("id","div-kcmap");
-    $("<div id='kcs_act_info'></div>").insertBefore("div#div-kcmap");
+
+    //$("<div id='kcs_act_info'></div>").insertBefore("div#div-kcmap");
+    $("<div id='kcs_act_info'></div>").insertBefore("div#actlst-div-detail-kcmap");
+
     d3.select("div#kcs_act_info")
       .append("svg")
       .attr("id","svg-kcs_act_info")
@@ -1015,6 +1104,16 @@ function actLstShow(doMe, doVs, doGrp) {
       $("div#kcmap-group-selection").insertBefore("svg#conceptVisSvg");
       $("div#kcmap-group-selection").css("margin-top","10px");
     }
+
+    //if student chose previously to keep fine-grained OLM visible in the gneral view, it should be still visible in the actlst view
+    if(state.args.controlKcmap){
+      if(state.args.showKcmap){
+        $("div#div-kcmap").css("display","block");
+      }else{
+        $("div#div-kcmap").css("display","none");
+      }
+    }
+
     if(lastNodeMouseOver){
       topicNodeMouseOut(lastNodeMouseOver);//added by @Jordan
     }
@@ -1033,6 +1132,10 @@ function actLstShow(doMe, doVs, doGrp) {
     .attr("class", "rec-tooltip")       
     .style("opacity", 0)
     .style("pointer-events", "none");
+
+    //@Jordan hide concepts that are first appearing on locked topics
+    //d3.selectAll(".nodename").attr("display",function(d){return (state.args.uiTopicTimeMapFile && !checkIfTopicUnlockedByName(d.t))?"none":"block";});
+    //d3.selectAll(".bar").attr("display",function(d){return (state.args.uiTopicTimeMapFile && !checkIfTopicUnlockedByName(d.t))?"none":"block";});
   }
 
   //added by @Jordan for rec_exp
@@ -1166,7 +1269,21 @@ function actLstHide() {
 //  state.vis.lastCellSel.topicIdx = -1;
 //  state.vis.lastCellSel.gridName = null;
   
-  $("svg#conceptVisSvg").appendTo("div#chart");//added by @Jordan
+  //$("svg#conceptVisSvg").appendTo("div#chart");//added by @Jordan
+
+  //When closing the actlst we need to hide the fine-grained OLM if previously it was deactivated 
+  $("#conceptVisSvg").appendTo("#div-conceptVisSvg");//added by @Jordan
+  if(state.args.controlKcmap){
+    if(state.args.showKcmap){
+      //$("#conceptVisSvg").css("display","initial");//added by @Jordan
+      //d3.select("#div-conceptVisSvg").select("svg");
+      //$("#div-conceptVisSvg").css("display","none");
+      $("#div-conceptVisSvg").css("display","block");
+    }else{
+      $("#div-conceptVisSvg").css("display","none");
+    }
+  }
+
   $("div#kcmap-group-selection").insertBefore("svg#conceptVisSvg");//added by @Jordan
   $("div#kcmap-group-selection").css("margin-top",maxBarHeight-5);//added by @Jordan
   d3.select("#gauge").remove();//added by @Jordan
@@ -1182,9 +1299,9 @@ function actLstHide() {
   d3.select(".concepts-frame-rect").remove();
 
   //Commented by @Jordan for rec_exp
-  // if($("#help-dlg").css("display")=="block"){
-  //   helpDialogHide();//added by @Jordan
-  // }
+   if(!state.args.recExp && $("#help-dlg").css("display")=="block"){
+     helpDialogHide();//added by @Jordan
+   }
 }
 
 
@@ -1214,38 +1331,38 @@ function actOpen(resId, actIdx) {
   last.act = JSON.parse(JSON.stringify(state.vis.act))
   //end of code added by @Jordan for rec_exp
  
-  
   // TODO
   if(res.dim){
-      /*if(res.dim.w) ui.vis.act.frame.style.width = res.dim.w + "px";
-      if(res.dim.h) ui.vis.act.frame.style.height = res.dim.h + "px";
+    /*if(res.dim.w) ui.vis.act.frame.style.width = res.dim.w + "px";
+    if(res.dim.h) ui.vis.act.frame.style.height = res.dim.h + "px";
 
-      ui.vis.act.table.style.width = (res.dim.w) + "px";
-      ui.vis.act.table.style.height = (res.dim.h) + "px";*/
-      
-      //ui.vis.act.frameRec.style.width = "930px";
-      //ui.vis.act.frameRec.style.width = "930px";
+    ui.vis.act.table.style.width = (res.dim.w) + "px";
+    ui.vis.act.table.style.height = (res.dim.h) + "px";*/
+    
+    //ui.vis.act.frameRec.style.width = "930px";
+    //ui.vis.act.frameRec.style.width = "930px";
 
-      //@@@JORDAN
-      //Adaptive frame size
-      var display_width = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-      var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    //@@@JORDAN
+    //Adaptive frame size
+    var display_width = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
-      
+    
     ui.vis.act.frame.style.width = display_width + "px";
-      ui.vis.act.frame.style.height = display_height + "px";
+    ui.vis.act.frame.style.height = display_height + "px";
 
-      ui.vis.act.table.style.width = display_width + "px";
-      ui.vis.act.table.style.height = display_height + "px";
-      
-      //@@@JORDAN
-  }else{
-      ui.vis.act.frame.style.width = CONST.vis.actWindow.w;
-      ui.vis.act.frame.style.height = CONST.vis.actWindow.h;
-      
-      ui.vis.act.table.style.width  = (CONST.vis.actWindow.w) + "px";
-      ui.vis.act.table.style.height = (CONST.vis.actWindow.h) + "px";
+    ui.vis.act.table.style.width = display_width + "px";
+    ui.vis.act.table.style.height = display_height + "px";
+    
+    //@@@JORDAN
+  } else{
+    ui.vis.act.frame.style.width = CONST.vis.actWindow.w;
+    ui.vis.act.frame.style.height = CONST.vis.actWindow.h;
+    
+    ui.vis.act.table.style.width  = (CONST.vis.actWindow.w) + "px";
+    ui.vis.act.table.style.height = (CONST.vis.actWindow.h) + "px";
   }
+
   // show the link for help
   var helpLink = "";
   if(resId === 'ae'){
@@ -1257,9 +1374,8 @@ function actOpen(resId, actIdx) {
 
   //Replace old version of quizjet with the new version of quizjet which includes Table Tracing
   var is_quizjet_url = act.url.indexOf("quizjet") !== -1;
-  if(data.context.group.id.match(/^(IS0017Fall2019|WentworthFall2019)/) && is_quizjet_url){
-    act.url = act.url.replace("/quizjet/","/quizjet_codetrace/");
-
+  var traceParams;
+  if(is_quizjet_url){
     //Changes by Zak Risha for table trace params
     userKnowledge = {kcs: []};
 
@@ -1304,7 +1420,7 @@ function actOpen(resId, actIdx) {
         break;
     }
 
-    act.url = act.url + "&trace=true&popup=" + popup + "&uk=" + userKnowledge.kcSum;
+    traceParams = "&trace=true&popup=" + popup + "&uk=" + userKnowledge.kcSum;
   }
   
   ui.vis.act.title.innerHTML = "Topic: <b>" + topic.name + "</b> &nbsp; &bull; &nbsp; Activity: <b>" + act.name + "</b>";
@@ -1322,8 +1438,27 @@ function actOpen(resId, actIdx) {
   //  });
  // }
   //@@@Jordan@@@
-  
+
+  /**
+   * The size of the act.frame is dynamically set after loading completed. 
+   * Old content (WebEx) loaded as white-space after Chrome browser update (March 2020)
+   * The problem is workaround fixed with setting the width dynamically after iframe load completed
+  */
+  $(ui.vis.act.frame).load(function(){
+    var display_width = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    ui.vis.act.frame.style.width = (display_width + 1) + "px";
+    ui.vis.act.frame.style.height = (display_height + 1) + "px";
+
+    ui.vis.act.table.style.width = (display_width + 1) + "px";
+    ui.vis.act.table.style.height = (display_height + 1) + "px";
+  })
+
   ui.vis.act.frame.src = act.url + "&grp=" + state.curr.grp + "&usr=" + state.curr.usr + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid;
+
+  if(is_quizjet_url && traceParams)
+    ui.vis.act.frame.src += traceParams;
   ui.vis.act.otherTxt.innerHTML = helpLink;
   
 
@@ -1375,6 +1510,7 @@ function actUpdGrids(doReqState, fnCb) {
 }
 
 function updateLearnerData(rsp){
+    console.log("Updating learner data...");
     data.learners[getMe(true)] = rsp.learner;
     
     var me = getMe(false);
@@ -1390,10 +1526,21 @@ function updateLearnerData(rsp){
       console.log("Update data.learners[usr_index].state.kcs with data from bn_general (loaded previously)")
       updateLearnerDataWithOtherEstimates(item_kc_estimates);
 
-      /*if(data.configprops.agg_proactiverec_enabled){
-        generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
-        addRecommendationsToUI();
-      }*/
+      // if(data.configprops.agg_proactiverec_enabled){
+      //   generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
+      //   addRecommendationsToUI();
+      // }
+
+      // $.get( "http://adapt2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp+"&cid="+state.curr.cid+"&defaultModel=true", function(kcs_data) {
+        
+      //   console.log("Updating learner's data (using bn_general)...");
+      //     //TODO: this has to be modified in order to receive this information directly from getContentLevels, not having this hack from calling bn_general
+      //   item_kc_estimates = kcs_data["item-kc-estimates"]
+      //   updateLearnerDataWithOtherEstimates(item_kc_estimates);
+
+      //   console.log("Redrawing the OLM (BN)...");
+      //   redrawBipartite();
+      // });
     }
 
     if(data.configprops.agg_kc_student_modeling=="cumulate"){
@@ -1412,6 +1559,9 @@ function updateLearnerData(rsp){
           map_kcs_id_info[kc_obj.id] = kc_obj;
         }
       }
+
+      console.log("Redrawing the OLM (CUMULATE)...");
+      redrawBipartite();
     }
 
     actUpdGrids_cb(function () { vis.loadingHide();});
@@ -1703,10 +1853,7 @@ function init() {
     false
   );
   
-  pawswebsocket.openWebSocket(state.curr, websocketCallback);
-  
   loadData();
-
 }
 
 function websocketCallback(message) {
@@ -1953,6 +2100,12 @@ function initUI() {
       handles: "all"
   });
   //$( "#act-frame" ).resizable();
+
+  //added by jbarriapineda for optional OLM
+  if(state.args.controlKcmap){
+    $("#general-div-detail-kcmap").click(clickShowKcmapGeneral);
+    log("action"          + CONST.log.sep02 + "init-kcmap-hidden", false);
+  }
   
 }
 
@@ -1968,8 +2121,6 @@ function loadData() {
     : $call("GET", "/um-vis-dev/data.js", null, loadData_cb, true, false)
   );
 }
-
-
 // ----^----
 function loadData_cb(res) {
   // (1) Process the data:
@@ -1979,6 +2130,28 @@ function loadData_cb(res) {
   // (2) Process arguments (fuse those passed through the query string and those passed in the server's response (the latter take precedence):
   stateArgsSet02();
 
+  loadStaticData()
+}
+
+function loadStaticData() {
+  if(state.args.uiTopicTimeMapFile){
+    $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=201910271040", function(json) {
+      for (var i=0; i < json.topicTime.length ; i++) {
+      	var topic_order = json.topicTime[i].topicOrder - 1;
+      	var releaseDate = new Date(json.topicTime[i].releaseDate)
+      	
+        data.topics[topic_order].unlockTime = releaseDate
+        data.topics[topic_order].locked = new Date() < releaseDate
+      }
+
+      processData()
+    });
+  } else {
+    processData()
+  }
+}
+
+function processData() {
   //Added by @Jordan
   
   var data_topics = data["topics"];
@@ -1988,6 +2161,8 @@ function loadData_cb(res) {
   var all_resource_kcs = new Set()
   
   state.args.kcResouceIds.forEach(function(resource) {
+	console.log(resource);
+	console.log(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat());
 	var resource_kcs = new Set(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat().map(function(b){return b.kcs}).flat())
 	all_resource_kcs = new Set([...all_resource_kcs,...resource_kcs])
   });
@@ -2200,19 +2375,48 @@ function loadData_cb(res) {
         //Generate recommendations based on problematic concepts (added by @Jordan)
         if(data.configprops.agg_proactiverec_method=="remedial"){
           var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-          recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state.kcs, data.kcs, 0.5, 0.5);
+          recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
 
-          var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
-          if (top_rec_list_first_index<0){
-            top_rec_list_first_index=0;
+          //Keep at most max_remedial_recommendations_per_topic per potential recommmendations per topic
+          var recommended_activities_temp = []
+          var recommendations_per_topic = {}
+          for(var i=0;i<recommended_activities.length;i++){
+              var act_topic = recommended_activities[i].topic;
+              if(!(act_topic in recommendations_per_topic)){
+                recommendations_per_topic[act_topic] = 1;
+              }else{
+                recommendations_per_topic[act_topic] = recommendations_per_topic[act_topic] + 1;
+              }
+              if(recommendations_per_topic[act_topic]<=max_remedial_recommendations_per_topic){
+                recommended_activities_temp.push(recommended_activities[i]);
+              }
           }
-          var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
-          if(top_rec_list_last_index > recommended_activities.length-1){
-            top_rec_list_last_index = recommended_activities.length-1;
+
+          recommended_activities = recommended_activities_temp;
+
+          if(recommended_activities.length > max_rec_n) {
+
+              /*var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
+              if (top_rec_list_first_index<0){
+                top_rec_list_first_index=0;
+              }
+              var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
+              if(top_rec_list_last_index > recommended_activities.length){
+                top_rec_list_last_index = recommended_activities.length;
+              }*/
+              var top_rec_list_first_index = 0;
+              var top_rec_list_last_index = max_rec_n;
+
+              top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+
+              recommendations_per_topic = count(top_recommended_activities, function (act) {
+                  return act.topic;
+              });
+   
+          } else {
+            top_recommended_activities = recommended_activities
           }
-          top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
-          
-          
+        
           //Here we get the maximum rank of the items recommended per topic
           for(var i=0;i<top_recommended_activities.length;i++){
             var rec_act_topic = top_recommended_activities[i]["topic"];
@@ -2268,20 +2472,34 @@ function loadData_cb(res) {
       if(state.args.uiMinProgressCheck){
         updateMinOverallProgressCheckInfo();
       }
-      
+
+      //@Jordan hide concepts that are first appearing on locked topics
+      d3.selectAll(".nodename").attr("display",function(d){return (state.args.uiTopicTimeMapFile && !checkIfTopicUnlockedByName(d.t))?"none":"block";});
+      d3.selectAll(".bar").attr("display",function(d){return (state.args.uiTopicTimeMapFile && !checkIfTopicUnlockedByName(d.t))?"none":"block";});
+ 
  
 	  
-	   //Show help if this is the first time they open the activity in their browser (with the new version)
-		if(!Cookies.get("topic-grid-tutorial")){
-		  Cookies.set('topic-grid-tutorial', 'shown', { expires: 10});   
-		  
-		  $("#one-res").d3Click();
-		  $("#help-dlg").offset($("#one-res").position());
-		  $("#overlay").css("display","block");
-		  $("#help-dlg").css("z-index","105");
-		  $("#topic-svg-grid").css("z-index","104");	
-		  
-		}
+      //Show help if this is the first time they open the activity in their browser (with the new version)
+      if(!Cookies.get("topic-grid-tutorial")){
+        Cookies.set('topic-grid-tutorial', 'shown', { expires: 10});   
+        
+        $("#one-res").d3Click();
+        $("#help-dlg").offset($("#one-res").position());
+        $("#overlay").css("display","block");
+        $("#help-dlg").css("z-index","105");
+        $("#topic-svg-grid").css("z-index","104");	
+        
+      }
+      
+      if(state.args.uiIncenCheck && state.curr.grp.startsWith("AALTOSQL20")){
+        if(!Cookies.get('extra-points-announcement')) {
+          Cookies.set('extra-points-announcement', 'shown', { expires: 14});
+          $("#extra_points_help").d3Click();
+          $("#help-dlg").offset($("#extra_points_help").position());
+          $("#overlay").css("display","block");
+          $("#help-dlg").css("z-index","105");
+        }
+      }
     }
   }
   
@@ -2297,8 +2515,10 @@ function addRecommendationStarToTopic(g_cell_topic, topic_name) {
   const add = (a, b) =>
   a + b
   // use reduce to sum the total number of recommended activities
-  var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
+  //var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
 
+  var total_rec_activities = top_recommended_activities.length;
+  
   var map_rank_to_seq = 0;
   map_rank_to_seq = 1-(rank_rec/total_rec_activities);
 
@@ -2331,7 +2551,10 @@ function addRecommendationStarToTopic(g_cell_topic, topic_name) {
         .attr("id", "star_1")
         .attr("visibility", "visible")
         //.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
-        .attr("points", function (d) { d.seq = map_rank_to_seq; return ((d.seq === 0) ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+        .attr("points", function (d) { 
+          d.seq = map_rank_to_seq; 
+          return ((d.seq === 0) ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); 
+        })
         .attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
         //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
         .attr("stroke", "white")
@@ -2711,6 +2934,8 @@ function stateArgsSet02() {
   state.args.effortMsg = false;
   state.args.recExp = false;
   state.args.kcResouceIds = data.resources.map(res => res.id)
+  state.args.showKcmap = false;//check if fine-grained OLM is shown or not
+  state.args.controlKcmap = false;//check if users have access to choose if fine-grained OLM is shown or not
   //end of code added by @Jordan
   
   // @@@@
@@ -2752,7 +2977,7 @@ function stateArgsSet02() {
       //added by @Jordan
       state.args.kcMap                  = (data.vis.ui.params.group.kcMap != undefined ? data.vis.ui.params.group.kcMap : state.args.kcMap);
       state.args.kcMapMode              = (data.vis.ui.params.group.kcMapMode != undefined ? data.vis.ui.params.group.kcMapMode : state.args.kcMapMode);
-
+      state.args.controlKcmap           = (data.vis.ui.params.group.controlKcmap != undefined ? data.vis.ui.params.group.controlKcmap : state.args.controlKcmap);
       state.args.impactMsg              = (data.vis.ui.params.group.impactMsg != undefined ? data.vis.ui.params.group.impactMsg : state.args.impactMsg);
       state.args.difficultyMsg          = (data.vis.ui.params.group.difficultyMsg != undefined ? data.vis.ui.params.group.difficultyMsg : state.args.difficultyMsg);
       state.args.effortMsg              = (data.vis.ui.params.group.effortMsg != undefined ? data.vis.ui.params.group.effortMsg : state.args.effortMsg);
@@ -2794,7 +3019,7 @@ function stateArgsSet02() {
       //added by @Jordan
       state.args.kcMap                  = (data.vis.ui.params.user.kcMap != undefined ? data.vis.ui.params.user.kcMap : state.args.kcMap);
       state.args.kcMapMode              = (data.vis.ui.params.user.kcMapMode != undefined ? data.vis.ui.params.user.kcMapMode : state.args.kcMapMode);
-
+      state.args.controlKcmap           = (data.vis.ui.params.user.controlKcmap != undefined ? data.vis.ui.params.user.controlKcmap : state.args.controlKcmap);
       state.args.impactMsg              = (data.vis.ui.params.user.impactMsg != undefined ? data.vis.ui.params.user.impactMsg : state.args.impactMsg);
       state.args.difficultyMsg          = (data.vis.ui.params.user.difficultyMsg != undefined ? data.vis.ui.params.user.difficultyMsg : state.args.difficultyMsg);
       state.args.effortMsg              = (data.vis.ui.params.user.effortMsg != undefined ? data.vis.ui.params.user.effortMsg : state.args.effortMsg);
@@ -3429,7 +3654,8 @@ function visGenGridDataAllRes(gridData, gridName, learner01, learner02, seriesNa
         valMe    : learner01.state.topics[t.id].values[r.id][getRepLvl().id],
         valGrp   : (learner02 === null ? -1 : learner02.state.topics[t.id].values[r.id][getRepLvl().id]),
         isInt    : (learner01.id === data.context.learnerId && r.id !== "AVG"),
-        isVis    : true
+        isVis    : true,
+        isLocked : t.locked
       });
     }
     gridData.series.push(s);
@@ -3485,7 +3711,8 @@ function visGenGridDataOneRes(gridData, gridName, learner01, learner02, seriesNa
       valMe    : learner01.state.topics[t.id].values[r.id][getRepLvl().id],
       valGrp   : -1,
       isInt    : (r.id !== "AVG"),
-      isVis    : true
+      isVis    : true,
+      isLocked : t.locked
     });
   }
   
@@ -3506,7 +3733,8 @@ function visGenGridDataOneRes(gridData, gridName, learner01, learner02, seriesNa
         valMe    : learner01.state.topics[t.id].values[r.id][getRepLvl().id],
         valGrp   : (learner02 === null ? -1 : learner02.state.topics[t.id].values[r.id][getRepLvl().id]),
         isInt    : false,
-        isVis    : true
+        isVis    : true,
+        isLocked : t.locked
       });
     }
     
@@ -3528,7 +3756,8 @@ function visGenGridDataOneRes(gridData, gridName, learner01, learner02, seriesNa
         valMe    : -1,
         valGrp   : learner02.state.topics[t.id].values[r.id][getRepLvl().id],
         isInt    : false,
-        isVis    : true
+        isVis    : true,
+        isLocked : t.locked
       });
     }
     
@@ -3579,7 +3808,8 @@ function visGenGridDataAllRes_act(gridData, gridName, learner01, learner02, seri
         valMe    : learner01.state.topics[topic.id].values[res.id][getRepLvl().id],
         valeGrp  : (learner02 === null || !learner01.state.topics ? -1 : learner02.state.topics[topic.id].values[res.id][getRepLvl().id]),
         isInt    : true,
-        isVis    : true
+        isVis    : true,
+        isLocked : false
       });
     }
     
@@ -3601,7 +3831,8 @@ function visGenGridDataAllRes_act(gridData, gridName, learner01, learner02, seri
           valMe    : learner01.state.activities[topic.id][res.id][a.id].values[getRepLvl().id],
           valGrp   : (learner02 === null || !learner01.state.activities ? -1 : learner02.state.activities[topic.id][res.id][a.id].values[getRepLvl().id]),
           isInt    : true,
-          isVis    : true
+          isVis    : true,
+          isLocked : false
         });
         colCnt++;
       }
@@ -3609,7 +3840,7 @@ function visGenGridDataAllRes_act(gridData, gridName, learner01, learner02, seri
     
     // Add empty data points to make all series equal length:
     for (var j = colCnt; j < colCntMax; j++) {
-      s.data.push({ resIdx: i, topicIdx: state.vis.topicIdx, actIdx: -1, seq: 0, val: 0, isInt: false, isVis: false });
+      s.data.push({ resIdx: i, topicIdx: state.vis.topicIdx, actIdx: -1, seq: 0, val: 0, isInt: false, isVis: false, isLocked:false });
     }
     
     gridData.series.push(s);
@@ -3656,7 +3887,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
       valMe    : learner01.state.topics[topic.id].values[res.id][getRepLvl().id],
       valGrp   : -1,
       isInt    : true,
-      isVis    : true
+      isVis    : true,
+      isLocked : false
     });
   }
   
@@ -3676,7 +3908,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
         valMe    : learner01.state.activities[topic.id][res.id][a.id].values[getRepLvl().id],
         valeGrp  : -1,
         isInt    : true,
-        isVis    : true
+        isVis    : true,
+        isLocked : false
       });
       colCnt++;
     }
@@ -3699,7 +3932,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
         valMe    : learner01.state.topics[topic.id].values[res.id][getRepLvl().id],
         valGrp   : -1,
         isInt    : true,
-        isVis    : true
+        isVis    : true,
+        isLocked : false
       });
     }
     
@@ -3718,7 +3952,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
           valMe    : learner01.state.activities[topic.id][res.id][a.id].values[getRepLvl().id],
           valGrp   : (learner02 === null || !learner01.state.activities ? 0 : learner02.state.activities[topic.id][res.id][a.id].values[getRepLvl().id]),
           isInt    : false,
-          isVis    : true
+          isVis    : true,
+          isLocked : false
         });
         colCnt++;
       }
@@ -3742,7 +3977,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
         valMe    : -1,
         valGrp   : learner02.state.topics[topic.id].values[res.id][getRepLvl().id],
         isInt    : true,
-        isVis    : true
+        isVis    : true,
+        isLocked : false
       });
     }
     
@@ -3761,7 +3997,8 @@ function visGenGridDataOneRes_act(gridData, gridName, learner01, learner02, seri
           valMe    : -1,
           valGrp   : learner02.state.activities[topic.id][res.id][a.id].values[getRepLvl().id],
           isInt    : false,
-          isVis    : true
+          isVis    : true,
+          isLocked : false
         });
         colCnt++;
       }
@@ -3855,7 +4092,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
    if(data.configprops.agg_proactiverec_enabled && !title) { //Added for proactive recommendation, need to check with a parameter but should work only for topic based grid, not the main one. Title is the only way that I could find @Kamil
     var recommendationtr = $$("td", tr, null, 'rec-list');
     
-	if((data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_method=="remedial") || data.configprops.agg_kc_student_modeling=="bn" && data.configprops.agg_proactiverec_method=="km"){
+  if(data.configprops.agg_proactiverec_method=="remedial" || data.configprops.agg_proactiverec_method=="km"){
     console.log("Add recommendation classes to cells...");
     console.log(top_recommended_activities);
     if(top_recommended_activities && top_recommended_activities.length > 0) {
@@ -3866,7 +4103,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 			$(recommendation).append(orderedList);
 			$(recommendationtr).append(recommendation);  
 			
-			var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)
+			var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().id)
 			
 			if(topic_rec_activities.length > 0) {
 				topic_rec_activities//.sort((a,b) => b.rec_score - a.rec_score)
@@ -4012,7 +4249,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
       return "svg-grid";
     }).//added by @Jordan
     attr("style", "padding-bottom: 0px;").//+ (gridData.series.length > 1 ? extraPaddingB : 0) + "px;").
-    attr("width", visW + (gridData.sepX.length * settings.sepX) + (xLblAngle === 45 ? topicMaxWCos : 0)).
+    attr("width", 10 + visW + (gridData.sepX.length * settings.sepX) + (xLblAngle === 45 ? topicMaxWCos : 0)).
     attr("height", function(d){
       if (gridData.gridName=="act_me" || gridData.gridName=="act_mevsgrp" || gridData.gridName=="act_grp"){
         return visH-35;
@@ -4078,94 +4315,149 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
       var topic_names = Object.keys(me_data);
 
       var assessment_res_ids = [];
+      var completed_assessments = []
 
       var full_points = 2;//default for AALTO SQL
-      if (state.curr.grp.startsWith("IS0017Fall2019")){ //TODO: make this parameterized !!!
+      if (state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")){ //TODO: make this parameterized !!!
         full_points = 1;
       }
 
-      if(state.curr.grp.startsWith("IS0017Fall2019")){//TODO: Change this for a parameter with the id of the resource
+      if(state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")){//TODO: Change this for a parameter with the id of the resource
         assessment_res_ids = ["qz"];
-      }else{
-        assessment_res_ids - ["Problems"];
+      } else if(state.curr.grp.startsWith("AALTOSQL20")) {
+        assessment_res_ids = ["Query Practice", "Query Writing"];
+      } else if(state.curr.grp.startsWith("CS007Spring2020")){
+        assessment_res_ids = ["Tracing Problems", "Programming Challenges", "Coding Problems"];
+      } else if(state.curr.grp.startsWith("CMPINF401Fall2020") || state.curr.grp.startsWith("CMPINF0401Fall2020") ){
+        assessment_res_ids = ["Coding Problems"];
+      } else{
+        assessment_res_ids = ["Problems"];
       }
       
       for (var i = 0; i<topic_names.length; i++){
           var topic_name = topic_names[i];
           var topic_data = me_data[topic_name];
           var points = 0;
+
           for (var j=0; j<assessment_res_ids.length;j++){
-            var completed_assessments = 0;
+            completed_assessments[j] = 0;
             var res_id = assessment_res_ids[j];
-			var available_assessments = Object.keys(topic_data[res_id]);
-			
-			if(available_assessments.length > 0) {
-				for (var k=0;k<available_assessments.length;k++){
-				  var act_name = Object.keys(topic_data[res_id])[k]
-				  var act_progress = topic_data[res_id][act_name]["values"]["p"];
-				  if(act_progress==1){
-					completed_assessments = completed_assessments + 1;
-				  }
-				}
-				
-				points += completed_assessments;
-			} else {
-				points = -1;
-			}}
-		  
-		  if(points >= full_points) {
-			  credit_achievement[i] = 1;
-		  } else if (points == full_points/2) {
-			   credit_achievement[i] = .5;
-		  } else if(points == 0){
-			  credit_achievement[i] = 0;
-		  } else {
-			  credit_achievement[i] = -1;
-		  }
+
+            if(topic_data[res_id] !== undefined){
+              var available_assessments = Object.keys(topic_data[res_id]);
+
+              if(available_assessments.length > 0) {
+                for (var k=0;k<available_assessments.length;k++){
+                  var act_name = Object.keys(topic_data[res_id])[k]
+                  var act_progress = topic_data[res_id][act_name]["values"]["p"];
+                  if(act_progress==1){
+                    completed_assessments[j] = completed_assessments[j] + 1;
+                  }
+                }
+
+                if(state.curr.grp.startsWith("AALTOSQL20")) {
+                  if(topic_name == 'Set Operations') {
+                    points = completed_assessments[j]
+                  } else {
+                    points += completed_assessments[j] >=1?1:0;
+                  }
+                } else {
+                  points += completed_assessments[j];
+                }
+              } else {
+                points = points;//changed by @Jordan
+              }
+            }
+          }
+        
+          if(points >= full_points) {
+            credit_achievement[i] = 1;
+          } else if (points == full_points/2) {
+            credit_achievement[i] = .5;
+          } else if(points == 0){
+            credit_achievement[i] = 0;
+          } else {
+            credit_achievement[i] = -1;
+          }
       }
     }
 
   for (var iSeries = 0; iSeries < gridData.series.length; iSeries++) {
     var s = gridData.series[iSeries];
     var res = data.resources[s.resIdx];
-    
+
     // Resource name:
     if (doShowResNames) {
       svg.
         append("text").
-        attr("x", 1).
+        attr("x", 0).
         attr("y", ((sqH + settings.sq.padding) * iSeries) + (sqH / 2) + 5 + topicOffsetT + paddingT).
         text(s.name).
         attr("class", "res").
         style("text-rendering", "geometricPrecision");
+
+      
     }
     
     // Help:
-    //
-    if(state.args.uiShowHelp && helpId && s.id){
-      svg.
-        append("g").
-        attr("class", "helpButton").
-        //attr("style","background-image: url('img/help.gif');").
-        attr("helpId",helpId).
-		attr("id",helpId).
-        attr("serieId",(s.id ? s.id : "")).
-        attr("cursor","pointer").
-        on("click",function() {
-            var origin = d3.select(this).attr("helpId") + '-' + d3.select(this).attr("serieId");
-            helpDialogShow(origin,d3.mouse(this)[0],d3.mouse(this)[1]+57);
-            //helpDialogShow(origin,event.clientX,event.clientY);
-        }).
-        on("mouseover",function () {d3.select(this).style("opacity","1");}).
-        on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
-        style("opacity", "0.7").
-          append("image").
-          attr("x", (resOffsetL + paddingL + settings.sepX + (sqW+settings.sq.padding) * data.topics.length + 10)).
-          attr("y", ((sqH + settings.sq.padding) * iSeries)  + 5 + topicOffsetT + paddingT).
-          attr("width", 22).
-          attr("height", 19).
-          attr("xlink:href","img/help.png");
-
+    if(state.args.uiShowHelp){
+      var resourcesWithDescriptions = ["Animated Examples", "Tracing Problems" ,"Programming Examples", "Programming Challenges", "Coding Problems"]
+      if(helpId && s.id){
+        svg.
+          append("g").
+          attr("class", "helpButton").
+          //attr("style","background-image: url('img/help.gif');").
+          attr("helpId",helpId).
+          attr("id",helpId).
+              attr("serieId",(s.id ? s.id : "")).
+              attr("cursor","pointer").
+              on("click",function() {
+                  var origin = d3.select(this).attr("helpId") + '-' + d3.select(this).attr("serieId");
+                  helpDialogShow(origin,d3.mouse(this)[0],d3.mouse(this)[1]+57);
+                  //helpDialogShow(origin,event.clientX,event.clientY);
+              }).
+              on("mouseover",function () {d3.select(this).style("opacity","1");}).
+              on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
+              style("opacity", "0.7").
+                append("image").
+                attr("x", resOffsetL + paddingL + settings.sepX + (sqW+settings.sq.padding) * data.topics.length + 10).
+                attr("y", ((sqH + settings.sq.padding) * iSeries)  + 5 + topicOffsetT + paddingT).
+                attr("width", 22).
+                attr("height", 19).
+                attr("xlink:href","img/help.png");
+      }else{
+        if(s.name && Object.keys(getTopic().activities).includes(s.name) && resourcesWithDescriptions.includes(s.name)){
+          svg.
+          append("g").
+          attr("class", "helpButton").
+          //attr("style","background-image: url('img/help.gif');").
+          attr("helpId",s.name).
+          attr("id",s.name).
+              attr("serieId",(s.id ? s.id : "")).
+              attr("cursor","pointer").
+              on("click",function() {
+                  var origin = d3.select(this).attr("helpId");
+                  if(state.args.uiMinProgressCheck){
+                    helpDialogShow(origin,d3.mouse(this)[0]+100,d3.mouse(this)[1]+170);
+                  }else{
+                    helpDialogShow(origin,d3.mouse(this)[0]+100,d3.mouse(this)[1]+170);
+                  }
+                  
+                  //helpDialogShow(origin,event.clientX,event.clientY);
+              }).
+              on("mouseover",function () {d3.select(this).style("opacity","1");}).
+              on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
+              style("opacity", "0.7").
+                append("image").
+                attr("x", function(d){
+                  return resOffsetL + settings.sepX + (sqW+settings.sq.padding) * getTopic().activities[s.name].length - 2
+                }).
+                attr("y", ((sqH + settings.sq.padding) * iSeries)  + 5 + topicOffsetT + paddingT).
+                attr("width", 20).
+                attr("height", 18).
+                attr("xlink:href","img/help.png");
+        }
+      }
     }
     
     // Mini-series (e.g., bar chart):
@@ -4272,12 +4564,34 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 			let totalCredit = credit_achievement.filter(cr => cr != -1).reduce((a,b) => a+b)*2
 
 			svg.
-				append("text").
+        append("text").
 				attr("x", 1).
 				attr("y", topicOffsetT).
 				text("Extra Points Earned: " + totalCredit + "/20").
-				attr("class", "title").
-				style("text-rendering", "geometricPrecision");
+        attr("class", "title").
+        style("text-rendering", "geometricPrecision");
+        
+
+      svg.
+        append("g").
+        attr("class", "helpButton").
+        //attr("style","background-image: url('img/help.gif');").
+        attr("helpId", "extra_points").
+        attr("id", "extra_points_help").
+            attr("serieId",(s.id ? s.id : "")).
+            attr("cursor","pointer").
+            on("click",function() {
+                helpDialogShow("extra_points",d3.mouse(this)[0],d3.mouse(this)[1]+57);
+            }).
+            on("mouseover",function () {d3.select(this).style("opacity","1");}).
+            on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
+            style("opacity", "0.7").
+              append("image").
+              attr("x", 185).
+              attr("y", 0).
+              attr("width", 22).
+              attr("height", 19).
+              attr("xlink:href","img/help.png");
 
 			$('td.title').hide()
 		}			
@@ -4393,36 +4707,30 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   } 
 
   if(state.args.uiTopicTimeMapFile && isInteractive){
-
-    $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=201910271040", function(json) {
-      for (var i=0; i < json.topicTime.length ; i++) {
-        data.topics[json.topicTime[i].topicOrder].unlockTime = json.topicTime[i].releaseDate
-      }
-      if(d3.selectAll(".lock-img").empty()){
-        d3.selectAll(".grid-cell-inner")
-        .filter(function(d) {return (d3.select(this).select("rect").attr("width")==d3.select(this).select("rect").attr("height")) && d3.select(this).node().parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
-        .append("svg:image")
-        .attr("class","lock-img")
-          .attr('x', sqW / 2 + 6)
-          .attr('y', - sqW / 2 + 8)
-          .attr('width', 12)
-          .attr('height', 12)
-          .attr("xlink:href", function(d){
-              if(d.topicIdx > 0) {
-                if(!checkIfTopicUnlocked(d.topicIdx))
-                    return "./img/lock2.png"; 
-                else 
-                    return;
-              }
-              return;
-              
-          });
-      }
-    });
+    if(d3.selectAll(".lock-img").empty()){
+      d3.selectAll(".grid-cell-inner")
+      .filter(function(d) {return (d3.select(this).select("rect").attr("width")==d3.select(this).select("rect").attr("height")) && d3.select(this).node().parentNode.getAttribute("data-grid-name")=="me" && d.actIdx==-1 && d.resIdx==0 && d.topicIdx>0 }) //first if is for just showing the checkmarks on the "Me" row in MG, not in all of the other two (me vs group and group)
+      .append("svg:image")
+      .attr("class","lock-img")
+        .attr('x', sqW / 2 + 6)
+        .attr('y', - sqW / 2 + 8)
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr("xlink:href", function(d){
+            if(d.topicIdx > 0) {
+              if(d.isLocked)
+                  return "./img/lock2.png"; 
+              else 
+                  return;
+            }
+            return;
+            
+        });
+    }
   }
   
   // Grid cells -- Sequencing:
-  if (s.doShowSeq) {
+  if (!data.configprops.agg_proactiverec_enabled && s.doShowSeq) {//modified 
     if(CONST.vis.seqStars){
       g
         .append("svg:polygon")
@@ -4433,6 +4741,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         .attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
         //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
         .attr("stroke", "white")
+        .attr("class","rec_activity_star")
         .style("shape-rendering", "geometricPrecision")
       
       g
@@ -4449,9 +4758,11 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
             return " 1";
           } else if (d.seq === 0.7) {
             return " 2";
-          } else {
+          } else if (d.seq === 0.3) {
             return " 3";
           }
+
+          return "";
           
           /*if(d.seq === 1) {
             return "+6";
@@ -4706,7 +5017,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial"){
     d3.selectAll("g.grid-cell-outter").each( function(d){
       var topic_name = d3.select(this).attr("topic");
-      console.log(d3.select(this));
       var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
       if(topic_has_recommended_acts){
           addRecommendationStarToTopic(d3.select(this),topic_name)
@@ -4719,9 +5029,16 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 }
 
 function checkIfTopicUnlocked(topicId) {
-  var topicUnlockTime = new Date(data.topics[topicId].unlockTime)
-  var currentDate = new Date()
-  return currentDate >= topicUnlockTime
+  return !data.topics[topicId].locked
+}
+
+function checkIfTopicUnlockedByName(topicName) {
+  var topicUnlocked = true;
+  var topic = data.topics.filter(function(d){return d.id==topicName;})[0]
+  if(topic && topic.locked){
+    topicUnlocked=false;
+  }
+  return topicUnlocked;
 }
 
 /**
@@ -4795,7 +5112,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
       usrState += data.reportLevels[i].id + "=" + getMe().state.topics[topic.id].values[res.id][data.reportLevels[i].id]  + (i < data.reportLevels.length-1 ? "|" : "");
       grpState += data.reportLevels[i].id + "=" + getGrp().state.topics[topic.id].values[res.id][data.reportLevels[i].id] + (i < data.reportLevels.length-1 ? "|" : "");
   }
-  
 
   if (gridName=="act_me" || gridName=="act_mevsgrp" || gridName=="act_grp"){
 
@@ -5044,6 +5360,52 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         }
 
         var act_rec_info = recommended_activities.filter(function(d){return d["id"]==act_id})[0];
+
+        //Count rec and non rec activities at every moment
+        var recDone = 0;
+        var noRecDone = 0;
+        var recNoDone = 0;
+        var noRecNoDone = 0;
+
+        var usrProgressTopic = getMe().state.activities[topic.id];
+        var resourcesIds = Object.keys(usrProgressTopic);
+        for(var i=0;i<resourcesIds.length;i++){
+          var resource = resourcesIds[i];
+          var resActs = usrProgressTopic[resource];
+          var actIds = Object.keys(resActs);
+
+          for(var j=0;j<actIds.length;j++){
+            var actId = actIds[j];
+            var actProgress = resActs[actId].values.p;
+            var recInfo = recommended_activities.filter(function(d){return d["id"]==actId})[0];
+            if(recInfo){
+              var isRec = recInfo["isRecommended"];
+              if(isRec=="1"){
+                //nRecActs +=1;
+                if(actProgress==1){
+                  recDone +=1;
+                }else{
+                  recNoDone += 1;
+                }
+              }else{
+                //nNonRecActs +=1;
+                if(actProgress==1){
+                  noRecDone +=1;
+                }else{
+                  noRecNoDone +=1;
+                }
+              }
+            }else{
+               if(actProgress==1){
+                  noRecDone +=1;
+                }else{
+                  noRecNoDone +=1;
+                }
+            }
+          }
+        }
+
+        //console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
         
         var act_mouseover_log =
           "action"           + CONST.log.sep02 + "grid-activity-cell-mouseover" + CONST.log.sep01 +
@@ -5057,6 +5419,10 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
           "kcsNotKnown"      + CONST.log.sep02 + kcsNotKnown                 + CONST.log.sep01 +
           "kcsLearning"      + CONST.log.sep02 + kcsLearning                 + CONST.log.sep01 +
           "kcsKnown"         + CONST.log.sep02 + kcsKnown                    + CONST.log.sep01 +
+          "nRecDone"         + CONST.log.sep02 + recDone                     + CONST.log.sep01 +
+          "nRecNoDone"      + CONST.log.sep02 + recNoDone                    + CONST.log.sep01 +
+          "nNoRecDone"         + CONST.log.sep02 + noRecDone                 + CONST.log.sep01 +
+          "nNoRecNoDone"      + CONST.log.sep02 + noRecNoDone                + CONST.log.sep01 +
           //"difficulty"       + CONST.log.sep02 + act_difficulty                  + CONST.log.sep01 +
           //"probability"       + CONST.log.sep02 + probability                  + CONST.log.sep01 +
           //"median_prob"       + CONST.log.sep02 + median_prob                 + CONST.log.sep01 +
@@ -5074,7 +5440,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
             act_mouseover_log = act_mouseover_log + CONST.log.sep01 +
             "isRec"   + CONST.log.sep02 + act_rec_info["isRecommended"] + CONST.log.sep01 +
             "exp"   + CONST.log.sep02 + explanation_text;
-            console.log(act_mouseover_log);
           }
         }
 
@@ -5115,7 +5480,9 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
      var actLstShown=true;
      if(ui.vis.actLst.cont.style.display == 'none'){
        if(topic.order!=0){
-          topicNodeMouseOver(topic.id);
+          if(!topic.locked){
+            topicNodeMouseOver(topic.id);
+          }
        }
        actLstShown=false;
      }
@@ -5590,7 +5957,13 @@ function ehVisGridBoxClick(e, grpOutter) {
     else {
       if (actIdx === -1) return;  // the average activity cell has been clicked
       
-      
+      usrState +="|";
+      grpState += "|";
+
+      for (var i = 0; i < data.reportLevels.length; i++){
+          usrState += data.reportLevels[i].id + "AVG=" + getMe().state.topics[topic.id].overall[data.reportLevels[i].id]  + (i < data.reportLevels.length-1 ? "|" : "");
+          grpState += data.reportLevels[i].id + "AVG=" + getGrp().state.topics[topic.id].values.AVG[data.reportLevels[i].id] + (i < data.reportLevels.length-1 ? "|" : "");
+      }
       
       usrState += CONST.log.sep01 + "usrActState" + CONST.log.sep02;
       grpState += CONST.log.sep01 + "grpActState" + CONST.log.sep02;
@@ -5712,6 +6085,52 @@ function ehVisGridBoxClick(e, grpOutter) {
       //   true
       // );
 
+      //Count rec and non rec activities at every moment
+      var recDone = 0;
+      var noRecDone = 0;
+      var recNoDone = 0;
+      var noRecNoDone = 0;
+
+      var usrProgressTopic = getMe().state.activities[topic.id];
+      var resourcesIds = Object.keys(usrProgressTopic);
+      for(var i=0;i<resourcesIds.length;i++){
+        var resource = resourcesIds[i];
+        var resActs = usrProgressTopic[resource];
+        var actIds = Object.keys(resActs);
+
+        for(var j=0;j<actIds.length;j++){
+          var actId = actIds[j];
+          var actProgress = resActs[actId].values.p;
+          var recInfo = recommended_activities.filter(function(d){return d["id"]==actId})[0];
+          if(recInfo){
+            var isRec = recInfo["isRecommended"];
+            if(isRec=="1"){
+              //nRecActs +=1;
+              if(actProgress==1){
+                recDone +=1;
+              }else{
+                recNoDone += 1;
+              }
+            }else{
+              //nNonRecActs +=1;
+              if(actProgress==1){
+                noRecDone +=1;
+              }else{
+                noRecNoDone +=1;
+              }
+            }
+          }else{
+             if(actProgress==1){
+                noRecDone +=1;
+              }else{
+                noRecNoDone +=1;
+              }
+          }
+        }
+      }
+
+      console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
+
       if(data.configprops.agg_kc_student_modeling=="cumulate"){
         var current_topic = data.topics[topicIdx];
         var mg_activities = current_topic ? current_topic.activities:undefined;
@@ -5728,6 +6147,8 @@ function ehVisGridBoxClick(e, grpOutter) {
           if(act_is_recommended){
             rank_recommended = rank_recommended_activities[act_id];
           }
+
+          console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
           
           var act_click_log=
             "action"           + CONST.log.sep02 + "grid-activity-cell-select" + CONST.log.sep01 +
@@ -5742,6 +6163,10 @@ function ehVisGridBoxClick(e, grpOutter) {
             "kcsNotKnown"      + CONST.log.sep02 + kcsNotKnown                 + CONST.log.sep01 +
             "kcsLearning"      + CONST.log.sep02 + kcsLearning                 + CONST.log.sep01 +
             "kcsKnown"         + CONST.log.sep02 + kcsKnown                    + CONST.log.sep01 +
+            "nRecDone"         + CONST.log.sep02 + recDone                     + CONST.log.sep01 +
+            "nRecNoDone"      + CONST.log.sep02 + recNoDone                    + CONST.log.sep01 +
+            "nNoRecDone"         + CONST.log.sep02 + noRecDone                 + CONST.log.sep01 +
+            "nNoRecNoDone"      + CONST.log.sep02 + noRecNoDone                + CONST.log.sep01 +
             //"difficulty"       + CONST.log.sep02 + difficulty                  + CONST.log.sep01 +
             "probability"       + CONST.log.sep02 + probability                  + CONST.log.sep01 +
             //"activeVis"        + CONST.log.sep02 + uiCMVisId                   + CONST.log.sep01 +
@@ -5793,6 +6218,10 @@ function ehVisGridBoxClick(e, grpOutter) {
           "kcsNotKnown"      + CONST.log.sep02 + kcsNotKnown                 + CONST.log.sep01 +
           "kcsLearning"      + CONST.log.sep02 + kcsLearning                 + CONST.log.sep01 +
           "kcsKnown"         + CONST.log.sep02 + kcsKnown                    + CONST.log.sep01 +
+          "nRecDone"         + CONST.log.sep02 + recDone                     + CONST.log.sep01 +
+          "nRecNoDone"      + CONST.log.sep02 + recNoDone                    + CONST.log.sep01 +
+          "nNoRecDone"         + CONST.log.sep02 + noRecDone                 + CONST.log.sep01 +
+          "nNoRecNoDone"      + CONST.log.sep02 + noRecNoDone                + CONST.log.sep01 +
           //"difficulty"       + CONST.log.sep02 + difficulty                  + CONST.log.sep01 +
           "probability"       + CONST.log.sep02 + probability                  + CONST.log.sep01 +
           //"activeVis"        + CONST.log.sep02 + uiCMVisId                   + CONST.log.sep01 +
@@ -6155,10 +6584,40 @@ function CalculateStarPoints(centerX, centerY, arms, outerRadius, innerRadius){
 
 function generateHelp(origin){
     var helpText = "";
+    if(["Animated Examples"].includes(origin)){
+      var height = 90;
+      helpText = "<b>Animated Examples (AE)</b>: AEs show visually how each step of an example problem is executed. This examples are useful to lean about the behavior of different programming constructs."
+      ui.vis.helpDlg.style.height = height+"px";
+    }
+
+    if(["Quizzes","Tracing Problems"].includes(origin)){
+      var height = 90;
+      helpText = "<b>Tracing Problems (TP)</b>: TPs assess your knowledge of how different programming contracts behave when being executed. If you feel that these problems are too hard, check <b>Animated Examples</b>."
+      ui.vis.helpDlg.style.height = height+"px";
+    }
+
+    if(["Examples","Programming Examples"].includes(origin)){
+      var height = 90;
+      helpText = "<b>Programming Examples (PE)</b>: PEs walk you through complete solutions of meaningful programming problems. Use it to understand how programs should be constructed."
+      ui.vis.helpDlg.style.height = height+"px";
+    }
+
+    if(["Challenges","Programming Challenges"].includes(origin)){
+      var height = 90;
+      helpText = "<b>Programming Challenges (PC)</b>: PCs assess your basic knowledge of problem construction. In these challenges, you are provided with a clear context and have to choose the correct programming construct to achieve the given goal."
+      ui.vis.helpDlg.style.height = height+"px";
+    }
+
+    if(["Coding","Coding Problems"].includes(origin)){
+      var height = 90;
+      helpText = "<b>Coding Problems (CP)</b>: CPs is the ultimate check of your program construction knowledge. Given the task, you need to write code to solve it. Your solution is checked using a set of tests."
+      ui.vis.helpDlg.style.height = height+"px";
+    }
+
     if(origin === "one-res-me-h"){
         var height = 150;
 		
-		helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>My Progress Grid</h3><p>This row represents your progress in the topics of the course. Each topic is a cell. Gray means 0% of progress and darker color means more progress.</p>";
+		    helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>My Progress Grid</h3><p>This row represents your progress in the topics of the course. Each topic is a cell. Gray means 0% of progress and darker color means more progress.</p>";
         helpText += "<table border=0 cellpadding=0 cellspacing=0>";
 
 		if(data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial"){
@@ -6201,16 +6660,35 @@ function generateHelp(origin){
 		if(state.args.uiIncenCheck) {
       if (state.curr.grp.startsWith("IS0017Fall2019")){
         helpText += "<h3>Points per Topic</h3><img src='./img/half_credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 quiz.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
+        height += 150;
+      } else if(state.curr.grp.startsWith("AALTOSQL20")) {
+        helpText += "<h3>Points per Topic</h3>"
+
+        helpText += "<img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'>"
+        helpText += "<p style='display:inline;'>means that you got 2 points for completing at least 2 problems (1 from Query Practice and 1 from Query Writing). In Set Operations topic, you have to solve 2 Query Writing problem to get 2 points.</p><br>"
+
+        helpText += "<img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'>"
+        helpText += "<p style='display:inline;'>means that you got 1 point for completing at least 1 problem.(1 from Query Practice or 1 from Query Writing). In Set Operations topic, this means that you solved only 1 Query Writing problem.</p><br>"
+
+        helpText += "<img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'>"
+        helpText += "<p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
+        height += 225;
+
+      }
+      else if(state.curr.grp.startsWith("CS007Spring2020")){
+        helpText += "<h3>Points per Topic</h3><p style='display:inline'>Here we define a <b>problem</b> as either of the following learning activities: tracing problems, prog. challenges or coding problems)</p><br><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems.</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
+        height += 150;
       }else{
         helpText += "<h3>Points per Topic</h3><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems.</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
+        height += 150;
       }
 			
-			height += 150;
+			
     }
     
     if(state.args.uiTopicTimeMapFile) {
       helpText += "<h3>Topic Opening</h3><img src='./img/lock2.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that the topic is not available for now but will be opened by your instructor at a later time. </p>"
-      height += 50;
+      height += 70;
     }
 		
 		ui.vis.helpDlg.style.height = height + "px";
@@ -6313,46 +6791,46 @@ function generateHelp(origin){
       // helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>My progress on concepts</h3>" +
       //              "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars grow and become darker green. Mouse over a concept to highlight its name.</p>";
 
-	  if(data.configprops.agg_kc_student_modeling=="cumulate"){
-      if(data.configprops.agg_proactiverec_method=="remedial"){
-  		  helpText = "<h4 style='margin: 0px; padding: 0px 10px 0px 0px;'>Knowledge Level and Success Rate of Concepts</h4>" +
-                     "<p>This is the list of concepts of the course grouped by topic. As you complete the problems within the topics, you will see that the bars will change in order to show the knowledge level"+
-  				   " of the concept that the system calculates based on your historic performance.</p> " + 
-  				   //"<b><i>Click</i></b> on a concept to see what system thinks about your knowledge and performance.<br/>"+
-  				   "<b><i>Mouseover</i></b> a concept to highlight its name and estimated knowledge level."+
-                     "<p><ul style='margin-top:-5px; padding: 0px 0px 0px 10px;'>"+
-  				   "<li>Concepts that you have had struggled with will be highlighted with a warning sign <image x='8' y='2' width='16' height='16' src='./img/warning-icon2.png'></image></li>" +
-  				   "<li>The bar length shows your estimated level of knowledge.</li>"+
-  				   "<li>The bar color "+
-  				   " <a style='background-color:rgb(200, 0, 0); padding:2px 5px 2px 5px;'></a>" +
-  				   " <a style='background-color:rgb(236, 164, 74); padding:2px 5px 2px 5px;'></a>" +
-  				   " <a style='background-color:rgb(208, 215, 92); padding:2px 5px 2px 5px;'></a>" +
-  				   " <a style='background-color:rgb(92, 166, 40); padding:2px 5px 2px 5px;'></a>" +
-  				   " <a style='background-color:rgb(0, 128, 0); padding:2px 5px 2px 5px;'> </a>  " +
-  				   " indicates the recent success rate you have on problems that involve that concept"+
-  				  "</ul></p>"; 
-  		  ui.vis.helpDlg.style.height = "300px";
-      }else{
-        helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Level of Knowledge per Concept</h3>" +
-                   "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars will change in order to show the estimated amount of knowledge about the concept that the system calculates based on your historic performance. <i>Mouseover</i> a concept to highlight its name and its estimated knowledge percentage.";
-                           
-        ui.vis.helpDlg.style.height = "150px";
-      }
-	  } else {
-      if(data.configprops.agg_kc_student_modeling=="bn"){
-        helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of mastering a concept</h3>" +
-                   "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars will change in order to show the probability of mastering the concept that the system calculates based on your historic performance. <i>Mouseover</i> a concept to highlight its name and its exact probability:"+
-                   "<ul style='margin-top:-5px; padding: 0px 0px 0px 10px;'><li>\><b>50%:</b> for the system it is more likely that you know the concept. Shown as <span style='color:green;font-weight:bold;'>green</span> bars.</li><li><b>50%</b>: uncertain probability, i.e. system is not sure if you know the concept or not. Shown as <b>no bar</b>.</li><li><b>\<50%</b>: for the system it is more likely that you do not know the concept. Shown as  <span style='color:red;font-weight:bold;'>red</span> bars.</li></ul>.</p>";         
-        ui.vis.helpDlg.style.height = "250px";
-      }else{
-        helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of mastering a concept</h3>" +
-                   "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars will change in order to show the probability of mastering the concept that the system calculates based on your historic performance. <i>Mouseover</i> a concept to highlight its name and its exact probability:"+
-                   "<ul style='margin-top:-5px; padding: 0px 0px 0px 10px;'><li>\><b>50%:</b> for the system it is more likely that you know the concept. Shown as <span style='color:green;font-weight:bold;'>green</span> bars.</li><li><b>50%</b>: uncertain probability, i.e. system is not sure if you know the concept or not. Shown as <b>no bar</b>.</li><li><b>\<50%</b>: for the system it is more likely that you do not know the concept. Shown as  <span style='color:red;font-weight:bold;'>red</span> bars.</li></ul>.</p>";         
-        ui.vis.helpDlg.style.height = "250px";
-      }
-	  }
-	  
+  	  if(data.configprops.agg_kc_student_modeling=="cumulate"){
+        if(data.configprops.agg_proactiverec_method=="remedial"){
+    		  helpText = "<h4 style='margin: 0px; padding: 0px 10px 0px 0px;'>Knowledge Level and Success Rate of Concepts</h4>" +
+                       "<p>This is the list of concepts of the course grouped by topic. As you complete the problems within the topics, you will see that the bars will change in order to show the knowledge level"+
+    				   " of the concept that the system calculates based on your historic performance.</p> " + 
+    				   //"<b><i>Click</i></b> on a concept to see what system thinks about your knowledge and performance.<br/>"+
+    				   "<b><i>Mouseover</i></b> a concept to highlight its name and estimated knowledge level."+
+                       "<p><ul style='margin-top:-5px; padding: 0px 0px 0px 10px;'>"+
+    				   "<li>Concepts that you have had struggled with will be highlighted with a warning sign <image x='8' y='2' width='16' height='16' src='./img/warning-icon2.png'></image></li>" +
+    				   "<li>The bar length shows your estimated level of knowledge.</li>"+
+    				   "<li>The bar color "+
+    				   " <a style='background-color:rgb(200, 0, 0); padding:2px 5px 2px 5px;'></a>" +
+    				   " <a style='background-color:rgb(236, 164, 74); padding:2px 5px 2px 5px;'></a>" +
+    				   " <a style='background-color:rgb(208, 215, 92); padding:2px 5px 2px 5px;'></a>" +
+    				   " <a style='background-color:rgb(92, 166, 40); padding:2px 5px 2px 5px;'></a>" +
+    				   " <a style='background-color:rgb(0, 128, 0); padding:2px 5px 2px 5px;'> </a>  " +
+    				   " indicates the recent success rate you have on problems that involve that concept"+
+    				  "</ul></p>"; 
+    		  ui.vis.helpDlg.style.height = "300px";
+        }else{
+          helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Level of Knowledge per Concept</h3>" +
+                     "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars will change in order to show the estimated amount of knowledge about the concept that the system calculates based on your historic performance. <i>Mouseover</i> a concept to highlight its name and its estimated knowledge percentage.";
+                             
+          ui.vis.helpDlg.style.height = "150px";
+        }
+  	  } else {
+        if(data.configprops.agg_kc_student_modeling=="bn"){
+          helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of mastering a concept</h3>" +
+                     "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars will change in order to show the probability of mastering the concept that the system calculates based on your historic performance. <i>Mouseover</i> a concept to highlight its name and its exact probability:"+
+                     "<ul style='margin-top:-5px; padding: 0px 0px 0px 10px;'><li>\><b>50%:</b> for the system it is more likely that you know the concept. Shown as <span style='color:green;font-weight:bold;'>green</span> bars.</li><li><b>50%</b>: uncertain probability, i.e. system is not sure if you know the concept or not. Shown as <b>no bar</b>.</li><li><b>\<50%</b>: for the system it is more likely that you do not know the concept. Shown as  <span style='color:red;font-weight:bold;'>red</span> bars.</li></ul>.</p>";         
+          ui.vis.helpDlg.style.height = "250px";
+        }else{
+          helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of mastering a concept</h3>" +
+                     "<p>This is the list of concepts of the course grouped by topic. As you complete the activities within the topics, you will see that the bars will change in order to show the probability of mastering the concept that the system calculates based on your historic performance. <i>Mouseover</i> a concept to highlight its name and its exact probability:"+
+                     "<ul style='margin-top:-5px; padding: 0px 0px 0px 10px;'><li>\><b>50%:</b> for the system it is more likely that you know the concept. Shown as <span style='color:green;font-weight:bold;'>green</span> bars.</li><li><b>50%</b>: uncertain probability, i.e. system is not sure if you know the concept or not. Shown as <b>no bar</b>.</li><li><b>\<50%</b>: for the system it is more likely that you do not know the concept. Shown as  <span style='color:red;font-weight:bold;'>red</span> bars.</li></ul>.</p>";         
+          ui.vis.helpDlg.style.height = "250px";
+        }
+  	  }
     }
+
     if(origin === "bipartite-group"){
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Group progress on concepts</h3>" +
                    "<p>These <i>upside-down</i> bars represent the average of the class group on the concepts of the course. This average only consider learners who have done some activity in this system.</p>";        
@@ -6368,15 +6846,32 @@ function generateHelp(origin){
       //   helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Learning impact of the activity</h3>" +
       //              "<p>This gauge shows an estimation of how much you can learn by doing an activity when you mouse over an activity cell. You will probably learn more in activities which have more <i>new</i> concepts.</p>";
       // }
-      helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of succesfully attempting an activity</h3>" +
+      /*helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of succesfully attempting an activity</h3>" +
                     "<p>This gauge estimates the probability of solving a challenge/problem correctly or understanding an example thoroughly. This calculation is based on the mastery estimation for each of the concepts covered in the activity. This estimations are based on previous attempts on activities.</p>"; 
-      ui.vis.helpDlg.style.height = "150px";
+      ui.vis.helpDlg.style.height = "150px";*/
+      if(data.configprops.agg_kc_student_modeling=="cumulate" || data.configprops.agg_proactiverec_method=="km"){
+         helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Appropriateness for expanding your knowledge</h3>" +
+                    "<p>This gauge estimates the appropriateness of a learning activity to help you to increase your knowledge about the current topic. This calculation is based on the balance between the level of knowledge in the concepts required to attempt the activity (pre-requisites) and how much knowledge can be acquired in the current topic's concepts by attempting it. These knowledge estimations are based on previous attempts on activities.</p>"; 
+         ui.vis.helpDlg.style.height = "175px";
+      }else{
+         helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of succesfully attempting an activity</h3>" +
+                    "<p>This gauge estimates the probability of solving a challenge/problem correctly or understanding an example thoroughly. This calculation is based on the mastery estimation for each of the concepts covered in the activity. These estimations are based on previous attempts on activities.</p>"; 
+         ui.vis.helpDlg.style.height = "150px";
+      }
      
     }
     if(origin === "activity-concepts"){
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Activity cells</h3>" +
                    "<p>These cells contain the content activities. Mouseover an activity cell to see which are the related concepts in the chart below.</p>";        
         
+    }
+
+    if(origin === "extra_points") {
+      helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Extra Points Announcement</h3>" +
+                   "<p>You can keep using the system to practice your SQL skills. <br/> However, from now on, your activities <b>will not affect the extra points you have already earned</b>" +
+                   "(extra points you have earned until now are reflected to your accounts) <br/></p>" + 
+                   "<p>You will see changes in the interface but these changes will not be reflected.</p>"; 
+      ui.vis.helpDlg.style.height = "150px"
     }
     return helpText;
 }
@@ -6417,27 +6912,123 @@ function median(values){
     return (values[half - 1] + values[half]) / 2.0;
 }
 
+// function calculateOverallProgressPerActType(data_per_topic,act_type){
+//   var avg_progress = data_per_topic["AVG"]["values"];
+//   var avg_progress_act_type = 0;
+//   var avg_progress_act_type = avg_progress[act_type]["p"];
+//   return avg_progress_act_type;
+// }
+
+// function updateMinOverallProgressCheckInfo(){
+//   var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+//   var progress_data=data.learners[usr_index].state.topics;
+//   var act_ids = Object.keys(state.args.uiMinProgressCheck);
+//   var minOverallProgressInfoHTML = $("#min-progress-check");
+//   minOverallProgressInfoHTML.empty()
+//   var progress_html = "<b>Progress summary:</b> ";
+//   for(var i=0;i<act_ids.length;i++){
+//     var act_type_name=act_ids[i]
+//     var act_type=act_ids[i]
+//     switch(act_type){
+//       case "qz":
+//         act_type_name="Quizzes"
+//         break
+//       case "e159":
+//         act_type_name="Examples"
+//         break
+//       case "c160":
+//         act_type_name="Challenges"
+//         break
+//       case "c161":
+//         act_type_name="Coding"
+//         break
+//       case "ae":
+//         act_type_name="Animated Examples"
+//         break
+//       default:
+//         break
+//     }
+//     var minRequiredProgress = state.args.uiMinProgressCheck[act_type];
+//     var currentProgress = calculateOverallProgressPerActType(progress_data,act_type);
+//     progress_html = progress_html + "   <span style='color:green;'>" + act_type_name + ":</span> "+Math.round(currentProgress*100)+"% (min. " +Math.round(minRequiredProgress*100)+ "%) &nbsp; &nbsp;"; 
+//   }
+//   progress_html = progress_html + "</br>";
+//   minOverallProgressInfoHTML.html(progress_html);
+// }
+
 function calculateOverallProgressPerActType(data_per_topic,act_type){
-  var avg_progress = data_per_topic["AVG"]["values"];
+  
+  var topic_ids = Object.keys(data_per_topic);
+  var act_count = 0;
+  var completed_acts_count = 0;
+  //console.log(act_type);
+  for(var i=0;i<topic_ids.length;i++){
+    var topic_id = topic_ids[i];
+    var topic_activities = data_per_topic[topic_id][act_type];
+    var act_ids = Object.keys(topic_activities);
+    //console.log(topic_id);
+    //console.log(act_ids);
+    for(var j=0;j<act_ids.length;j++){
+      var act_id = act_ids[j];
+      var act_progress = topic_activities[act_id].values.p;
+      if(act_progress==1){
+        completed_acts_count++;
+      }
+      act_count++;
+    }
+  }
+  //var avg_progress = data_per_topic["AVG"]["values"];
   var avg_progress_act_type = 0;
-  var avg_progress_act_type = avg_progress[act_type]["p"];
+  var avg_progress_act_type = completed_acts_count/act_count;
+  //var avg_progress_act_type = avg_progress[act_type]["p"];
+  //console.log("Completed "+act_type+" :"+completed_acts_count);
+  //console.log("Total "+act_type+" :"+act_count);
   return avg_progress_act_type;
 }
 
 function updateMinOverallProgressCheckInfo(){
   var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-  var progress_data=data.learners[usr_index].state.topics;
+  var progress_data=data.learners[usr_index].state.activities;
   var act_ids = Object.keys(state.args.uiMinProgressCheck);
   var minOverallProgressInfoHTML = $("#min-progress-check");
   minOverallProgressInfoHTML.empty()
   var progress_html = "<b>Progress summary:</b> ";
   for(var i=0;i<act_ids.length;i++){
-    var act_type=act_ids[i];
+    var act_type_name=act_ids[i]
+    var act_type=act_ids[i]
+    switch(act_type){
+      case "qz":
+        act_type_name="Quizzes"
+        break
+      case "e159":
+        act_type_name="Examples"
+        break
+      case "c160":
+        act_type_name="Challenges"
+        break
+      case "c161":
+        act_type_name="Coding"
+        break
+      case "ae":
+        act_type_name="Animated Examples"
+        break
+      default:
+        break
+    }
     var minRequiredProgress = state.args.uiMinProgressCheck[act_type];
     var currentProgress = calculateOverallProgressPerActType(progress_data,act_type);
-    progress_html = progress_html + "   <span style='color:green;'>" + act_type + ":</span> "+Math.round(currentProgress*100)+"% (min. " +Math.round(minRequiredProgress*100)+ "%) &nbsp; &nbsp;"; 
+    progress_html = progress_html + "   <span style='color:green;'>" + act_type_name + ":</span> "+Math.round(currentProgress*100)+"% (min. " +Math.round(minRequiredProgress*100)+ "%) &nbsp; &nbsp;"; 
   }
   progress_html = progress_html + "</br>";
   minOverallProgressInfoHTML.html(progress_html);
 }
+
+count = function (ary, classifier) {
+    classifier = classifier || String;
+    return ary.reduce(function (counter, item) {
+        var p = classifier(item);
+        counter[p] = counter.hasOwnProperty(p) ? counter[p] + 1 : 1;
+        return counter;
+    }, {})
+};
 

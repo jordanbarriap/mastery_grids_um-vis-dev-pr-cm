@@ -2620,7 +2620,7 @@ function initBipartite(){
 //       });
 //     }
     
-     svg = d3.select("div#chart")
+     svg =  d3.select("#div-conceptVisSvg")//d3.select("div#chart")
             //.insert("svg","div#kcmap-selection")//commented by jbarriapineda
             .append("svg")
             .attr("id","conceptVisSvg")
@@ -2637,8 +2637,8 @@ function initBipartite(){
             .append('g')
             .attr("width", "100%");//added by jbarriapineda
     
-     var bipartite = $("svg#conceptVisSvg");
-     if ($('#act-lst').is(':visible')) bipartite.appendTo("div#div-kcmap");
+     //var bipartite = $("svg#conceptVisSvg");
+     //if ($('#act-lst').is(':visible')) bipartite.appendTo("div#div-kcmap");
 
           /*var  fakeNode = svg.selectAll("g.fakeNode");
           fakeNode = fakeNode.data(groups);
@@ -2899,7 +2899,7 @@ function initBipartite(){
               var barSizeUser = bipartiteBarScale(d.uk);
               //if(d[barSizeUser]==0||d[barSizeUser]==-1)return "#EEEEEE";//commented by jbarriapineda
               if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){//TODO change to use the type of parameterized recommendation approach (remedial)
-                if(d["lastk-sr"]==-1) return d["uk"]==0?"#EEEEEE": "#999999"; 
+                if(d["lastk-sr"]<=0) return d["uk"]==0?"#EEEEEE": "#999999"; 
                 //eturn "#19195d";
                 return barColorScaleSuccessRate(d["lastk-sr"]);
               }
@@ -2996,7 +2996,7 @@ function initBipartite(){
               .attr('height', 10)
               .attr("xlink:href", function(d){
                 if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
-                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>=0){
+                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>0 && d["uk"]>=knowledge_level_limit){
                     return  "./img/warning-icon2.png";
                   }else{
                      "./img/white.png";
@@ -3006,7 +3006,7 @@ function initBipartite(){
               })
               .attr("class", function(d){
                 if(data.configprops.agg_proactiverec_enabled &&  data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
-                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>=0){
+                  if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>0 && d["uk"]>=knowledge_level_limit){
                      return "warning";
                   }else{
                      return "no-warning";
@@ -3282,6 +3282,29 @@ function initBipartite(){
       hideSocialComparisonBipartite();
     }
 
+    //Modified by @Jordan for having optional OLM feature
+    //@Jordan hide concepts that are first appearing on locked topics
+    d3.selectAll(".nodename").attr("display",function(d){return (state.args.uiTopicTimeMapFile && !checkIfTopicUnlockedByName(d.t))?"none":"block";});
+    d3.selectAll(".bar").attr("display",function(d){return (state.args.uiTopicTimeMapFile && !checkIfTopicUnlockedByName(d.t))?"none":"block";});
+
+    var bipartite = $("svg#conceptVisSvg");
+    if ($('#act-lst').is(':visible')) bipartite.appendTo("div#div-kcmap");
+
+    //Added by jbarriapineda for optional OLM
+    if(state.args.controlKcmap){
+      if($('#act-lst').is(':visible')){
+        $("#actlst-div-detail-kcmap").css("display","block");      
+        if(!state.args.showKcmap){
+          $("#div-kcmap").css("display","none");
+        }   
+      }else{
+        $("#general-div-detail-kcmap").css("display","block");
+        if(!state.args.showKcmap){
+          $("#div-conceptVisSvg").css("display","none");
+        }   
+      }
+    }
+
 }
 
 function isStudentModelingCumulate() {
@@ -3387,7 +3410,7 @@ function getOrderMap(){
       a_order = 0;
       b_order = 0;
       if(a.hasOwnProperty("order")){
-        a_order = a.order;
+        a_order = a.order; 
       }
       if(b.hasOwnProperty("order")){
         b_order = b.order;
@@ -4585,28 +4608,38 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
     // d3.select("#kcsLearning").text(kc_state_act.kcsLearning);
     // d3.select("#kcsKnown").text(kc_state_act.kcsKnown);
 
-    d3.select("#kcsNotKnown").text(kcsNotKnown);
-    d3.select("#kcsLearning").text(kcsLearning);
-    d3.select("#kcsKnown").text(kcsKnown);
+    if(data.configprops.agg_proactiverec_enabled){
+      d3.select("#kcsNotKnown").text(kcsNotKnown);
+      d3.select("#kcsLearning").text(kcsLearning);
+      d3.select("#kcsKnown").text(kcsKnown);
+      
+    }else{
+      d3.select("#kcsNotKnown").text(kcsNotKnown);
+      d3.select("#kcsLearning").text(kcsLearning);
+      d3.select("#kcsKnown").text(kcsKnown);
+    }
+
+    
 
     //percent = kc_state_act.difficulty; //Commented by @Jordan for the use of MG pr version + concept vis
 
     if(needle && (state.args.impactMsg || state.args.difficultyMsg)){
-      if(data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="remedial"){
+      if(data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_enabled && (data.configprops.agg_proactiverec_method=="remedial" || data.configprops.agg_proactiverec_method=="km")){
         var act_difficulty = 0;
         var mouseovered_act = recommended_activities.filter(function(d){return d.id==actId;})[0];
         if (mouseovered_act){
           act_difficulty = mouseovered_act["rec_score"];
+          //console.log("Rec score: "+act_difficulty)
           needle.moveTo(act_difficulty);
         }
       }else{
-        console.log("Needle will move to: "+percent);
+        //console.log("Needle will move to: "+percent);
         if(state.args.difficultyMsg || state.args.impactMsg){
           if(state.args.difficultyMsg){
             needle.moveTo(percent);
           }
           if(state.args.impactMsg){
-            needle.moveTo(1-percent);
+            needle.moveTo(percent);
           }
         }else{
           needle.moveTo(percent);
@@ -4756,6 +4789,7 @@ function highlightKcsOnActivityMouseOut(actId){
       d3.select("#kcsNotKnown").text("-");
       d3.select("#kcsLearning").text("-");
       d3.select("#kcsKnown").text("-");
+      d3.select("#kcsNew").text("-");
     }
 
     d3.selectAll(".bar").classed("kcactive", false);
@@ -5803,56 +5837,137 @@ function createKcsInfo(){
       //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
       .call(wrap,120);
     }
-    
-    gsvg.append("text")
+
+    if((state.args.impactMsg || state.args.difficultyMsg) && data.configprops.agg_kc_student_modeling=="bn"){
+        d3.selectAll(".label-kc").style("display","none");
+        d3.selectAll(".text-kc").style("display","none");
+    }
+
+    if(data.configprops.agg_proactiverec_enabled){
+      gsvg.append("text")
       .attr("id","kcsNotKnown")
       .attr("class","text-kc")
       .text("-")
-      .attr('transform', "translate(" + ((3.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +30) + ")");
+      .attr('transform', "translate(" + ((3.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +35) + ")");
 
-    gsvg.append("text")
-      .attr("id","label-kcsNotKnown")
-      .attr("class","label-kc")
-      .attr("x",(3.5*gwidth) / 5 + margin.left)
-      .attr("y",(gheight + margin.top) / 2 +40)
-      .text("New Concepts")
-      //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
-      .call(wrap,40);
+      gsvg.append("text")
+        .attr("id","label-kcsNotKnown")
+        .attr("class","label-kc")
+        .attr("x",(3.5*gwidth) / 5 + margin.left)
+        .attr("y",(gheight + margin.top) / 2 +45)
+        .text("New Concepts")
+        //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
+        .call(wrap,40);
 
-    gsvg.append("text")
-      .attr("id","kcsLearning")
+      gsvg.append("text")
+        .attr("id","kcsLearning")
+        .attr("class","text-kc")
+        .text("-")
+        .attr('transform', "translate(" + ((2.45*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +35) + ")");
+
+      gsvg.append("text")
+        .attr("id","label-kcsNotLearning")
+        .attr("class","label-kc")
+        .attr("x",(2.5*gwidth) / 5 + margin.left)
+        .attr("y",(gheight + margin.top) / 2 +45)
+        .text("Familiar Concepts")
+        //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
+        .call(wrap,40);
+
+       gsvg.append("text")
+        .attr("id","kcsKnown")
+        .attr("class","text-kc")
+        .text("-")
+        .attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +35) + ")");
+
+       gsvg.append("text")
+        .attr("id","label-kcsKnown")
+        .attr("class","label-kc")
+        .attr("x",(1.4*gwidth) / 5 + margin.left)
+        .attr("y",(gheight + margin.top) / 2 +45)
+        .text("Known Concepts")
+        //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
+        .call(wrap,40);
+
+
+       if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="km"){
+
+          gsvg.append("text")
+          //.attr("id","label-prob-act")
+          .attr("id","label-rec-score")
+          .text("Appropriateness for expanding your knowledge")
+          .attr("x",(2.5*gwidth) / 5 + margin.left)
+          .attr("y",(gheight + margin.top) / 2 + 30)
+          //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
+          .call(wrap,120);
+
+          d3.selectAll(".label-kc").style("display","none");
+          d3.selectAll(".text-kc").style("display","none");
+
+         /*gsvg.append("text")
+          .attr("id","kcsNew")
+          .attr("class","text-kc")
+          .text("-")
+          .attr('transform', "translate(" + ((4.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +35) + ")");
+
+         gsvg.append("text")
+          .attr("id","label-kcsNew")
+          .attr("class","label-kc")
+          .attr("x",(4.5*gwidth) / 5 + margin.left)
+          .attr("y",(gheight + margin.top) / 2 +45)
+          .text("New Concepts")
+          //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
+          .call(wrap,40);*/
+       }
+
+    }else{
+      gsvg.append("text")
+      .attr("id","kcsNotKnown")
       .attr("class","text-kc")
       .text("-")
-      .attr('transform', "translate(" + ((2.45*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +30) + ")");
+      .attr('transform', "translate(" + ((3.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +35) + ")");
 
-    gsvg.append("text")
-      .attr("id","label-kcsNotLearning")
-      .attr("class","label-kc")
-      .attr("x",(2.5*gwidth) / 5 + margin.left)
-      .attr("y",(gheight + margin.top) / 2 +40)
-      .text("Familiar Concepts")
-      //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
-      .call(wrap,40);
+      gsvg.append("text")
+        .attr("id","label-kcsNotKnown")
+        .attr("class","label-kc")
+        .attr("x",(3.5*gwidth) / 5 + margin.left)
+        .attr("y",(gheight + margin.top) / 2 +45)
+        .text("New Concepts")
+        //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
+        .call(wrap,40);
 
-     gsvg.append("text")
-      .attr("id","kcsKnown")
-      .attr("class","text-kc")
-      .text("-")
-      .attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +30) + ")");
+      gsvg.append("text")
+        .attr("id","kcsLearning")
+        .attr("class","text-kc")
+        .text("-")
+        .attr('transform', "translate(" + ((2.45*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +35) + ")");
 
-     gsvg.append("text")
-      .attr("id","label-kcsKnown")
-      .attr("class","label-kc")
-      .attr("x",(1.4*gwidth) / 5 + margin.left)
-      .attr("y",(gheight + margin.top) / 2 +40)
-      .text("Known Concepts")
-      //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
-      .call(wrap,40);
+      gsvg.append("text")
+        .attr("id","label-kcsNotLearning")
+        .attr("class","label-kc")
+        .attr("x",(2.5*gwidth) / 5 + margin.left)
+        .attr("y",(gheight + margin.top) / 2 +45)
+        .text("Familiar Concepts")
+        //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
+        .call(wrap,40);
 
-      if((state.args.impactMsg || state.args.difficultyMsg) && data.configprops.agg_kc_student_modeling=="bn"){
-        d3.selectAll(".label-kc").style("display","none");
-        d3.selectAll(".text-kc").style("display","none");
-      }
+       gsvg.append("text")
+        .attr("id","kcsKnown")
+        .attr("class","text-kc")
+        .text("-")
+        .attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +35) + ")");
+
+       gsvg.append("text")
+        .attr("id","label-kcsKnown")
+        .attr("class","label-kc")
+        .attr("x",(1.4*gwidth) / 5 + margin.left)
+        .attr("y",(gheight + margin.top) / 2 +45)
+        .text("Known Concepts")
+        //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
+        .call(wrap,40);
+    }
+    
+    
 
     
 
@@ -5875,14 +5990,22 @@ function createKcsInfo(){
       .attr("x",gwidth/2-gaugeWidth/2-15)
       .attr("y",(gheight + margin.top) / 2 -50)
       .text(function(d){
-        if(state.args.difficultyMsg || state.args.impactMsg){
+        if(data.configprops.agg_proactiverec_enabled && (data.configprops.agg_proactiverec_method == "remedial" || data.configprops.agg_proactiverec_method == "km")){
+          if(data.configprops.agg_proactiverec_method == "remedial"){
+            return "less appropriate to fix misconceptions"
+          }
+          if(data.configprops.agg_proactiverec_method == "km"){
+            return "low"
+          }
+        }else if(state.args.difficultyMsg || state.args.impactMsg){
           if(state.args.difficultyMsg){
             return "easy";
           }
           if(state.args.impactMsg){
             return "learn less";
           }
-        }else{
+        }
+        else{
           return "Low";
         }
       })
@@ -5895,7 +6018,7 @@ function createKcsInfo(){
         // }
         return "translate(0, " + 55 + ")";
       })
-      .call(wrap,30);
+      .call(wrap,60);
 
     // if(state.args.difficultyMsg){
     //   gsvg.append("text")
@@ -5912,7 +6035,14 @@ function createKcsInfo(){
       .attr("x",gwidth/2+gaugeWidth/2+15)
       .attr("y",(gheight + margin.top) / 2 -50)
       .text(function(d){
-        if(state.args.difficultyMsg || state.args.impactMsg){
+        if(data.configprops.agg_proactiverec_enabled && (data.configprops.agg_proactiverec_method == "remedial" || data.configprops.agg_proactiverec_method == "km")){
+          if(data.configprops.agg_proactiverec_method == "remedial"){
+            return "more appropriate to fix misconceptions"
+          }
+          if(data.configprops.agg_proactiverec_method == "km"){
+            return "high"
+          }
+        }else if(state.args.difficultyMsg || state.args.impactMsg){
           if(state.args.difficultyMsg){
             return "hard";
           }
@@ -5933,7 +6063,7 @@ function createKcsInfo(){
         // }
         return "translate(0," + 55 + ")";
       })
-      .call(wrap,30);
+      .call(wrap,60);
     //needle.moveTo(0.5);
 
     gsvg.
@@ -6108,6 +6238,82 @@ function correctTopicName(topic){
         break;
   }
   return topic;
+}
+
+//added by jbarriapineda for allowing users to choose showing or not OLM in the topic view
+function clickShowKcmapGeneral(){
+  var actLstShown = ui.vis.actLst.cont.style.display != 'none';
+  var log_click_kcmap_detail;
+  if(state.args.showKcmap){
+
+    $("#div-conceptVisSvg").hide("drop",{direction:"left",duration:200});
+    $("#general-div-detail-kcmap").removeClass("active");
+    $("#general-div-detail-kcmap").addClass("inactive");
+    $("#actlst-div-detail-kcmap").removeClass("active");
+    $("#actlst-div-detail-kcmap").addClass("inactive");
+    $("#general-text-div-detail-kcmap").html("Show detailed estimations of your knowledge in Java concepts &#9660");
+    $("#actlst-text-div-detail-kcmap").html("Show detailed estimations of your knowledge in Java concepts &#9660");
+
+    log_click_kcmap_detail= 
+         "action"                + CONST.log.sep02 + "hide-kcmap"  + CONST.log.sep01 +
+         "act-lst-shown"         + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
+         "origin"                + CONST.log.sep02 + origin;
+     
+  }else{
+    $("#div-conceptVisSvg").show("drop",{direction:"left",duration:200});
+    $("#general-div-detail-kcmap").removeClass("inactive");
+    $("#general-div-detail-kcmap").addClass("active")
+    $("#actlst-div-detail-kcmap").removeClass("inactive");
+    $("#actlst-div-detail-kcmap").addClass("active");
+    $("#general-text-div-detail-kcmap").html("Hide detailed estimations of your knowledge in Java concepts &#9650");
+    $("#actlst-text-div-detail-kcmap").html("Hide detailed estimations of your knowledge in Java concepts &#9650");
+
+    log_click_kcmap_detail = 
+         "action"                + CONST.log.sep02 + "show-kcmap"  + CONST.log.sep01 +
+         "act-lst-shown"         + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
+         "origin"                + CONST.log.sep02 + origin;
+     
+  }
+  log(log_click_kcmap_detail,true);
+  state.args.showKcmap = !state.args.showKcmap;
+
+}
+
+//added by jbarriapineda for allowing users to choose showing or not OLM in the actlst view
+function clickShowKcmapActLst(){
+  var actLstShown = ui.vis.actLst.cont.style.display != 'none';
+  var log_click_kcmap_detail;
+  if(state.args.showKcmap){
+
+    $("#div-kcmap").hide("drop",{direction:"left",duration:200});
+    $("#actlst-div-detail-kcmap").removeClass("active");
+    $("#actlst-div-detail-kcmap").addClass("inactive")
+    $("#general-div-detail-kcmap").removeClass("active");
+    $("#general-div-detail-kcmap").addClass("inactive");
+    $("#actlst-text-div-detail-kcmap").html("Show detailed estimations of your knowledge in Java concepts &#9660");
+    $("#general-text-div-detail-kcmap").html("Show detailed estimations of your knowledge in Java concepts &#9660");
+
+    log_click_kcmap_detail= 
+         "action"                + CONST.log.sep02 + "hide-kcmap"  + CONST.log.sep01 +
+         "act-lst-shown"         + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
+         "origin"                + CONST.log.sep02 + origin;
+  }else{
+    $("#div-kcmap").show("drop",{direction:"left",duration:200});
+    $("#actlst-div-detail-kcmap").removeClass("inactive");
+    $("#actlst-div-detail-kcmap").addClass("active");
+    $("#general-div-detail-kcmap").removeClass("inactive");
+    $("#general-div-detail-kcmap").addClass("active");
+    $("#actlst-text-div-detail-kcmap").html("Hide detailed estimations of your knowledge in Java concepts &#9650");
+    $("#general-text-div-detail-kcmap").html("Hide detailed estimations of your knowledge in Java concepts &#9650");
+
+    log_click_kcmap_detail= 
+         "action"                + CONST.log.sep02 + "show-kcmap"  + CONST.log.sep01 +
+         "act-lst-shown"         + CONST.log.sep02 + actLstShown             + CONST.log.sep01 +
+         "origin"                + CONST.log.sep02 + origin;
+  }
+  log(log_click_kcmap_detail);
+  state.args.showKcmap = !state.args.showKcmap;
+
 }
 
 //added by @Jordan, convert topic names to the one present in course id=351
