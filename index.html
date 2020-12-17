@@ -24,10 +24,10 @@
   
   <script type="text/javascript" src="script/$.js"></script>
   <script type="text/javascript" src="script/vis/BarChart.js"></script>
-  <script type="text/javascript" src="script/websocket.js"></script>
-  <script type="text/javascript" src="script/recommendations/recommender.js"></script>
-  <script type="text/javascript" src="script/vis.js?v=201910282051"></script>
-  <script type="text/javascript" src="script/richolm/js/richolm.js?v=201910282051"></script>
+  <script type="text/javascript" src="script/websocket.js?v=202001261316"></script>
+  <script type="text/javascript" src="script/recommendations/recommender.js?v=202003180111"></script>
+  <script type="text/javascript" src="script/vis.js?v=202005051459"></script>
+  <script type="text/javascript" src="script/richolm/js/richolm.js?v=202003180111"></script>
   <script type="text/javascript" src="script/js-cookie/src/js.cookie.js"></script>
 </head>
 
@@ -42,7 +42,7 @@
 
 
 <!-- Activities list -->
-<div id="act-lst"><!-- Overlay -->
+<div id="act-lst" style="display: none;"><!-- Overlay -->
 </div>
 <img id="act-lst-arrow" src="img/ui-tabs-arrow.png" />
 
@@ -151,6 +151,8 @@
           <input id="checkbox-circle" type="radio" name="kcmap" value="circle">Circle
       </form> 
     </div>
+    <div class="div-detail-kcmap inactive" id="general-div-detail-kcmap" style="display:none;"><p id="general-text-div-detail-kcmap" class="text-div-detail-kcmap" style="text-align: center;">Show detailed estimations of your knowledge in Java concepts &#9660<p></div>
+    <div id="div-conceptVisSvg"></div>
   </div>
   <div id="grid-others"></div>
 </div>
