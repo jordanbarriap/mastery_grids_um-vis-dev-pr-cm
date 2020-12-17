@@ -1,0 +1,18 @@
+{
+    "topicTime": [
+        {"topicOrder":1, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":2, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":3, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":4, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":5, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":6, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":7, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":8, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":9, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":10, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":11, "releaseDate": "2020-03-01T06:00:00+0100"},
+        {"topicOrder":12, "releaseDate": "2020-03-23T06:00:00+0100"},
+        {"topicOrder":13, "releaseDate": "2020-03-30T06:00:00+0100"},
+        {"topicOrder":14, "releaseDate": "2020-04-06T06:00:00+0100"}
+    ]
+}
