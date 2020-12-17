@@ -1330,7 +1330,7 @@ function actOpen(resId, actIdx) {
   //added by @Jordan for rec_exp
   last.act = JSON.parse(JSON.stringify(state.vis.act))
   //end of code added by @Jordan for rec_exp
- 
+
   // TODO
   if(res.dim){
     /*if(res.dim.w) ui.vis.act.frame.style.width = res.dim.w + "px";
@@ -4693,7 +4693,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           .attr("xlink:href", function(d){
         			let topic_credit = credit_achievement[d.topicIdx-1]
                     if(topic_credit==1){
-                      if(state.curr.grp.startsWith("IS0017Fall2019")) return "./img/half_credit.png"; //icon specific for IS0017 Fall 2019 (do not use blue as it is the color for group progress)
+                      if(state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")) return "./img/half_credit.png"; //icon specific for IS0017 Fall 2019 (do not use blue as it is the color for group progress)
                       return "./img/credit.png";
                     }else{
                       if(topic_credit==.5){
@@ -6658,7 +6658,7 @@ function generateHelp(origin){
 		}
 		
 		if(state.args.uiIncenCheck) {
-      if (state.curr.grp.startsWith("IS0017Fall2019")){
+      if (state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")){
         helpText += "<h3>Points per Topic</h3><img src='./img/half_credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 quiz.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
         height += 150;
       } else if(state.curr.grp.startsWith("AALTOSQL20")) {

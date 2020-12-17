@@ -2996,7 +2996,9 @@ function initBipartite(){
               .attr('height', 10)
               .attr("xlink:href", function(d){
                 if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
+
                   if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>0 && d["uk"]>=knowledge_level_limit){
+
                     return  "./img/warning-icon2.png";
                   }else{
                      "./img/white.png";
@@ -3006,7 +3008,9 @@ function initBipartite(){
               })
               .attr("class", function(d){
                 if(data.configprops.agg_proactiverec_enabled &&  data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
+
                   if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>0 && d["uk"]>=knowledge_level_limit){
+
                      return "warning";
                   }else{
                      return "no-warning";

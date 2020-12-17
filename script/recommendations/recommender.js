@@ -98,6 +98,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 									}
 								}else{
 									//console.log(kc_id + " on-learning concept");
+
 								}
 								
 							}
@@ -122,6 +123,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 
 						misconception_kcs = misconception_kcs.sort((a, b) => (a.lastksr < b.lastksr) ? 1 : -1)
 						helpful_kcs = helpful_kcs.sort((a, b) => (a.kclevel < b.kclevel) ? 1 : -1)
+
 		
 						var rec_explanation = "This activity is recommended because:<ul>";
 		
@@ -147,6 +149,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 							}	
 
 							rec_explanation = rec_explanation + "(e.g. " + helpful_kcs[0].name + ")</li>"
+
 						}
 					
 						rec_explanation = rec_explanation + "</ul>";
@@ -726,7 +729,9 @@ function addRecommendationsToUI(){
 									if(rank_rec===2){
 										map_rank_to_seq = 0.3;
 									}else{
-										map_rank_to_seq = 0;	
+
+										map_rank_to_seq = 0.0;	
+
 									}
 								}
 							}
