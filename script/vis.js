@@ -1422,6 +1422,7 @@ function actOpen(resId, actIdx) {
 
     traceParams = "&trace=true&popup=" + popup + "&uk=" + userKnowledge.kcSum;
   }
+
   
   ui.vis.act.title.innerHTML = "Topic: <b>" + topic.name + "</b> &nbsp; &bull; &nbsp; Activity: <b>" + act.name + "</b>";
   
@@ -1455,10 +1456,19 @@ function actOpen(resId, actIdx) {
     ui.vis.act.table.style.height = (display_height + 1) + "px";
   })
 
-  ui.vis.act.frame.src = act.url + "&grp=" + state.curr.grp + "&usr=" + state.curr.usr + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid;
+  var activity_url = act.url
 
-  if(is_quizjet_url && traceParams)
-    ui.vis.act.frame.src += traceParams;
+  if(is_quizjet_url && traceParams) {
+    activity_url += traceParams;
+  } else if(state.curr.grp.startsWith("AALTOSQL21")) {
+    var is_dbqa_url = act.url.indexOf("tool=dbqa") !== -1;
+    if(is_dbqa_url) {
+      activity_url += "&step_explanation=" + state.args.dbqaExplanations
+    }
+  }
+
+  ui.vis.act.frame.src = activity_url + "&grp=" + state.curr.grp + "&usr=" + state.curr.usr + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid;
+
   ui.vis.act.otherTxt.innerHTML = helpLink;
   
 
@@ -2135,7 +2145,7 @@ function loadData_cb(res) {
 
 function loadStaticData() {
   if(state.args.uiTopicTimeMapFile){
-    $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=201910271040", function(json) {
+    $.getJSON("./data/" + state.args.uiTopicTimeMapFile + "?v=202103052204", function(json) {
       for (var i=0; i < json.topicTime.length ; i++) {
       	var topic_order = json.topicTime[i].topicOrder - 1;
       	var releaseDate = new Date(json.topicTime[i].releaseDate)
@@ -2918,13 +2928,15 @@ function stateArgsSet02() {
   
   state.args.uiShowHelp             = (qs["ui-show-help"]  === "1" ? true : false);
   
-  state.args.uiIncenCheck			= (qs["ui-incen-check"]  === "1" ? true : false);
+  state.args.uiIncenCheck			      = (qs["ui-incen-check"]  === "1" ? true : false);
 
   state.args.uiRecExpOnDemand = (qs["ui-rec-exp-on-demand"]  === "1" ? true : false);
 
   state.args.uiTopicTimeMapFile = (qs["ui-topic-time-map-file"]  !== undefined ? qs["ui-topic-time-map-file"] : undefined);
 
   state.args.uiMinProgressCheck = (qs["ui-min-progress-vis-check"]  !== undefined ? qs["ui-min-progress-check"] : undefined);
+
+  state.args.dbqaExplanations = false
   
   //added by @Jordan
   state.args.kcMap = "";
@@ -2984,6 +2996,8 @@ function stateArgsSet02() {
       state.args.recExp                 = (data.vis.ui.params.group.recExp != undefined ? data.vis.ui.params.group.recExp : state.args.recExp);//added for rec_exp
 	  state.args.kcResouceIds           = (data.vis.ui.params.group.kcResouceIds != undefined ? data.vis.ui.params.group.kcResouceIds : state.args.kcResouceIds);
       //end of code added by @Jordan
+
+      state.args.dbqaExplanations       = (data.vis.ui.params.group.dbqa_exp != undefined ? data.vis.ui.params.group.dbqa_exp : state.args.dbqaExplanations);
   }
   if(data.vis.ui.params.user){
       state.args.defValRepLvl           = (data.vis.ui.params.user.defValRepLvlId != undefined ? data.vis.ui.params.user.defValRepLvlId : state.args.defValRepLvl);
@@ -3026,6 +3040,8 @@ function stateArgsSet02() {
       state.args.recExp                 = (data.vis.ui.params.user.recExp != undefined ? data.vis.ui.params.user.recExp : state.args.recExp);//added for rec_exp
 	  state.args.kcResouceIds			= (data.vis.ui.params.user.kcResouceIds != undefined ? data.vis.ui.params.user.kcResouceIds : state.args.kcResouceIds);
       //end of code added by @Jordan
+
+      state.args.dbqaExplanations       = (data.vis.ui.params.user.dbqa_exp != undefined ? data.vis.ui.params.user.dbqa_exp : state.args.dbqaExplanations);
   }
   
   CONST.comparison.grpActive        = state.args.uiGridGrpVis;
