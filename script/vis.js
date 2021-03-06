@@ -4356,6 +4356,8 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         assessment_res_ids = ["qz"];
       } else if(state.curr.grp.startsWith("AALTOSQL20")) {
         assessment_res_ids = ["Query Practice", "Query Writing"];
+      } else if(state.curr.grp.startsWith("AALTOSQL21")) {
+          assessment_res_ids = ["Query Analysis", "Query Execution"];
       } else if(state.curr.grp.startsWith("CS007Spring2020")){
         assessment_res_ids = ["Tracing Problems", "Programming Challenges", "Coding Problems"];
       } else if(state.curr.grp.startsWith("CMPINF401Fall2020") || state.curr.grp.startsWith("CMPINF0401Fall2020") ){
@@ -4402,7 +4404,16 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
                   } else {
                     points += completed_assessments[j] >=1?1:0;
                   }
-                }                
+                }     
+                
+                if(state.curr.grp.startsWith("AALTOSQL21")) {
+                  if(topic_name == 'Set Operations') {
+                    points = completed_assessments[j]
+                  } else {
+                    points += completed_assessments[j] >=1?1:0;
+                  }
+                }    
+                
                 //This will allow students to have at least 2 activities attempted for BOTH coding and tracing problems
                 else if(state.curr.grp.startsWith("WentworthSpring2021")){
                   if(completed_assessments[j]<full_points){
@@ -4625,7 +4636,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         append("text").
 				attr("x", 1).
 				attr("y", topicOffsetT).
-				text("Extra Points Earned: " + totalCredit + "/20").
+				text("Extra Points Earned: " + totalCredit + "/22").
         attr("class", "title").
         style("text-rendering", "geometricPrecision");
         
@@ -6780,9 +6791,19 @@ function generateHelp(origin){
         helpText += "<img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'>"
         helpText += "<p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
         height += 225;
+      } else if(state.curr.grp.startsWith("AALTOSQL21")) {
+        helpText += "<h3>Points per Topic</h3>"
 
-      }
-      else if(state.curr.grp.startsWith("CS007Spring2020")){
+        helpText += "<img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'>"
+        helpText += "<p style='display:inline;'>means that you got 2 points for completing at least 2 problems (1 from Query Analysis and 1 from Query Execution). In Set Operations topic, you have to solve 2 Query Execution problems to get 2 points.</p><br>"
+
+        helpText += "<img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'>"
+        helpText += "<p style='display:inline;'>means that you got 1 point for completing at least 1 problem.(1 from Query Analysis or 1 from Query Execution). In Set Operations topic, this means that you solved only 1 Query Execution problem.</p><br>"
+
+        helpText += "<img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'>"
+        helpText += "<p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
+        height += 225;
+      } else if(state.curr.grp.startsWith("CS007Spring2020")){
         helpText += "<h3>Points per Topic</h3><p style='display:inline'>Here we define a <b>problem</b> as either of the following learning activities: tracing problems, prog. challenges or coding problems)</p><br><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems.</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
         height += 150;
       }
