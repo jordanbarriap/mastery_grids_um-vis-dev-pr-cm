@@ -4641,26 +4641,26 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         style("text-rendering", "geometricPrecision");
         
 
-      svg.
-        append("g").
-        attr("class", "helpButton").
-        //attr("style","background-image: url('img/help.gif');").
-        attr("helpId", "extra_points").
-        attr("id", "extra_points_help").
-            attr("serieId",(s.id ? s.id : "")).
-            attr("cursor","pointer").
-            on("click",function() {
-                helpDialogShow("extra_points",d3.mouse(this)[0],d3.mouse(this)[1]+57);
-            }).
-            on("mouseover",function () {d3.select(this).style("opacity","1");}).
-            on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
-            style("opacity", "0.7").
-              append("image").
-              attr("x", 185).
-              attr("y", 0).
-              attr("width", 22).
-              attr("height", 19).
-              attr("xlink:href","img/help.png");
+      // svg.
+      //   append("g").
+      //   attr("class", "helpButton").
+      //   //attr("style","background-image: url('img/help.gif');").
+      //   attr("helpId", "extra_points").
+      //   attr("id", "extra_points_help").
+      //       attr("serieId",(s.id ? s.id : "")).
+      //       attr("cursor","pointer").
+      //       on("click",function() {
+      //           helpDialogShow("extra_points",d3.mouse(this)[0],d3.mouse(this)[1]+57);
+      //       }).
+      //       on("mouseover",function () {d3.select(this).style("opacity","1");}).
+      //       on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
+      //       style("opacity", "0.7").
+      //         append("image").
+      //         attr("x", 185).
+      //         attr("y", 0).
+      //         attr("width", 22).
+      //         attr("height", 19).
+      //         attr("xlink:href","img/help.png");
 
 			$('td.title').hide()
 		}			
