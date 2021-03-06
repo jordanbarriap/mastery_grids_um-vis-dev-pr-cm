@@ -5334,7 +5334,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
                 var d = document.getElementById('rec-tooltip-content');
                 d.style.position = "absolute";
                 d.style.padding = "1.5px";
-                d.style.left = (x_pos+$(".rec-list").width()+18)+'px';
+                d.style.left = (x_pos+$(".rec-list").width()+25)+'px';
                 d.style.top = (y_pos+25)+'px';
                 $("#rec-tooltip-content").mouseleave(function() {
                   $(this).hide();
