@@ -190,7 +190,7 @@ var map_kcs_id_info = []; // helps to get the info from the kc name (added by @J
 var topics_concepts = [];//maps concepts and the topic that they first appear in (added by @Jordan)
 var map_concept_id_topic = {}; //maps id with topic in which appear first (added by @Jordan)
 
-//Code added for remedial recommendations + explanations based on problematic concepts (added by @Jordan)
+//Added by @Jordan for remedial recommendations + explanations based on problematic concepts (added by @Jordan)
 var recommended_activities = []; //array with the recommended activities
 var top_recommended_activities = [];
 var max_rec_n = 5;//Number of recommended activities that will be shown at each time (added by @Jordan)
@@ -202,6 +202,10 @@ var scaleRecommendationStar =
       d3.scale.linear().
       domain([0,max_rec_n]).
       range([20,10]);
+
+//@AALTOSQL21
+var total_attempts_problems = 0;
+var min_attempts_start_treatment = 10;
 
 //Added by @Jordan for calculating importance of a concept for an activity in the context of a specific topic
 var concept_weights = {};
@@ -583,7 +587,8 @@ function actDone_cb(rsp) {
   				 "logRecId":millisecondsDate.toString(),
   				 "recMethod":"remedialCUMULATE",
   				 "recommendations":recommended_activities}),
-  				url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+  				//url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+          url: "http://adapt2.sis.pitt.edu/recommendation/LogRecommendations",
   				contentType: "application/json"
   			  });
   		  }
@@ -1088,8 +1093,12 @@ function actLstShow(doMe, doVs, doGrp) {
       .append("div")
       .attr("id","div-kcmap");
 
-    //$("<div id='kcs_act_info'></div>").insertBefore("div#div-kcmap");
-    $("<div id='kcs_act_info'></div>").insertBefore("div#actlst-div-detail-kcmap");
+    //Modified for AALTOSQL21
+    if(state.args.controlKcmap){
+      $("<div id='kcs_act_info'></div>").insertBefore("div#actlst-div-detail-kcmap");
+    }else{
+      $("<div id='kcs_act_info'></div>").insertBefore("div#div-kcmap");
+    }
 
     d3.select("div#kcs_act_info")
       .append("svg")
@@ -2180,6 +2189,9 @@ function processData() {
   data.kcs = data.kcs.filter(function(kc){return all_resource_kcs.has(kc.id)})
   //end @Kamil
 
+  //@AALTOSQL21
+  total_attempts_problems = getTotalAttempts(["Query Analysis","Query Execution"]);
+
   //Calculate concept weights per topic
   for(var i=0;i<data.kcs.length;i++){
     var kc_data = data.kcs[i];
@@ -2382,8 +2394,8 @@ function processData() {
 	      map_topic_max_rank_rec_act = {};
         rank_recommended_activities = {};
         
-        //Generate recommendations based on problematic concepts (added by @Jordan)
-        if(data.configprops.agg_proactiverec_method=="remedial"){
+        //Generate recommendations based on problematic concepts (added by @Jordan) | second condition added for @AALTOSQL21
+        if(data.configprops.agg_proactiverec_method=="remedial" && (!state.curr.grp.startsWith("AALTOSQL21") || (state.curr.grp.startsWith("AALTOSQL21") && total_attempts_problems>min_attempts_start_treatment))){
           var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
           recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
 
@@ -4126,54 +4138,56 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 					.forEach(function(activity){
             var recommendationItem = document.createElement('li');
             recommendationItem.setAttribute("value",rank_recommended_activities[activity.id]+1);
-            var recommendationInfoImg = document.createElement('img')
-            $(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
-            if(state.args.uiRecExpOnDemand) {
-              $(recommendationInfoImg)
-                .attr('src', 'img/why.png')
-                .attr('id', 'rec-info-img')
-                .attr('alt', 'icon')
-                .attr('class', 'info-icon')
-                .width('30px')
-                .attr('title', 'Why this activity recommended?')
-                .data('activity', activity)
-                .mouseover(function() {
-                  setTimeout(function(){
-                    $('.ui-tooltip').hide()
-                  }, 3000);
-                })
-                .click(function(e){ 
-                  $('#rec-tooltip-content').show()
+            //@AALTOSQL
+            
+              var recommendationInfoImg = document.createElement('img')
+              $(recommendationItem).html(activity.name).addClass('recommendation').attr('data-act-id',activity.id).data('activity', activity);
+              if(!state.curr.grp.startsWith("AALTOSQL21")){
+              if(state.args.uiRecExpOnDemand) {
+                $(recommendationInfoImg)
+                  .attr('src', 'img/why.png')
+                  .attr('id', 'rec-info-img')
+                  .attr('alt', 'icon')
+                  .attr('class', 'info-icon')
+                  .width('30px')
+                  .attr('title', 'Why this activity recommended?')
+                  .data('activity', activity)
+                  .mouseover(function() {
+                    setTimeout(function(){
+                      $('.ui-tooltip').hide()
+                    }, 3000);
+                  })
+                  .click(function(e){ 
+                    $('#rec-tooltip-content').show()
 
-                  var tooltip_activity = $(this).data('activity')
+                    var tooltip_activity = $(this).data('activity')
 
-                  var act_rec_info = recommended_activities.filter(function(d){return d["id"]==tooltip_activity.id})[0];
+                    var act_rec_info = recommended_activities.filter(function(d){return d["id"]==tooltip_activity.id})[0];
 
-                  var rank_rec_activity = rank_recommended_activities[activity.id];
+                    var rank_rec_activity = rank_recommended_activities[activity.id];
 
-                  var rec_exp_log =
-                    "action"           + CONST.log.sep02 + "recommended-activity-show-exp"                     + CONST.log.sep01 +
-                    "cell-topic-id"    + CONST.log.sep02 + getTopic().id                                       + CONST.log.sep01 +
-                    "cell-resource-id" + CONST.log.sep02 + data.resources[tooltip_activity.resIdx].id          + CONST.log.sep01 +
-                    "cell-activity-id" + CONST.log.sep02 + tooltip_activity.id                                 + CONST.log.sep01 +
-                    "rank-rec-act" + CONST.log.sep02 + rank_rec_activity                                       + CONST.log.sep01;
-                  
+                    var rec_exp_log =
+                      "action"           + CONST.log.sep02 + "recommended-activity-show-exp"                     + CONST.log.sep01 +
+                      "cell-topic-id"    + CONST.log.sep02 + getTopic().id                                       + CONST.log.sep01 +
+                      "cell-resource-id" + CONST.log.sep02 + data.resources[tooltip_activity.resIdx].id          + CONST.log.sep01 +
+                      "cell-activity-id" + CONST.log.sep02 + tooltip_activity.id                                 + CONST.log.sep01 +
+                      "rank-rec-act" + CONST.log.sep02 + rank_rec_activity                                       + CONST.log.sep01;
+                    
 
-                  if (act_rec_info!==undefined){
-                    var rec_score = act_rec_info["rec_score"];
-                    rec_exp_log += "rec_score"   + CONST.log.sep02 + rec_score
-                  }
-                  
+                    if (act_rec_info!==undefined){
+                      var rec_score = act_rec_info["rec_score"];
+                      rec_exp_log += "rec_score"   + CONST.log.sep02 + rec_score
+                    }
+                    
 
-                  log(
-                    rec_exp_log,     
-                    true
-                  );
+                    log(
+                      rec_exp_log,     
+                      true
+                    );
 
-                })
-                $(recommendationItem).append(recommendationInfoImg)
-                
-                
+                  })
+                  $(recommendationItem).append(recommendationInfoImg)
+              }
             }
 						$(orderedList).append(recommendationItem);
           })
@@ -4346,7 +4360,10 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         assessment_res_ids = ["Tracing Problems", "Programming Challenges", "Coding Problems"];
       } else if(state.curr.grp.startsWith("CMPINF401Fall2020") || state.curr.grp.startsWith("CMPINF0401Fall2020") ){
         assessment_res_ids = ["Coding Problems"];
-      } else{
+      }else if(state.curr.grp.startsWith("WentworthSpring2021")){
+        assessment_res_ids = ["Coding Problems","Tracing Problems"];
+        full_points = 2;
+      }else{
         assessment_res_ids = ["Problems"];
       }
       
@@ -4365,11 +4382,19 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
               if(available_assessments.length > 0) {
                 for (var k=0;k<available_assessments.length;k++){
                   var act_name = Object.keys(topic_data[res_id])[k]
-                  var act_progress = topic_data[res_id][act_name]["values"]["p"];
-                  if(act_progress==1){
-                    completed_assessments[j] = completed_assessments[j] + 1;
+                  if(state.curr.grp.startsWith("WentworthSpring2021")){
+                    var act_progress = topic_data[res_id][act_name]["values"]["a"];
+                    if(act_progress>0){
+                      completed_assessments[j] = completed_assessments[j] + 1;
+                    }
+                  }else{
+                    var act_progress = topic_data[res_id][act_name]["values"]["p"];
+                    if(act_progress==1){
+                      completed_assessments[j] = completed_assessments[j] + 1;
+                    }
                   }
                 }
+                
 
                 if(state.curr.grp.startsWith("AALTOSQL20")) {
                   if(topic_name == 'Set Operations') {
@@ -4377,7 +4402,15 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
                   } else {
                     points += completed_assessments[j] >=1?1:0;
                   }
-                } else {
+                }                
+                //This will allow students to have at least 2 activities attempted for BOTH coding and tracing problems
+                else if(state.curr.grp.startsWith("WentworthSpring2021")){
+                  if(completed_assessments[j]<full_points){
+                    points = 0;
+                  }else{
+                    points += 1;
+                  }
+                }else {
                   points += completed_assessments[j];
                 }
               } else {
@@ -4395,6 +4428,15 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           } else {
             credit_achievement[i] = -1;
           }
+
+          if(state.curr.grp.startsWith("WentworthSpring2021")){
+            if(points >= full_points) {
+              credit_achievement[i] = 1;
+            }else{
+              credit_achievement[i] = 0;
+            }
+          }
+
       }
     }
 
@@ -5211,6 +5253,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
 
     //Added by @Jordan for rec_exp
     if(data.configprops.agg_proactiverec_enabled && state.args.recExp){
+
       var seq           = grpOutterNode.__data__["seq"];
       var isRecommended = seq>0 && actIdx!=-1;
       var recScore      = -1;
@@ -5270,17 +5313,59 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
       }
 	  
   		if(data.configprops.agg_proactiverec_method=="remedial" || data.configprops.agg_proactiverec_method=="km" ){//Changed by @Jordan before it was only data.configprops.agg_kc_student_modeling=="cumulate"
-      $('div[id=rec-tooltip-content]').remove()
+        $('div[id=rec-tooltip-content]').remove();
         if(d3.select(grpOutterNode).classed('recommended_act')) {
   			  let recommended_activity_arr = top_recommended_activities.filter(rec_act => rec_act.name == e.actName || rec_act.id == e.id);
   			  if(recommended_activity_arr.length > 0) {
   				  var explanationTxt = ""
-            explanationTxt += "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
             
-            $('#kcs_act_info').prepend(explanationTxt)
+            //AALTOSQL21
+            if(state.curr.grp.startsWith('AALTOSQL21')){
+              var x_pos;
+              var y_pos;
+              
+              explanationTxt += "<div id='rec-tooltip-content'><button type='button' id='button-reveal-exp'>Why is this recommended?</button></i></b><div id='hidden-exp-div'>"+recommended_activity_arr[0].explanation+"</div></div>";
 
-            if(state.args.uiRecExpOnDemand) {
-              $('#rec-tooltip-content').hide()
+              if ($('svg#topic-svg-grid:hover').length != 0) {
+                x_pos = d3.mouse(d3.select("svg#topic-svg-grid").node())[0];
+                y_pos = d3.mouse(d3.select("svg#topic-svg-grid").node())[1];
+                $('#topic-svg-grid').parent().append(explanationTxt);
+                $('#hidden-exp-div').hide();
+                var d = document.getElementById('rec-tooltip-content');
+                d.style.position = "absolute";
+                d.style.padding = "1.5px";
+                d.style.left = (x_pos+$(".rec-list").width()+18)+'px';
+                d.style.top = (y_pos+25)+'px';
+                $("#rec-tooltip-content").mouseleave(function() {
+                  $(this).hide();
+                  var topicIdx      = +grpOutter.attr("data-topic-idx");
+                  var cellIdx       = +grpOutter.attr("data-cell-idx");
+                  var gridName      = grpOutter.attr("data-grid-name");
+                  //var actId         = grpOutterNode.__data__["actId"];//added by @Jordan //commented by @Jordan for it to work with bn_general service for the student model
+                  var actIdx        = grpOutterNode.__data__["actIdx"];//added by @Jordan
+                  var resIdx        = +grpOutter.attr("data-res-idx");//added by @Jordan
+                  var row           = grpOutter.attr("data-series-idx");//added by @Jordan
+                  var topic         = data.topics[topicIdx];//added by @Jordan
+                  var actIdx        = grpOutterNode.__data__["actIdx"];//added by @Jordan
+                  var resIdx        = +grpOutter.attr("data-res-idx");//added by @Jordan
+                  var actId         = -1;//added by @Jordan, for the cases of topic grid cells that they do not have an associated actId
+                  var res           = data.resources[resIdx];//added by @Jordan
+                  if(actIdx>-1){
+                      actId         = topic.activities[res.id][actIdx].id;//added by @Jordan
+                  }
+                  highlightKcsOnActivityMouseOut(actId,resIdx);
+                });
+
+                $("#button-reveal-exp").click(function(){
+                  revealTextualExplanation(grpOutter);
+                });
+              }
+              //else{}
+              //this part should show rec-tooltip in the list part of the interface
+
+            }else{
+              explanationTxt += "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
+              $('#kcs_act_info').prepend(explanationTxt)
             }
 
   				  /*recTooltip.transition()    
@@ -5423,6 +5508,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
 
         //console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
         
+
+
         var act_mouseover_log =
           "action"           + CONST.log.sep02 + "grid-activity-cell-mouseover" + CONST.log.sep01 +
           "grid-name"        + CONST.log.sep02 + gridName                    + CONST.log.sep01 +
@@ -5775,6 +5862,7 @@ function ehVisGridBoxMouseOut(e, grpOutter, miniSvg) {
       var mg_activity = data_resource ? data_resource[actIdx]:undefined;
       //var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
       if(mg_activity) {
+
         var act_id = mg_activity.id;
         var act_is_recommended = (act_id in rank_recommended_activities);
         var rank_recommended = -1;
@@ -5807,6 +5895,9 @@ function ehVisGridBoxMouseOut(e, grpOutter, miniSvg) {
           act_mouseout_log = act_mouseout_log + CONST.log.sep01 +
           "rec_score"   + CONST.log.sep02 + rec_score;
         }
+
+        //AALTOSQL21
+        //$("#rec-tooltip-content").hide();
 
         //Logs the activity mouseover in ent_tracking (aggregate db)
         log(
@@ -6694,6 +6785,10 @@ function generateHelp(origin){
       else if(state.curr.grp.startsWith("CS007Spring2020")){
         helpText += "<h3>Points per Topic</h3><p style='display:inline'>Here we define a <b>problem</b> as either of the following learning activities: tracing problems, prog. challenges or coding problems)</p><br><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems.</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
         height += 150;
+      }
+      else if(state.curr.grp.startsWith("WentworthSpring2021")){
+        helpText += "<h3>Points per Topic</h3><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for attempting at least 2 Tracing Problems and 2 Coding Problems.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not attempted at least 2 Tracing Problems and 2 Coding Problems in this topic.</p>";
+        height += 150;
       }else{
         helpText += "<h3>Points per Topic</h3><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems.</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
         height += 150;
@@ -7037,6 +7132,79 @@ function updateMinOverallProgressCheckInfo(){
   }
   progress_html = progress_html + "</br>";
   minOverallProgressInfoHTML.html(progress_html);
+}
+
+//AALTOSQL21
+function getTotalAttempts(res_ids){
+  var data_acts = data.learners.filter(function(d){return d.id==state.curr.usr})[0].state.activities;
+  var topics = Object.keys(data_acts);
+  var total_attempts = 0;
+  for(var i=0;i<topics.length;i++){
+    var topic = data_acts[topics[i]];
+    var resources = Object.keys(topic);
+    for(var j=0;j<resources.length;j++){
+      if(res_ids.includes(resources[j])){
+        var acts = topic[resources[j]];
+        var act_names = Object.keys(acts);
+        for(var k=0;k<act_names.length;k++){
+          var attempts = acts[act_names[k]].values.a;
+          total_attempts = total_attempts + attempts;
+        }
+      } 
+    }
+  }
+  return total_attempts;
+}
+
+//AALTOSQL21
+function revealTextualExplanation(grpOutter){
+  var grpOutterNode = grpOutter.node();
+  $('#button-reveal-exp').remove();
+  $('#hidden-exp-div').show();
+
+  var topicIdx      = +grpOutter.attr("data-topic-idx");
+  var cellIdx       = +grpOutter.attr("data-cell-idx");
+  var gridName      = grpOutter.attr("data-grid-name");
+  //var actId         = grpOutterNode.__data__["actId"];//added by @Jordan //commented by @Jordan for it to work with bn_general service for the student model
+  var actIdx        = grpOutterNode.__data__["actIdx"];//added by @Jordan
+  var resIdx        = +grpOutter.attr("data-res-idx");//added by @Jordan
+  var row           = grpOutter.attr("data-series-idx");//added by @Jordan
+  var topic         = data.topics[topicIdx];//added by @Jordan
+  var actIdx        = grpOutterNode.__data__["actIdx"];//added by @Jordan
+  var resIdx        = +grpOutter.attr("data-res-idx");//added by @Jordan
+  var actId         = -1;//added by @Jordan, for the cases of topic grid cells that they do not have an associated actId
+  var res           = data.resources[resIdx];//added by @Jordan
+  if(actIdx>-1){
+      actId         = topic.activities[res.id][actIdx].id;//added by @Jordan
+  }
+
+
+  highlightKcsOnActivityMouseOver(actId,resIdx);
+
+  var tooltip_activity_data = $(grpOutterNode)[0].__data__;
+
+  var act_rec_info = recommended_activities.filter(function(d){return d["name"]==tooltip_activity_data.actName})[0];
+
+  var rank_rec_activity = rank_recommended_activities[act_rec_info.id];
+
+  var rec_exp_log =
+    "action"           + CONST.log.sep02 + "recommended-activity-show-exp"                     + CONST.log.sep01 +
+    "cell-topic-id"    + CONST.log.sep02 + getTopic().id                                       + CONST.log.sep01 +
+    "cell-resource-id" + CONST.log.sep02 + data.resources[tooltip_activity_data.resIdx].id     + CONST.log.sep01 +
+    "act-name"         + CONST.log.sep02 + act_rec_info.id                                     + CONST.log.sep01 +
+    "rank-rec-act"     + CONST.log.sep02 + rank_rec_activity                                   + CONST.log.sep01;
+  
+
+  if (act_rec_info!==undefined){
+    var rec_score = act_rec_info["rec_score"];
+    rec_exp_log += "rec_score"   + CONST.log.sep02 + rec_score
+  }
+  
+
+  log(
+    rec_exp_log,     
+    true
+  ); 
 }
 
 count = function (ary, classifier) {

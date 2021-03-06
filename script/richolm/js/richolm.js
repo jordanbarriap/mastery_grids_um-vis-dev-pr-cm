@@ -2901,7 +2901,10 @@ function initBipartite(){
               if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){//TODO change to use the type of parameterized recommendation approach (remedial)
                 if(d["lastk-sr"]<=0) return d["uk"]==0?"#EEEEEE": "#999999"; 
                 //eturn "#19195d";
-                return barColorScaleSuccessRate(d["lastk-sr"]);
+                if(!state.curr.grp.startsWith("AALTOSQL21") || (state.curr.grp.startsWith("AALTOSQL21") && total_attempts_problems>min_attempts_start_treatment)){
+                  return barColorScaleSuccessRate(d["lastk-sr"]);
+                }
+                return "#EEEEEE"; 
               }
               if(d.uk==0||d.uk==-1)return "#EEEEEE";
               if (isStudentModelingCumulate()){
@@ -2995,7 +2998,7 @@ function initBipartite(){
               .attr('width', 10)
               .attr('height', 10)
               .attr("xlink:href", function(d){
-                if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
+                if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate() && (!state.curr.grp.startsWith("AALTOSQL21") || (state.curr.grp.startsWith("AALTOSQL21") && total_attempts_problems>min_attempts_start_treatment))){
 
                   if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>0 && d["uk"]>=knowledge_level_limit){
 
@@ -3007,7 +3010,7 @@ function initBipartite(){
                 return "./img/white.png";
               })
               .attr("class", function(d){
-                if(data.configprops.agg_proactiverec_enabled &&  data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate()){
+                if(data.configprops.agg_proactiverec_enabled &&  data.configprops.agg_proactiverec_method == "remedial" && isStudentModelingCumulate() && (!state.curr.grp.startsWith("AALTOSQL21") || (state.curr.grp.startsWith("AALTOSQL21") && total_attempts_problems>min_attempts_start_treatment))){
 
                   if (d["lastk-sr"]<=0.5 && d["lastk-sr"]>0 && d["uk"]>=knowledge_level_limit){
 
