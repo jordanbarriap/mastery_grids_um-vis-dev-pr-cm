@@ -669,145 +669,207 @@ function addRecommendationsToUI(){
 	d3.selectAll(".recommendationStar").remove();
 	d3.selectAll(".recommended_act").classed("recommended_act",false);
 
-    if(top_recommended_activities && top_recommended_activities.length > 0) {
-		
-		//var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)
-		var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().id)
-		
-		if(topic_rec_activities.length > 0) {
+	if(data.configprops.agg_proactiverec_method=="km" || data.configprops.agg_proactiverec_method=="remedial"){
+		if(top_recommended_activities && top_recommended_activities.length > 0) {
+			
+			//var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)
+			var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().id)
+			
+			if(topic_rec_activities.length > 0) {
 
-			//console.log("Rank recommended activities:");
-			//console.log(rank_recommended_activities);
+				//console.log("Rank recommended activities:");
+				//console.log(rank_recommended_activities);
 
-			d3.selectAll("g.grid-cell-outter").each( function(d, i){
-				var current_topic = data.topics[d.topicIdx]
-				var mg_activities = current_topic ? current_topic.activities:undefined;
-				var data_resource = data.resources[d.resIdx]
-				var data_resource_id = data_resource ? data_resource.id:undefined;
-				var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
-				var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
-				//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
-				if(mg_activity) {
-					var act_id = mg_activity.id
-					var act_name = d.actName;
-					var act_is_recommended = (act_id in rank_recommended_activities);
-					mg_activity['actIdx'] = d.actIdx
-					mg_activity['topicIdx'] = d.topicIdx
-					mg_activity['resIdx'] = d.resIdx
+				d3.selectAll("g.grid-cell-outter").each( function(d, i){
+					var current_topic = data.topics[d.topicIdx]
+					var mg_activities = current_topic ? current_topic.activities:undefined;
+					var data_resource = data.resources[d.resIdx]
+					var data_resource_id = data_resource ? data_resource.id:undefined;
+					var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
+					var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
+					//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
+					if(mg_activity) {
+						var act_id = mg_activity.id
+						var act_name = d.actName;
+						var act_is_recommended = (act_id in rank_recommended_activities);
+						mg_activity['actIdx'] = d.actIdx
+						mg_activity['topicIdx'] = d.topicIdx
+						mg_activity['resIdx'] = d.resIdx
 
-					if(act_is_recommended){
+						if(act_is_recommended){
 
-						//This is to fix the globally stored top_recommended_activities array. (To solve the problem of first topic openning)
-						let recommended_activity = top_recommended_activities.find(x => x.id === mg_activity.id)
-						recommended_activity['actIdx'] = d.actIdx
-						recommended_activity['topicIdx'] = d.topicIdx
-						recommended_activity['resIdx'] = d.resIdx
+							//This is to fix the globally stored top_recommended_activities array. (To solve the problem of first topic openning)
+							let recommended_activity = top_recommended_activities.find(x => x.id === mg_activity.id)
+							recommended_activity['actIdx'] = d.actIdx
+							recommended_activity['topicIdx'] = d.topicIdx
+							recommended_activity['resIdx'] = d.resIdx
 
-						d3.select(this).classed("recommended_act", true);
-						// d3.select(this).append("svg:image")
-						// .attr('x', 8)
-						// .attr('y', 2)
-						// .attr('width', scaleRecommendationStar(rank_recommended_activities[act_id]))
-						// .attr('height', scaleRecommendationStar(rank_recommended_activities[act_id]))
-						// .attr("class","recommendationStar")
-						// .attr("xlink:href", function(d){
-						// 	return "./img/star.png";
-						// })
-						// .style("pointer-events","none");
-						var rank_rec = rank_recommended_activities[act_id];
+							d3.select(this).classed("recommended_act", true);
+							// d3.select(this).append("svg:image")
+							// .attr('x', 8)
+							// .attr('y', 2)
+							// .attr('width', scaleRecommendationStar(rank_recommended_activities[act_id]))
+							// .attr('height', scaleRecommendationStar(rank_recommended_activities[act_id]))
+							// .attr("class","recommendationStar")
+							// .attr("xlink:href", function(d){
+							// 	return "./img/star.png";
+							// })
+							// .style("pointer-events","none");
+							var rank_rec = rank_recommended_activities[act_id];
+							var map_rank_to_seq = -1;
 
-;						var map_rank_to_seq = -1;
-
-						//TODO write here what happen if the proactive method is km
-						if(data.configprops.agg_proactiverec_method=="km"){
-							if(rank_rec===0){
-								map_rank_to_seq = 1;
-							}else{
-								if(rank_rec===1){
-									map_rank_to_seq = 0.7;
+							//TODO write here what happen if the proactive method is km
+							if(data.configprops.agg_proactiverec_method=="km"){
+								if(rank_rec===0){
+									map_rank_to_seq = 1;
 								}else{
-									if(rank_rec===2){
-										map_rank_to_seq = 0.3;
+									if(rank_rec===1){
+										map_rank_to_seq = 0.7;
 									}else{
+										if(rank_rec===2){
+											map_rank_to_seq = 0.3;
+										}else{
 
-										map_rank_to_seq = 0.0;	
+											map_rank_to_seq = 0.0;	
 
+										}
 									}
 								}
 							}
-						}
-						//TODO write here what happen if the proactive method is remedial
-						if(data.configprops.agg_proactiverec_method=="remedial"){
-							// function for adding two numbers.
-							const add = (a, b) => a + b
-							// use reduce to sum the total number of recommended activities
-							//var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
+							//TODO write here what happen if the proactive method is remedial
+							if(data.configprops.agg_proactiverec_method=="remedial"){
+								// function for adding two numbers.
+								const add = (a, b) => a + b
+								// use reduce to sum the total number of recommended activities
+								//var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
+								
+								//We use the total number of recommendations shown that is coming from vis.js in MG through the array top_recommended_activities
+								var total_rec_activities = top_recommended_activities.length;
+								map_rank_to_seq = 1-(rank_rec/total_rec_activities);
+							}
 							
-							//We use the total number of recommendations shown that is coming from vis.js in MG through the array top_recommended_activities
-							var total_rec_activities = top_recommended_activities.length;
-							map_rank_to_seq = 1-(rank_rec/total_rec_activities);
-						}
-						
-						
-						d3.select(this)
-							.append("svg:polygon")
-							//.attr("id", "star_1")
-							.attr("visibility", "visible")
-							//.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
-							.attr("points", function (d) { d.seq = map_rank_to_seq; return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
-							.attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
-							//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
-							.attr("stroke", "white")
-							.attr("max_rec_rank_act",rank_recommended_activities[act_id])
-							.attr("class","act_topic")
-							.style("shape-rendering", "geometricPrecision")
-							.style("pointer-events","none");
-						
-						d3.select(this)
-							.append("text").
-							attr("x", 15).
-							attr("y", 15).
-							attr("class", "rec_act_rank_txt").
-							style("text-anchor", "start").
-							text(function (d) {
-								if(data.configprops.agg_proactiverec_method=="km"){
+							
+							d3.select(this)
+								.append("svg:polygon")
+								//.attr("id", "star_1")
+								.attr("visibility", "visible")
+								//.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
+								.attr("points", function (d) { d.seq = map_rank_to_seq; return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+								.attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
+								//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
+								.attr("stroke", "white")
+								.attr("max_rec_rank_act",rank_recommended_activities[act_id])
+								.attr("class","act_topic")
+								.style("shape-rendering", "geometricPrecision")
+								.style("pointer-events","none");
+							
+							d3.select(this)
+								.append("text").
+								attr("x", 15).
+								attr("y", 15).
+								attr("class", "rec_act_rank_txt").
+								style("text-anchor", "start").
+								text(function (d) {
+									if(data.configprops.agg_proactiverec_method=="km"){
+										if(d.seq === 1) {
+											return " 1";
+										} else if (d.seq === 0.7) {
+											return " 2";
+										} else if (d.seq === 0.3){
+											return " 3";
+										} else{
+											return "";
+										}
+									}
+									if(data.configprops.agg_proactiverec_method=="remedial"){
+										return rank_rec+1;
+									}
+									
+								
+								/*if(d.seq === 1) {
+									return "+6";
+								} else if (d.seq === 0.7) {
+									return "+4";
+								} else {
+									return "+2";
+								}*/
+								})
+								.attr("font-family", "sans-serif")
+										.attr("font-size", "12px")
+								.attr("style", function(d) {
+									var colorIndex = Math.round(data.vis.color.value2color(d.val)*10);
+									var color = colorbrewer.Oranges[9][8-Math.min(colorIndex,8)];
+									return "fill: " + color + ";"; 
+								})
+								.style("pointer-events","none");
+						};
+					}
+					
+				});
+			}
+		}
+	}else{
+		d3.selectAll("g.grid-cell-outter").each( function(d, i){
+					var current_topic = data.topics[d.topicIdx]
+					var mg_activities = current_topic ? current_topic.activities:undefined;
+					var data_resource = data.resources[d.resIdx]
+					var data_resource_id = data_resource ? data_resource.id:undefined;
+					var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
+					var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
+					//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
+					if(mg_activity) {
+						//var act_id = mg_activity.id
+						//var act_name = d.actName;
+						var act_is_recommended = d.seq>0 ? true : false;
+						//var act_is_recommended = (act_id in rank_recommended_activities);
+						//mg_activity['actIdx'] = d.actIdx
+						//mg_activity['topicIdx'] = d.topicIdx
+						//mg_activity['resIdx'] = d.resIdx
+		
+							d3.select(this)
+								.append("svg:polygon")
+								//.attr("id", "star_1")
+								.attr("visibility", "visible")
+								//.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
+								.attr("points", function (d) { return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+								.attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
+								//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
+								.attr("stroke", "white")
+								//.attr("max_rec_rank_act",rank_recommended_activities[act_id])
+								.attr("class","act_topic")
+								.style("shape-rendering", "geometricPrecision")
+								.style("pointer-events","none");
+							
+							d3.select(this)
+								.append("text").
+								attr("x", 15).
+								attr("y", 15).
+								attr("class", "rec_act_rank_txt").
+								style("text-anchor", "start").
+								text(function (d) {
 									if(d.seq === 1) {
-										return " 1";
+										return "1";
 									} else if (d.seq === 0.7) {
-										return " 2";
-									} else if (d.seq === 0.3){
-										return " 3";
-									} else{
+										return "2";
+									} else if(d.seq ===0.3){
+										return "3";
+									}else{
 										return "";
 									}
-								}
-								if(data.configprops.agg_proactiverec_method=="remedial"){
-									return rank_rec+1;
-								}
-								
-							
-							/*if(d.seq === 1) {
-								return "+6";
-							} else if (d.seq === 0.7) {
-								return "+4";
-							} else {
-								return "+2";
-							}*/
-							})
-							.attr("font-family", "sans-serif")
-									.attr("font-size", "12px")
-							.attr("style", function(d) {
-								var colorIndex = Math.round(data.vis.color.value2color(d.val)*10);
-								var color = colorbrewer.Oranges[9][8-Math.min(colorIndex,8)];
-								return "fill: " + color + ";"; 
-							})
-							.style("pointer-events","none");
-					};
-				}
-				
-			});
-		}
-	}
+								})
+								.attr("font-family", "sans-serif")
+										.attr("font-size", "12px")
+								.attr("style", function(d) {
+									var colorIndex = Math.round(data.vis.color.value2color(d.val)*10);
+									var color = colorbrewer.Oranges[9][8-Math.min(colorIndex,8)];
+									return "fill: " + color + ";"; 
+								})
+								.style("pointer-events","none");
+						//};
+					}
+					
+				});
+	}    
 }
 
 function generateProactiveRecommendations(method){

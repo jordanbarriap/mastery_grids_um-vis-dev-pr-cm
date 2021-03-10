@@ -367,13 +367,13 @@ function actDone_cb(rsp) {
       d3.scale.linear().
       domain(CONST.vis.gridAbs.scales.y).
       range(["#eeeeee"].concat(CONST.vis.colors.me[data.vis.color.binCount - 1]));
-  
+
   // (2) Recommended activities:
   // (2.1) Remove the previous recommendations:
   if($("#act-rec-lst").is(':hidden')) {//Recommendations should change/shown only once and remain static until the iframe closed. It should be refreshed when user tried another activity.
      state.vis.act.rsp.rec    = rsp.recommendation;
      while (ui.vis.act.recLst.children.length > 2) ui.vis.act.recLst.removeChild(ui.vis.act.recLst.children[2]);
-  
+     
     // (2.2) At least one activity has been recommended:
     if (rsp.recommendation && rsp.recommendation.length > 0) {
         var frameWidth = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -455,7 +455,6 @@ function actDone_cb(rsp) {
   if(data.configprops.agg_kc_student_modeling=="bn"){
       //console.log("Update data.learners[usr_index].state.kcs with data from bn_general (loaded previously)")
       //updateLearnerDataWithOtherEstimates(item_kc_estimates);
-
 
       $.get( "http://adapt2.sis.pitt.edu/bn_general/StudentModelCache?usr="+state.curr.usr+"&grp="+state.curr.grp+"&cid="+state.curr.cid+"&defaultModel=true", function(kcs_data) {
         
@@ -1016,30 +1015,32 @@ function actLstShow(doMe, doVs, doGrp) {
   }
 
   if (grid) {
-    // var y = $getCoords(grid).y2 - (CONST.vis.barChart ? 32 : 0) - (((!res && doMe) || (res && (doMe || doVs || doGrp))) && state.args.uiGridTimelineVis ? (state.vis.mode === CONST.vis.mode.ind && state.vis.resIdx >= 0 ? 25 : 30) : 0);
-    
-    // $setPosCenter(ui.vis.actLst.cont,  false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y,      true );
-    // $setPosCenter(ui.vis.actLst.arrow, false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y - 15, false);
-  
-    //code added by @Jordan
-    var viewportElement = document.documentElement; 
-    var element = $("#grid-me")[0];
-    var box = element.getBoundingClientRect(); 
-    var y = box.top + viewportElement.scrollTop;
-    var height = box.height;
-    var width = box.width;
-    y = y + height;
+    //No visualization needs to be shown
+     if(state.args.kcMapMode==-1){
+        var y = $getCoords(grid).y2 - (CONST.vis.barChart ? 32 : 0) - (((!res && doMe) || (res && (doMe || doVs || doGrp))) && state.args.uiGridTimelineVis ? (state.vis.mode === CONST.vis.mode.ind && state.vis.resIdx >= 0 ? 25 : 30) : 0);
+        $setPosCenter(ui.vis.actLst.cont,  false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y,      true );
+        $setPosCenter(ui.vis.actLst.arrow, false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y - 15, false);
+     }else{
+        //code added by @Jordan
+        var viewportElement = document.documentElement; 
+        var element = $("#grid-me")[0];
+        var box = element.getBoundingClientRect(); 
+        var y = box.top + viewportElement.scrollTop;
+        var height = box.height;
+        var width = box.width;
+        y = y + height;
 
-    //$setPosCenter(ui.vis.actLst.cont,  false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y,      true );
-    $setPosCenter(ui.vis.actLst.cont,  false, 0 , y,      true );
-    $setPosCenter(ui.vis.actLst.arrow, false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y - 15, false);
-    
+        //$setPosCenter(ui.vis.actLst.cont,  false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y,      true );
+        $setPosCenter(ui.vis.actLst.cont,  false, 0 , y,      true );
+        $setPosCenter(ui.vis.actLst.arrow, false, ui.vis.actLst.topicCellX[state.vis.topicIdx - 1] + $getCoords($("#grids")[0]).x1, y - 15, false);
+        
+        $('#act-lst').css('width',width-10);
+     }
+     
     //$("#conceptVisSvg").hide();
     $("#act-lst").click(function( event ) {
       event.stopPropagation();
     });
-
-    //$('#act-lst').css('width',width);
 
     //end of code added by @Jordan
     if(data.configprops.agg_reactiverec_enabled) {
@@ -4117,7 +4118,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   
   var tr = $$("tr", tbl); 
   
-   if(data.configprops.agg_proactiverec_enabled && !title) { //Added for proactive recommendation, need to check with a parameter but should work only for topic based grid, not the main one. Title is the only way that I could find @Kamil
+  if(data.configprops.agg_proactiverec_enabled && !title) { //Added for proactive recommendation, need to check with a parameter but should work only for topic based grid, not the main one. Title is the only way that I could find @Kamil
     var recommendationtr = $$("td", tr, null, 'rec-list');
     
   if(data.configprops.agg_proactiverec_method=="remedial" || data.configprops.agg_proactiverec_method=="km"){
@@ -4203,7 +4204,34 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 			$(topicMastered).html("There is no recommendation\nin this topic.").addClass('no_recommendation');
 			$(recommendationtr).append(topicMastered);  
 		}
-	} else if(data.configprops.agg_kc_student_modeling=="bn"){
+	} else if(data.configprops.agg_proactiverec_method=="random"){
+    var recommendedActivities = $.grep($.map( gridData.series, function(n){
+      return n.data;
+    }), function(activity) {
+      return activity.seq > 0
+    });
+    
+    if(recommendedActivities.length > 0) {
+      var orderedList = document.createElement('ol');
+      $(orderedList).attr('id', 'rec-list');
+      
+      var recommendation = document.createElement('div');
+      $(recommendation).append(orderedList);
+      $(recommendationtr).append(recommendation);  
+      
+      recommendedActivities.sort(function(a, b) { 
+      return b.seq - a.seq
+      }).forEach(function(activity){
+      var recommendationItem = document.createElement('li');
+      $(recommendationItem).html(activity.actName).addClass('recommendation').data('activity', activity);
+      $(orderedList).append(recommendationItem);
+      });
+    } else {
+      var topicMastered = document.createElement('div');
+      $(topicMastered).html("Well done!\nYou mastered this topic.").addClass('no_recommendation');
+      $(recommendationtr).append(topicMastered);  
+    }
+  } else if(data.configprops.agg_kc_student_modeling=="bn"){
 		var recommendedActivities = $.grep($.map( gridData.series, function(n){
 		  return n.data;
 		}), function(activity) {
@@ -4788,7 +4816,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   }
   
   // Grid cells -- Sequencing:
-  if (!data.configprops.agg_proactiverec_enabled && s.doShowSeq) {//modified 
+  if (!data.configprops.agg_proactiverec_enabled && doShowSeq) {//modified 
     if(CONST.vis.seqStars){
       g
         .append("svg:polygon")
