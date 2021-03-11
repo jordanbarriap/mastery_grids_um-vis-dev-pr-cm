@@ -911,6 +911,7 @@ function generateProactiveRecommendations(method){
 				recommended_activities[j]["isRecommended"]="0";
 			  }
 			}
+			//console.log(recommended_activities);
 			var millisecondsDate = (new Date).getTime();
 			$.ajax({
 			  type: "POST",

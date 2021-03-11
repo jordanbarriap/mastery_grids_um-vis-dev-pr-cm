@@ -451,6 +451,47 @@ function actDone_cb(rsp) {
   
   // (5) Other:
   vis.loadingHide();
+  
+  if (data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="random"){
+      var random_recs = state.sequencedActs;
+      //var random_recs = sequencedActs4Log();
+      var millisecondsDate = (new Date).getTime();
+      var recommended_activities = [];
+      rank_recommended_activities = {};
+      for(var i=0;i<random_recs.length;i++){
+        var splitted_recs = random_recs[i].split("/");
+        var random_recs = state.sequencedActs;
+        var millisecondsDate = (new Date).getTime(); 
+        for(var i=0;i<random_recs.length;i++){
+          var splitted_recs = random_recs[i].split("/");
+          var topic_act = splitted_recs[0];
+          var id_act = splitted_recs[1];
+          var rank_score = splitted_recs[2];
+          var rec_act = {id:id_act,isRecommended:1,topic:topic_act,url:"",rec_score:rank_score,name:id_act,explanation:"",kcs:[]};
+          if(rank_score=="1"){
+            rank_recommended_activities[id_act] = 0;
+          }else if(rank_score=="0.7"){
+            rank_recommended_activities[id_act] = 1;
+          }else if(rank_score=="0.3"){
+            rank_recommended_activities[id_act] = 2;
+          }
+          recommended_activities.push(rec_act);
+        }
+      }
+      $.ajax({
+      type: "POST",
+      data :JSON.stringify({"usr":state.curr.usr,
+       "grp":state.curr.grp,
+       "sid":state.curr.sid,
+       "cid":state.curr.cid,
+       "sid":state.curr.sid,
+       "logRecId":millisecondsDate.toString(),
+       "recMethod":"random",
+       "recommendations":recommended_activities}),
+      url: "http://adapt2.sis.pitt.edu/recommendation/LogRecommendations",
+      contentType: "application/json"
+      });
+  }
 
   if(data.configprops.agg_kc_student_modeling=="bn"){
       //console.log("Update data.learners[usr_index].state.kcs with data from bn_general (loaded previously)")
@@ -575,6 +616,7 @@ function actDone_cb(rsp) {
   				  recommended_activities[j]["isRecommended"]="0";
   				}
   			  }
+
   			  var millisecondsDate = (new Date).getTime();
   			  $.ajax({
   				type: "POST",
@@ -2181,9 +2223,11 @@ function processData() {
   var all_resource_kcs = new Set()
   
   state.args.kcResouceIds.forEach(function(resource) {
-	console.log(resource);
-	console.log(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat());
-	var resource_kcs = new Set(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat().map(function(b){return b.kcs}).flat())
+	
+  //console.log(resource);
+	//console.log(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat());
+	
+  var resource_kcs = new Set(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat().map(function(b){return b.kcs}).flat())
 	all_resource_kcs = new Set([...all_resource_kcs,...resource_kcs])
   });
   
@@ -2192,6 +2236,8 @@ function processData() {
 
   //@AALTOSQL21
   total_attempts_problems = getTotalAttempts(["Query Analysis","Query Execution"]);
+
+  
 
   //Calculate concept weights per topic
   for(var i=0;i<data.kcs.length;i++){
@@ -2351,7 +2397,7 @@ function processData() {
   
   // (4) Grids:
   visDo(true, true, true);
-  
+
   vis.loadingHide();
   
   log("action" + CONST.log.sep02 + "data-load-end", false);
@@ -2394,6 +2440,46 @@ function processData() {
       	recommended_activities = [];
 	      map_topic_max_rank_rec_act = {};
         rank_recommended_activities = {};
+
+        if (data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="random"){
+            var random_recs = state.sequencedActs;
+            //var random_recs = sequencedActs4Log();
+            var millisecondsDate = (new Date).getTime();
+            var recommended_activities = []
+            for(var i=0;i<random_recs.length;i++){
+              var splitted_recs = random_recs[i].split("/");
+              var random_recs = state.sequencedActs;
+              var millisecondsDate = (new Date).getTime(); 
+              for(var i=0;i<random_recs.length;i++){
+                var splitted_recs = random_recs[i].split("/");
+                var topic_act = splitted_recs[0];
+                var id_act = splitted_recs[1];
+                var rank_score = splitted_recs[2];
+                var rec_act = {id:id_act,isRecommended:"1",topic:topic_act,url:"",rec_score:rank_score,name:id_act,explanation:"",kcs:[]};
+                if(rank_score=="1"){
+                  rank_recommended_activities[id_act] = 0;
+                }else if(rank_score=="0.7"){
+                  rank_recommended_activities[id_act] = 1;
+                }else if(rank_score=="0.3"){
+                  rank_recommended_activities[id_act] = 2;
+                }
+                recommended_activities.push(rec_act);
+              }
+            }
+            $.ajax({
+            type: "POST",
+            data :JSON.stringify({"usr":state.curr.usr,
+             "grp":state.curr.grp,
+             "sid":state.curr.sid,
+             "cid":state.curr.cid,
+             "sid":state.curr.sid,
+             "logRecId":millisecondsDate.toString(),
+             "recMethod":"random",
+             "recommendations":recommended_activities}),
+            url: "http://adapt2.sis.pitt.edu/recommendation/LogRecommendations",
+            contentType: "application/json"
+            });
+        }
         
         //Generate recommendations based on problematic concepts (added by @Jordan) | second condition added for @AALTOSQL21
         if(data.configprops.agg_proactiverec_method=="remedial" && (!state.curr.grp.startsWith("AALTOSQL21") || (state.curr.grp.startsWith("AALTOSQL21") && total_attempts_problems>min_attempts_start_treatment))){
@@ -2462,6 +2548,7 @@ function processData() {
                   recommended_activities[j]["isRecommended"]="0";
                 }
               }
+              console.log(recommended_activities);
               var millisecondsDate = (new Date).getTime();
               $.ajax({
                 type: "POST",
@@ -4122,8 +4209,8 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
     var recommendationtr = $$("td", tr, null, 'rec-list');
     
   if(data.configprops.agg_proactiverec_method=="remedial" || data.configprops.agg_proactiverec_method=="km"){
-    console.log("Add recommendation classes to cells...");
-    console.log(top_recommended_activities);
+    //console.log("Add recommendation classes to cells...");
+    //console.log(top_recommended_activities);
     if(top_recommended_activities && top_recommended_activities.length > 0) {
 			var orderedList = document.createElement('ol');
 			$(orderedList).attr('id', 'rec-list');
@@ -4827,7 +4914,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   }
   
   // Grid cells -- Sequencing:
-  if (!data.configprops.agg_proactiverec_enabled && doShowSeq) {//modified 
+  if (!data.configprops.agg_proactiverec_enabled && s.doShowSeq) {//modified 
     if(CONST.vis.seqStars){
       g
         .append("svg:polygon")
@@ -5355,7 +5442,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         $('div[id=rec-tooltip-content]').remove();
         if(d3.select(grpOutterNode).classed('recommended_act')) {
   			  let recommended_activity_arr = top_recommended_activities.filter(rec_act => rec_act.name == e.actName || rec_act.id == e.id);
-  			  if(recommended_activity_arr.length > 0) {
+  			  recommended_activities = recommended_activity_arr;
+          if(recommended_activity_arr.length > 0) {
   				  var explanationTxt = ""
             
             //AALTOSQL21
@@ -5373,8 +5461,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
                 var d = document.getElementById('rec-tooltip-content');
                 d.style.position = "absolute";
                 d.style.padding = "1.5px";
-                d.style.left = (x_pos+$(".rec-list").width()+25)+'px';
-                d.style.top = (y_pos+25)+'px';
+                d.style.left = (x_pos+$(".rec-list").width()+20)+'px';
+                d.style.top = (y_pos+20)+'px';
                 $("#rec-tooltip-content").mouseleave(function() {
                   $(this).hide();
                   var topicIdx      = +grpOutter.attr("data-topic-idx");
@@ -5392,7 +5480,43 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
                   if(actIdx>-1){
                       actId         = topic.activities[res.id][actIdx].id;//added by @Jordan
                   }
+
                   highlightKcsOnActivityMouseOut(actId,resIdx);
+
+                  var act_rec_info = recommended_activity_arr.filter(function(d){return d["id"]==actId})[0];
+
+                  var exp_mouseleave_log =
+                    "action"           + CONST.log.sep02 + "rec-explanation-mouseleave" + CONST.log.sep01 +
+                    //"grid-name"        + CONST.log.sep02 + gridName                    + CONST.log.sep01 +
+                    "row"              + CONST.log.sep02 + row                         + CONST.log.sep01 +
+                    "cell-topic-id"    + CONST.log.sep02 + topic.id                    + CONST.log.sep01 +
+                    "cell-resource-id" + CONST.log.sep02 + res.id                      + CONST.log.sep01 +
+                    "cell-activity-id" + CONST.log.sep02 + actId                       + CONST.log.sep01 + 
+                    "rank_recommend"   + CONST.log.sep02 + rank_recommended            + CONST.log.sep01 +
+                    "recExp"           + CONST.log.sep02 + state.args.recExp           + CONST.log.sep01 ;
+
+                  if (act_rec_info!==undefined){
+                    var rec_score = act_rec_info["rec_score"];
+                    exp_mouseleave_log = exp_mouseleave_log + CONST.log.sep01 +
+                    "rec_score"   + CONST.log.sep02 + rec_score;
+                    var explanation_text = act_rec_info["explanation"];
+                    if(state.args.recExp && act_rec_info["isRecommended"]=="1" && explanation_text){
+                      explanation_text = explanation_text.replace(",", " ");
+                      explanation_text = explanation_text.replace(/<[^>]*>?/gm, '');
+                      exp_mouseleave_log = exp_mouseleave_log + CONST.log.sep01 +
+                      "isRec"   + CONST.log.sep02 + act_rec_info["isRecommended"] + CONST.log.sep01 +
+                      "exp"   + CONST.log.sep02 + explanation_text;
+                    }
+                  }
+
+                  //Logs the explanation tooltip mouseleave in ent_tracking (aggregate db)
+                  log(
+                    exp_mouseleave_log,     
+                    true
+                  );
+
+
+
                 });
 
                 $("#button-reveal-exp").click(function(){
@@ -6275,7 +6399,7 @@ function ehVisGridBoxClick(e, grpOutter) {
         }
       }
 
-      console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
+      //console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
 
       if(data.configprops.agg_kc_student_modeling=="cumulate"){
         var current_topic = data.topics[topicIdx];
@@ -6294,7 +6418,7 @@ function ehVisGridBoxClick(e, grpOutter) {
             rank_recommended = rank_recommended_activities[act_id];
           }
 
-          console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
+          //console.log("rec acts complete: "+recDone+" rec acts incomplete: "+recNoDone+" no rec complete: "+noRecDone+ " no rec incomplete: "+noRecNoDone);
           
           var act_click_log=
             "action"           + CONST.log.sep02 + "grid-activity-cell-select" + CONST.log.sep01 +
