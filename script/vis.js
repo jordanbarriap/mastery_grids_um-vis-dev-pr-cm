@@ -4876,18 +4876,19 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           .attr('height', 12)
           .attr("xlink:href", function(d){
         			let topic_credit = credit_achievement[d.topicIdx-1]
-                    if(topic_credit==1){
-                      if(state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")) return "./img/half_credit.png"; //icon specific for IS0017 Fall 2019 (do not use blue as it is the color for group progress)
-                      return "./img/credit.png";
-                    }else{
-                      if(topic_credit==.5){
-                        return "./img/half_credit.png";
-                      }else if(topic_credit==0){
-                        return "./img/no_credit.png";
-                      }else {
-        				  return;
-			           }
-            }});
+              if(d.topicIdx>11 && state.curr.grp.startsWith("AALTOSQL21")) return "./img/white.png";
+              if(topic_credit==1){
+                if(state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")) return "./img/half_credit.png"; //icon specific for IS0017 Fall 2019 (do not use blue as it is the color for group progress)
+                return "./img/credit.png";
+              }else{
+                if(topic_credit==.5){
+                  return "./img/half_credit.png";
+                }else if(topic_credit==0){
+                  return "./img/no_credit.png";
+                }else {
+  				  return;
+           }
+      }});
   } 
 
   if(state.args.uiTopicTimeMapFile && isInteractive){
