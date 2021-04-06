@@ -2601,7 +2601,7 @@ function processData() {
         
       }
       
-      if(state.args.uiIncenCheck && state.curr.grp.startsWith("AALTOSQL20")){
+      if(state.args.uiIncenCheck && (state.curr.grp.startsWith("AALTOSQL20") || state.curr.grp.startsWith("AALTOSQL21"))){
         if(!Cookies.get('extra-points-announcement')) {
           Cookies.set('extra-points-announcement', 'shown', { expires: 14});
           $("#extra_points_help").d3Click();
@@ -7154,8 +7154,12 @@ function generateHelp(origin){
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Extra Points Announcement</h3>" +
                    "<p>You can keep using the system to practice your SQL skills. <br/> However, from now on, your activities <b>will not affect the extra points you have already earned</b>" +
                    "(extra points you have earned until now are reflected to your accounts) <br/></p>" + 
-                   "<p>You will see changes in the interface but these changes will not be reflected.</p>"; 
+                   "<p>You will see changes in the interface but these changes will not be reflected.</p>";
       ui.vis.helpDlg.style.height = "150px"
+      if(state.curr.grp.startsWith("AALTOSQL21") && (new Date() <  new Date('2021-04-29'))){
+        helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Extra Points Announcement</h3>" +
+                   "<p>Since April 6th, you can get extra-points only from working on learning activities ranging from the <br/>Sub-Queries topic to the Derived Relations and Views topic.<br/></p>"; 
+      }
     }
     return helpText;
 }
