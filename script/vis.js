@@ -4756,26 +4756,26 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         style("text-rendering", "geometricPrecision");
         
 
-      // svg.
-      //   append("g").
-      //   attr("class", "helpButton").
-      //   //attr("style","background-image: url('img/help.gif');").
-      //   attr("helpId", "extra_points").
-      //   attr("id", "extra_points_help").
-      //       attr("serieId",(s.id ? s.id : "")).
-      //       attr("cursor","pointer").
-      //       on("click",function() {
-      //           helpDialogShow("extra_points",d3.mouse(this)[0],d3.mouse(this)[1]+57);
-      //       }).
-      //       on("mouseover",function () {d3.select(this).style("opacity","1");}).
-      //       on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
-      //       style("opacity", "0.7").
-      //         append("image").
-      //         attr("x", 185).
-      //         attr("y", 0).
-      //         attr("width", 22).
-      //         attr("height", 19).
-      //         attr("xlink:href","img/help.png");
+      svg.
+        append("g").
+        attr("class", "helpButton").
+        //attr("style","background-image: url('img/help.gif');").
+        attr("helpId", "extra_points").
+        attr("id", "extra_points_help").
+            attr("serieId",(s.id ? s.id : "")).
+            attr("cursor","pointer").
+            on("click",function() {
+                helpDialogShow("extra_points",d3.mouse(this)[0],d3.mouse(this)[1]+57);
+            }).
+            on("mouseover",function () {d3.select(this).style("opacity","1");}).
+            on("mouseout",function () {d3.select(this).style("opacity","0.7");}).
+            style("opacity", "0.7").
+              append("image").
+              attr("x", 185).
+              attr("y", 0).
+              attr("width", 22).
+              attr("height", 19).
+              attr("xlink:href","img/help.png");
 
 			$('td.title').hide()
 		}			
@@ -7158,7 +7158,8 @@ function generateHelp(origin){
       ui.vis.helpDlg.style.height = "150px"
       if(state.curr.grp.startsWith("AALTOSQL21") && (new Date() <  new Date('2021-04-29'))){
         helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Extra Points Announcement</h3>" +
-                   "<p>Since April 6th, you can get extra-points only from working on learning activities ranging from the <br/>Sub-Queries topic to the Derived Relations and Views topic.<br/></p>"; 
+                   "<p>Since April 6th, you can get extra-points only from working on learning activities <b>ranging from Sub-Queries topic to Join topic (including it)</b>.<br/></p>"+ 
+                   "<p>You can check the extra-points you got from working on learning activities ranging from SELECT-FROM topic to Aggregate functions topic by <b>accessing your A+ account</b>.</p>";
       }
     }
     return helpText;
